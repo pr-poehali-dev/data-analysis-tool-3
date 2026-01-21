@@ -4,6 +4,7 @@ import { PortfolioNavbar, Footer } from "@/components/landing";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { requestsStore } from "@/store/requestsStore";
 import {
   Select,
   SelectContent,
@@ -123,8 +124,34 @@ export const CreateRequest = () => {
   };
 
   const handleSubmit = () => {
-    console.log("Форма отправлена:", formData);
-    navigate("/dashboard");
+    const reward = Math.floor(
+      (parseInt(formData.budgetMax) || 0) * 0.15
+    );
+    const bonus = Math.floor(reward * 0.3);
+
+    const districtsText = formData.districts.join(", ");
+    
+    requestsStore.addRequest({
+      name: "Вы",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NewUser",
+      location: `${formData.city}, ${districtsText}`,
+      budget: `${parseInt(formData.budgetMin).toLocaleString('ru-RU')} - ${parseInt(formData.budgetMax).toLocaleString('ru-RU')} ₽`,
+      reward: `${reward.toLocaleString('ru-RU')} ₽`,
+      bonus: `+${bonus.toLocaleString('ru-RU')} ₽ бонус`,
+      whoWillLive: formData.whoWillLive,
+      aboutYourself: formData.aboutYourself,
+      hasPets: formData.hasPets,
+      city: formData.city,
+      districts: formData.districts,
+      budgetMin: formData.budgetMin,
+      budgetMax: formData.budgetMax,
+      housingType: formData.housingType,
+      roomsCount: formData.roomsCount,
+      rentalPeriod: formData.rentalPeriod,
+      moveInDate: formData.moveInDate,
+    });
+
+    navigate("/feed");
   };
 
   return (

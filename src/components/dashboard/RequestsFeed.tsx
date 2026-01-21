@@ -1,12 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-
-interface RequestsFeedProps {
-  onRegisterClick?: () => void;
-}
+import { requestsStore, Request } from "@/store/requestsStore";
 import {
   Select,
   SelectContent,
@@ -15,20 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface Request {
-  id: string;
-  tenantName: string;
-  tenantAvatar: string;
-  city: string;
-  district: string;
-  budget: number;
-  reward: number;
-  bonus: number;
-  housingType: string;
-  rentalPeriod: string;
+interface RequestsFeedProps {
+  onRegisterClick?: () => void;
 }
 
-const mockRequests: Request[] = [
+const oldMockRequests = [
   {
     id: "1",
     tenantName: "Анна Иванова",
@@ -94,12 +82,23 @@ const mockRequests: Request[] = [
 export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [requests, setRequests] = useState<Request[]>([]);
   const itemsPerPage = 6;
 
-  const totalPages = Math.ceil(mockRequests.length / itemsPerPage);
+  useEffect(() => {
+    setRequests(requestsStore.getRequests());
+    
+    const unsubscribe = requestsStore.subscribe(() => {
+      setRequests(requestsStore.getRequests());
+    });
+    
+    return unsubscribe;
+  }, []);
+
+  const totalPages = Math.ceil(requests.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentRequests = mockRequests.slice(startIndex, endIndex);
+  const currentRequests = requests.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-6">
@@ -200,13 +199,15 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
             className="bg-white border border-border rounded-xl p-6 hover:shadow-lg transition-shadow"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                {request.tenantAvatar}
-              </div>
+              <img
+                src={request.avatar}
+                alt={request.name}
+                className="w-12 h-12 rounded-full"
+              />
               <div>
-                <p className="font-semibold text-foreground">{request.tenantName}</p>
+                <p className="font-semibold text-foreground">{request.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {request.city}, {request.district}
+                  {request.location}
                 </p>
               </div>
             </div>
@@ -215,7 +216,7 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
               <div className="flex items-center gap-2 text-sm">
                 <Icon name="DollarSign" size={16} className="text-muted-foreground" />
                 <span className="text-foreground">
-                  Бюджет: <span className="font-semibold">до {request.budget.toLocaleString('ru-RU')} ₽/мес</span>
+                  Бюджет: <span className="font-semibold">{request.budget}</span>
                 </span>
               </div>
 
@@ -235,10 +236,10 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
                     Вознаграждение
                   </p>
                   <p className="text-lg font-bold text-green-600">
-                    {request.reward.toLocaleString('ru-RU')} ₽
+                    {request.reward}
                   </p>
                   <p className="text-xs text-green-700 mt-1">
-                    + бонус до {request.bonus.toLocaleString('ru-RU')} ₽
+                    {request.bonus}
                   </p>
                 </div>
               </div>
