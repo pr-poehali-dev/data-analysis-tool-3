@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
-import { Button } from "@/components/ui/button";
-import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
+import { PortfolioNavbar, Footer } from "@/components/landing";
 
 export const Feed = () => {
   const navigate = useNavigate();
@@ -20,24 +19,10 @@ export const Feed = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="hover:opacity-80 transition-opacity">
-            <img 
-              src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
-              alt="SovetPay" 
-              className="h-12 w-auto"
-            />
-          </button>
-          <Button onClick={() => navigate("/")}>
-            <Icon name="Home" size={16} className="mr-2" />
-            На главную
-          </Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <PortfolioNavbar onRegisterClick={handleRegistrationClick} />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 mt-20">
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-foreground mb-2">Лента заявок</h1>
           <p className="text-lg text-muted-foreground">
@@ -67,6 +52,8 @@ export const Feed = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

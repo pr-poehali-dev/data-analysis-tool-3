@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
+import { PortfolioNavbar, Footer } from "@/components/landing";
 
 interface DashboardProps {
   user: {
@@ -186,15 +187,11 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <img 
-            src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
-            alt="SovetPay" 
-            className="h-12 w-auto"
-          />
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-background">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background">
+        <PortfolioNavbar />
+        <div className="bg-white border-b border-border">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-end gap-4">
             <span className="text-sm text-muted-foreground">
               {user.firstName} {user.lastName}
             </span>
@@ -204,10 +201,10 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="flex max-w-7xl mx-auto">
-        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-73px)] p-6">
+      <div className="flex max-w-7xl mx-auto pt-[140px]">
+        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-140px)] p-6 sticky top-[140px] self-start">
           <nav className="space-y-2">
             {filteredMenuItems.map((item) => (
               <button
@@ -237,6 +234,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </motion.div>
         </main>
       </div>
+
+      <Footer />
     </div>
   );
 };
