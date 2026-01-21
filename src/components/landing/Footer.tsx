@@ -37,7 +37,7 @@ const defaultSections: FooterSection[] = [
   {
     title: "Для рекомендателей",
     links: [
-      { label: "Лента заявок", href: "#feed" },
+      { label: "Лента заявок", href: "/feed" },
       { label: "Вознаграждения", href: "#pricing" },
       { label: "Предложить вариант", href: "#suggest" },
       { label: "Правила выплат", href: "#payouts" },

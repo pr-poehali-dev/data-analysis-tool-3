@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Dashboard } from "./pages/Dashboard";
+import { Feed } from "./pages/Feed";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => {
                 )
               }
             />
+            <Route path="/feed" element={<Feed />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
