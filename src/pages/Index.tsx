@@ -3,7 +3,6 @@ import {
   PortfolioNavbar,
   ProductTeaserCard,
   BankingScaleHero,
-  CaseStudiesCarousel,
   IntegrationCarousel,
   PricingSection,
   FAQSection,
@@ -33,7 +32,6 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
       <PortfolioNavbar onRegisterClick={handleRegistrationClick} />
       <ProductTeaserCard onRegisterClick={handleRegistrationClick} />
       <BankingScaleHero />
-      <CaseStudiesCarousel />
       <IntegrationCarousel />
       <PricingSection />
       <FAQSection />
