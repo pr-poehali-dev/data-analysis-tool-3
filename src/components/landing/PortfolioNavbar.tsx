@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface NavigationLink {
   name: string;
@@ -19,6 +20,8 @@ const navigationLinks: NavigationLink[] = [
 ];
 
 export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -46,6 +49,14 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
     }
   };
 
+  const handleLogoClick = () => {
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -56,7 +67,7 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <button
-              onClick={() => handleLinkClick("#home")}
+              onClick={handleLogoClick}
               className="hover:opacity-80 transition-opacity duration-200"
             >
               <img 
