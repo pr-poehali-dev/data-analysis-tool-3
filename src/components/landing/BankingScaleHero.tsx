@@ -19,23 +19,23 @@ interface DataPoint {
 
 const stats: StatItem[] = [
   {
-    value: "1 млрд+",
-    description: "Сообщений анализируется\nежедневно",
+    value: "0%",
+    description: "Комиссия для\nарендодателей",
     delay: 0,
   },
   {
-    value: "99.9%",
-    description: "Точность определения\nтональности",
+    value: "5-10к ₽",
+    description: "Вознаграждение\nрекомендателям",
     delay: 0.2,
   },
   {
-    value: "50+",
-    description: "Поддерживаемых\nязыков",
+    value: "100%",
+    description: "Защита через\nэскроу-счета",
     delay: 0.4,
   },
   {
-    value: "1000+",
-    description: "Организаций используют\nСинхроЛинк",
+    value: "4 города",
+    description: "Москва, СПб, Казань,\nРязань",
     delay: 0.6,
   },
 ];
@@ -85,7 +85,7 @@ export const BankingScaleHero = () => {
                   className="block whitespace-nowrap overflow-hidden relative z-10"
                   style={{ color: "#146e96" }}
                 >
-                  Доверие в масштабе
+                  Аренда через доверие
                 </motion.span>
                 <motion.span
                   initial={{ opacity: 0 }}
@@ -98,19 +98,19 @@ export const BankingScaleHero = () => {
             </div>
 
             <h2 className="text-[40px] font-normal leading-tight tracking-tight text-[#111A4A] mb-6">
-              Анализируем миллиарды разговоров ежедневно{" "}
+              Три роли — одна платформа.{" "}
               <span className="opacity-40">
-                для самых требовательных команд и корпораций мира.
+                Арендаторы, рекомендатели и владельцы находят друг друга напрямую.
               </span>
             </h2>
 
             <p className="text-lg leading-6 text-[#111A4A] opacity-60 mt-0 mb-6">
-              Как интеллектуальный слой для современных коммуникаций, мы предоставляем аналитику в реальном времени и распознавание эмоций через нашу продвинутую AI-платформу.
+              SovetPay объединяет поиск жилья и доверенные рекомендации. Арендодатели получают проверенных жильцов без комиссии, рекомендатели зарабатывают на подборе вариантов, а арендаторы находят жильё через знакомых.
             </p>
 
             <button className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] transition-all duration-200 ease-in-out rounded-lg px-4 mt-5 text-sm group hover:shadow-[0_1px_2px_0_rgba(0,0,0,0.05),0_0_0_1px_rgba(87,90,100,0.18)]">
               <span className="relative z-10 flex items-center gap-1">
-                Узнать больше о платформе
+                Как это работает
                 <ArrowRight className="w-4 h-4 -mr-1 transition-transform duration-150 group-hover:translate-x-1" />
               </span>
             </button>

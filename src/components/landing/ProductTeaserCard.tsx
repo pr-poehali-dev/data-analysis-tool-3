@@ -15,12 +15,12 @@ interface ProductTeaserCardProps {
 
 export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
   const {
-    dailyVolumeLabel = "ОБРАБОТАНО СООБЩЕНИЙ ЗА СУТКИ",
-    headline = "Интеллектуальный слой для современных коммуникаций",
-    subheadline = "СинхроЛинк объединяет все ваши звонки, чаты и встречи в единую AI-платформу — предоставляя аналитику в реальном времени, анализ тональности и синхронизацию команды.",
-    primaryButtonText = "Начать анализ",
+    dailyVolumeLabel = "НОВАЯ МОДЕЛЬ АРЕНДЫ ЖИЛЬЯ",
+    headline = "Арендуйте через знакомых, а не через агентов",
+    subheadline = "SovetPay — платформа аренды жилья через рекомендации. Арендаторы создают заявки, рекомендатели предлагают варианты за вознаграждение, владельцы находят проверенных жильцов без комиссий.",
+    primaryButtonText = "Найти жильё",
     primaryButtonHref = "",
-    secondaryButtonText = "Документация API",
+    secondaryButtonText = "Рекомендовать варианты",
     secondaryButtonHref = "",
   } = props;
 

@@ -20,47 +20,37 @@ interface PricingPlan {
 }
 
 const features: PricingFeature[] = [
-  { name: "Анализ разговоров в реальном времени", included: "starter" },
-  { name: "До 10 000 сообщений/месяц", included: "starter" },
-  { name: "Базовое определение тональности", included: "starter" },
-  { name: "Поддержка по email", included: "starter" },
-  { name: "Продвинутый эмоциональный интеллект", included: "pro" },
-  { name: "До 100 000 сообщений/месяц", included: "pro" },
-  { name: "Мультиязычная поддержка (50+ языков)", included: "pro" },
-  { name: "Приоритетная поддержка", included: "pro" },
-  { name: "Кастомное обучение AI модели", included: "enterprise" },
-  { name: "Безлимитные сообщения", included: "enterprise" },
-  { name: "Персональный менеджер", included: "enterprise" },
-  { name: "Поддержка 24/7 по телефону", included: "enterprise" },
-  { name: "Доступ к API", included: "all" },
-  { name: "Инструменты командной работы", included: "all" },
+  { name: "Публикация заявок на аренду", included: "all" },
+  { name: "Поиск вариантов жилья", included: "all" },
+  { name: "Вознаграждение за рекомендации", included: "all" },
+  { name: "Защита через эскроу-счета", included: "all" },
+  { name: "Готовые шаблоны договоров", included: "all" },
+  { name: "Встроенный мессенджер", included: "all" },
+  { name: "Проверка пользователей", included: "all" },
+  { name: "Поддержка в чате", included: "all" },
 ];
 
 const plans: PricingPlan[] = [
   {
-    name: "Старт",
-    price: { monthly: 2900, yearly: 29000 },
+    name: "Рязань",
+    price: { monthly: 5000, yearly: 50000 },
     level: "starter",
   },
   {
-    name: "Про",
-    price: { monthly: 9900, yearly: 99000 },
+    name: "Казань",
+    price: { monthly: 6000, yearly: 60000 },
     level: "pro",
-    popular: true,
   },
   {
-    name: "Бизнес",
-    price: { monthly: 29900, yearly: 299000 },
+    name: "Санкт-Петербург",
+    price: { monthly: 8000, yearly: 80000 },
     level: "enterprise",
+    popular: true,
   },
 ];
 
 function shouldShowCheck(included: PricingFeature["included"], level: PlanLevel): boolean {
-  if (included === "all") return true;
-  if (included === "enterprise" && level === "enterprise") return true;
-  if (included === "pro" && (level === "pro" || level === "enterprise")) return true;
-  if (included === "starter") return true;
-  return false;
+  return included === "all";
 }
 
 export function PricingSection() {
@@ -71,9 +61,9 @@ export function PricingSection() {
     <section className="py-24 bg-background" id="pricing">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-[40px] font-normal leading-tight mb-4">Выберите тариф</h2>
+          <h2 className="text-[40px] font-normal leading-tight mb-4">Вознаграждения по городам</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Начните работу с платформой коммуникационной аналитики СинхроЛинк. Все тарифы включают API доступ и инструменты командной работы.
+            Фиксированное вознаграждение для рекомендателей за успешную сделку. Арендаторы могут увеличить сумму для приоритета.
           </p>
         </div>
 
@@ -87,7 +77,7 @@ export function PricingSection() {
                 !isYearly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Месячная
+Базовое
             </button>
             <button
               type="button"
@@ -97,8 +87,8 @@ export function PricingSection() {
                 isYearly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Годовая
-              <span className="ml-2 text-sm text-[#156d95]">-17%</span>
+С бонусом
+              <span className="ml-2 text-sm text-[#156d95]">+₽</span>
             </button>
           </div>
         </div>
@@ -127,7 +117,7 @@ export function PricingSection() {
                   <span className="text-4xl font-medium">
                     {(isYearly ? plan.price.yearly : plan.price.monthly).toLocaleString("ru-RU")} ₽
                   </span>
-                  <span className="text-lg text-muted-foreground">/{isYearly ? "год" : "мес"}</span>
+                  <span className="text-lg text-muted-foreground">/сделка</span>
                 </div>
               </div>
               <div
@@ -190,9 +180,9 @@ export function PricingSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="bg-[#156d95] text-white px-[18px] py-[15px] rounded-full text-lg hover:rounded-2xl transition-all">
-            Начать с тарифа {plans.find((p) => p.level === selectedPlan)?.name}
-          </button>
+          <p className="text-muted-foreground">
+            В Москве вознаграждение составляет <strong>10 000 ₽</strong> за успешную сделку
+          </p>
         </div>
       </div>
     </section>

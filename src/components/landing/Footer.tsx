@@ -26,50 +26,46 @@ interface FooterProps {
 
 const defaultSections: FooterSection[] = [
   {
-    title: "Продукт",
+    title: "Для арендаторов",
     links: [
-      { label: "Возможности", href: "#features" },
-      { label: "Интеграции", href: "#integrations" },
-      { label: "Тарифы", href: "#pricing" },
-      { label: "Документация API", href: "#api" },
-      { label: "Обновления", href: "#changelog" },
+      { label: "Найти жильё", href: "#search" },
+      { label: "Создать заявку", href: "#create-request" },
+      { label: "Как это работает", href: "#how-it-works" },
+      { label: "Гарантии безопасности", href: "#safety" },
+    ],
+  },
+  {
+    title: "Для рекомендателей",
+    links: [
+      { label: "Лента заявок", href: "#feed" },
+      { label: "Вознаграждения", href: "#pricing" },
+      { label: "Предложить вариант", href: "#suggest" },
+      { label: "Правила выплат", href: "#payouts" },
+    ],
+  },
+  {
+    title: "Для владельцев",
+    links: [
+      { label: "Сдать жильё", href: "#rent-out" },
+      { label: "Без комиссий", href: "#no-commission" },
+      { label: "Верификация жильцов", href: "#verification" },
+      { label: "Договоры аренды", href: "#contracts" },
     ],
   },
   {
     title: "Компания",
     links: [
       { label: "О нас", href: "#about" },
-      { label: "Карьера", href: "#careers" },
-      { label: "Блог", href: "#blog" },
-      { label: "Пресс-кит", href: "#press" },
+      { label: "Помощь", href: "#help" },
       { label: "Контакты", href: "#contact" },
-    ],
-  },
-  {
-    title: "Ресурсы",
-    links: [
-      { label: "Документация", href: "#docs" },
-      { label: "Центр помощи", href: "#help" },
-      { label: "Сообщество", href: "#community" },
-      { label: "Кейсы", href: "#case-studies" },
-      { label: "Вебинары", href: "#webinars" },
-    ],
-  },
-  {
-    title: "Юридическое",
-    links: [
       { label: "Политика конфиденциальности", href: "#privacy" },
-      { label: "Условия использования", href: "#terms" },
-      { label: "Безопасность", href: "#security" },
-      { label: "Соответствие", href: "#compliance" },
-      { label: "Политика cookies", href: "#cookies" },
     ],
   },
 ];
 
 export const Footer = ({
-  companyName = "СинхроЛинк",
-  tagline = "Интеллектуальный слой для современных коммуникаций",
+  companyName = "SovetPay",
+  tagline = "Аренда жилья через рекомендации — безопасно и выгодно",
   sections = defaultSections,
   socialLinks = {
     twitter: "https://twitter.com",
