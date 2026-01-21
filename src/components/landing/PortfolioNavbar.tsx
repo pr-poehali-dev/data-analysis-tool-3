@@ -57,9 +57,13 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
           <div className="flex-shrink-0">
             <button
               onClick={() => handleLinkClick("#home")}
-              className="text-2xl font-bold text-foreground hover:text-primary transition-colors duration-200"
+              className="hover:opacity-80 transition-opacity duration-200"
             >
-              <span className="font-extrabold">SovetPay</span>
+              <img 
+                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bde90adc-dad9-4f02-b530-5f0c6b32ce3f.png" 
+                alt="SovetPay" 
+                className="h-10 w-auto"
+              />
             </button>
           </div>
 

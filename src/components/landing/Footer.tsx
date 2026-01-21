@@ -90,9 +90,11 @@ export const Footer = ({
             className="col-span-2"
           >
             <div className="mb-4">
-              <h3 className="text-2xl font-semibold text-[#202020] mb-2 font-medium">
-                {companyName}
-              </h3>
+              <img 
+                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bde90adc-dad9-4f02-b530-5f0c6b32ce3f.png" 
+                alt={companyName} 
+                className="h-10 w-auto mb-4"
+              />
               <p className="text-sm leading-5 text-[#666666] max-w-xs">
                 {tagline}
               </p>
