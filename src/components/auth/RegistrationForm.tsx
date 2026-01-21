@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
+import { PhoneVerification } from "./PhoneVerification";
 
 const cities = [
   "Рязань",
@@ -40,7 +41,8 @@ interface RegistrationFormProps {
 
 export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   const [selectedRole, setSelectedRole] = useState<string>("");
-  const [step, setStep] = useState<"role" | "form">("role");
+  const [step, setStep] = useState<"role" | "form" | "phone-verify">("role");
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const {
     register,
@@ -61,8 +63,14 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   };
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    onSuccess(data);
+    setFormData(data);
+    setStep("phone-verify");
+  };
+
+  const handlePhoneVerified = () => {
+    if (formData) {
+      onSuccess(formData);
+    }
   };
 
   const roles = [
@@ -294,6 +302,22 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 </a>
               </p>
             </form>
+          </motion.div>
+        )}
+
+        {step === "phone-verify" && formData && (
+          <motion.div
+            key="phone-verification"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PhoneVerification
+              phone={formData.phone}
+              onVerified={handlePhoneVerified}
+              onBack={() => setStep("form")}
+            />
           </motion.div>
         )}
       </AnimatePresence>

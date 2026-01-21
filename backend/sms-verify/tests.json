@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Verify invalid code returns error",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "phone": "+79001234567",
+        "code": "123456",
+        "codeHash": "wronghash123",
+        "expiresAt": 9999999999
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Invalid code",
+        "valid": false
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Reject missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "phone": "+79001234567"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Missing required fields"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

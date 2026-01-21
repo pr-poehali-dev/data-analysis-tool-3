@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Send SMS code successfully",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "phone": "+79001234567"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "SMS code sent successfully"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Reject empty phone number",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "phone": ""
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Phone number is required"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
