@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
+import Icon from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
 
 export const Feed = () => {
   const navigate = useNavigate();
