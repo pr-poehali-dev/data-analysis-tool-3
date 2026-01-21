@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { requestsStore } from "@/store/requestsStore";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ interface RequestFormData {
   roomsCount: string;
   rentalPeriod: string;
   moveInDate: string;
+  reward: number;
 }
 
 const cities = [
@@ -87,6 +89,7 @@ export const CreateRequest = () => {
     roomsCount: "",
     rentalPeriod: "",
     moveInDate: "",
+    reward: 10000,
   });
 
   const updateFormData = (field: keyof RequestFormData, value: any) => {
@@ -119,16 +122,12 @@ export const CreateRequest = () => {
       formData.housingType &&
       formData.roomsCount &&
       formData.rentalPeriod &&
-      formData.moveInDate
+      formData.moveInDate &&
+      formData.reward >= 3000
     );
   };
 
   const handleSubmit = () => {
-    const reward = Math.floor(
-      (parseInt(formData.budgetMax) || 0) * 0.15
-    );
-    const bonus = Math.floor(reward * 0.3);
-
     const districtsText = formData.districts.join(", ");
     
     requestsStore.addRequest({
@@ -136,8 +135,8 @@ export const CreateRequest = () => {
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NewUser",
       location: `${formData.city}, ${districtsText}`,
       budget: `${parseInt(formData.budgetMin).toLocaleString('ru-RU')} - ${parseInt(formData.budgetMax).toLocaleString('ru-RU')} ₽`,
-      reward: `${reward.toLocaleString('ru-RU')} ₽`,
-      bonus: `+${bonus.toLocaleString('ru-RU')} ₽ бонус`,
+      reward: `${formData.reward.toLocaleString('ru-RU')} ₽`,
+      bonus: "",
       whoWillLive: formData.whoWillLive,
       aboutYourself: formData.aboutYourself,
       hasPets: formData.hasPets,
@@ -480,6 +479,59 @@ export const CreateRequest = () => {
                     }
                     className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                </div>
+
+                <div className="mt-6">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                        <Icon name="Wallet" size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground">
+                          Вознаграждение рекомендателю
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Установите сумму от 3 000 до 50 000 ₽
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-4 mb-4">
+                      <div className="text-center mb-2">
+                        <span className="text-4xl font-bold text-green-600">
+                          {formData.reward.toLocaleString('ru-RU')} ₽
+                        </span>
+                      </div>
+                      <p className="text-sm text-center text-muted-foreground">
+                        Эта сумма будет выплачена рекомендателю при успешном заселении
+                      </p>
+                    </div>
+
+                    <div className="px-2">
+                      <Slider
+                        value={[formData.reward]}
+                        onValueChange={(value) => updateFormData("reward", value[0])}
+                        min={3000}
+                        max={50000}
+                        step={500}
+                        className="mb-3"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>3 000 ₽</span>
+                        <span>50 000 ₽</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex gap-2">
+                        <Icon name="Info" size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-blue-800">
+                          Более высокое вознаграждение повышает интерес рекомендателей и ускоряет поиск жилья
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

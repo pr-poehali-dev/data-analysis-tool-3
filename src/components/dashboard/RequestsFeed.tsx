@@ -238,9 +238,11 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
                   <p className="text-lg font-bold text-green-600">
                     {request.reward}
                   </p>
-                  <p className="text-xs text-green-700 mt-1">
-                    {request.bonus}
-                  </p>
+                  {request.bonus && (
+                    <p className="text-xs text-green-700 mt-1">
+                      {request.bonus}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
