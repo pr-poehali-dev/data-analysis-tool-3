@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 interface NavigationLink {
   name: string;
@@ -59,11 +60,7 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
               onClick={() => handleLinkClick("#home")}
               className="hover:opacity-80 transition-opacity duration-200"
             >
-              <img 
-                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bde90adc-dad9-4f02-b530-5f0c6b32ce3f.png" 
-                alt="SovetPay" 
-                className="h-10 w-auto"
-              />
+              <Logo width={140} height={32} />
             </button>
           </div>
 
