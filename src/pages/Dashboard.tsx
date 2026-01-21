@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 
 interface DashboardProps {
   user: {
@@ -23,6 +24,7 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
+  { id: "feed", label: "Лента заявок", icon: "List", roles: ["recommender", "landlord"] },
   { id: "requests", label: "Мои заявки", icon: "FileText", roles: ["tenant"] },
   { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp", roles: ["tenant", "recommender", "landlord"] },
   { id: "messages", label: "Сообщения", icon: "MessageSquare", roles: ["tenant", "recommender", "landlord"] },
@@ -40,6 +42,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case "feed":
+        return (
+          <div>
+            <h2 className="text-3xl font-bold text-foreground mb-6">Лента заявок</h2>
+            <RequestsFeed />
+          </div>
+        );
       case "requests":
         return (
           <div>
