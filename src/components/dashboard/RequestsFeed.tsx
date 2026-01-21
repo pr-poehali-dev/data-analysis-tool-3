@@ -3,6 +3,10 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+
+interface RequestsFeedProps {
+  onRegisterClick?: () => void;
+}
 import {
   Select,
   SelectContent,
@@ -87,7 +91,7 @@ const mockRequests: Request[] = [
   },
 ];
 
-export const RequestsFeed = () => {
+export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -240,7 +244,7 @@ export const RequestsFeed = () => {
               </div>
             </div>
 
-            <Button className="w-full">
+            <Button className="w-full" onClick={onRegisterClick}>
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант
             </Button>

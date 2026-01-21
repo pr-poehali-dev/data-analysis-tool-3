@@ -1,10 +1,23 @@
+import { useState } from "react";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { RegistrationForm } from "@/components/auth/RegistrationForm";
 
 export const Feed = () => {
   const navigate = useNavigate();
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
+  const handleRegistrationClick = () => {
+    setIsRegistrationOpen(true);
+  };
+
+  const handleRegistrationComplete = () => {
+    setIsRegistrationOpen(false);
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -32,7 +45,7 @@ export const Feed = () => {
           </p>
         </div>
 
-        <RequestsFeed />
+        <RequestsFeed onRegisterClick={handleRegistrationClick} />
 
         <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-start gap-4">
@@ -46,7 +59,7 @@ export const Feed = () => {
               <p className="text-muted-foreground mb-4">
                 Создайте аккаунт рекомендателя и начните зарабатывать на успешных рекомендациях жилья
               </p>
-              <Button onClick={() => navigate("/")}>
+              <Button onClick={handleRegistrationClick}>
                 <Icon name="UserPlus" size={16} className="mr-2" />
                 Зарегистрироваться
               </Button>
@@ -54,6 +67,12 @@ export const Feed = () => {
           </div>
         </div>
       </main>
+
+      <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <RegistrationForm onSuccess={handleRegistrationComplete} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
