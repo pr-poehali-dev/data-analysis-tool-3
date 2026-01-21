@@ -16,7 +16,7 @@ const navigationLinks: NavigationLink[] = [
   { name: "Как работает", href: "#how-it-works" },
   { name: "Города", href: "#pricing" },
   { name: "Преимущества", href: "#benefits" },
-  { name: "Частые вопросы", href: "#faq" },
+  { name: "Лента заявок", href: "/feed" },
 ];
 
 export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) => {
@@ -43,9 +43,13 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
 
   const handleLinkClick = (href: string) => {
     closeMobileMenu();
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    if (href.startsWith('/')) {
+      navigate(href);
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
