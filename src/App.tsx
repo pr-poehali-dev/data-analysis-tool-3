@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Dashboard } from "./pages/Dashboard";
 import { Feed } from "./pages/Feed";
+import { CreateRequest } from "./pages/CreateRequest";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => {
               }
             />
             <Route path="/feed" element={<Feed />} />
+            <Route path="/create-request" element={<CreateRequest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

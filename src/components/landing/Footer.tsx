@@ -30,7 +30,7 @@ const defaultSections: FooterSection[] = [
     title: "Для арендаторов",
     links: [
       { label: "Найти жильё", href: "#search" },
-      { label: "Создать заявку", href: "#create-request" },
+      { label: "Создать заявку", href: "/create-request" },
       { label: "Как это работает", href: "#how-it-works" },
       { label: "Гарантии безопасности", href: "#safety" },
     ],
