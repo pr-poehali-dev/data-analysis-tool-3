@@ -1,5 +1,6 @@
 import { Github, Twitter, Mail } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface FooterLink {
   label: string;
@@ -75,8 +76,22 @@ export const Footer = ({
   },
   copyrightText,
 }: FooterProps) => {
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const copyright = copyrightText || `© ${currentYear} ${companyName}. Все права защищены.`;
+
+  const handleLinkClick = (href: string, e: React.MouseEvent) => {
+    if (href.startsWith('/')) {
+      e.preventDefault();
+      navigate(href);
+    } else if (href.startsWith('#')) {
+      e.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <footer className="w-full bg-[#fafafa] border-t border-[#e5e5e5]">
@@ -159,7 +174,8 @@ export const Footer = ({
                   <li key={linkIndex}>
                     <a
                       href={link.href}
-                      className="text-sm text-[#666666] hover:text-[#202020] transition-colors duration-150"
+                      onClick={(e) => handleLinkClick(link.href, e)}
+                      className="text-sm text-[#666666] hover:text-[#202020] transition-colors duration-150 cursor-pointer"
                     >
                       {link.label}
                     </a>
