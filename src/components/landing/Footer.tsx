@@ -1,6 +1,5 @@
 import { Github, Twitter, Mail } from "lucide-react";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/Logo";
 
 interface FooterLink {
   label: string;
@@ -91,7 +90,11 @@ export const Footer = ({
             className="col-span-2"
           >
             <div className="mb-4">
-              <Logo width={140} height={32} className="mb-4" />
+              <img 
+                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/deff1ec1-39a7-47e5-a924-dc47933171ab.jpg" 
+                alt={companyName} 
+                className="h-8 w-auto mb-4"
+              />
               <p className="text-sm leading-5 text-[#666666] max-w-xs">
                 {tagline}
               </p>
