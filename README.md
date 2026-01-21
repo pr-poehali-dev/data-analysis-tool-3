@@ -1,3 +1,18 @@
-# data-analysis-tool-3
+# СинхроЛинк — AI-платформа коммуникаций
 
-Initial repository setup for pr-poehali-dev/data-analysis-tool-3
+![Preview](https://cdn.poehali.dev/templates/auralink-saas-ru/preview-ru.jpg)
+
+Полноценный SaaS-лендинг для AI-платформы анализа коммуникаций. Светлая профессиональная тема с секциями для всех ключевых элементов продающей страницы. Подойдёт для любого B2B SaaS-продукта.
+
+Включает:
+- Hero с описанием продукта
+- Статистика и социальное доказательство
+- Кейсы клиентов (карусель)
+- Интеграции
+- Три тарифных плана
+- FAQ аккордеон
+- Футер с навигацией
+
+```
+"tags": ["saas", "light", "ai", "pricing", "testimonials"]
+```
