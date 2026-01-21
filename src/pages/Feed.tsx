@@ -27,7 +27,7 @@ export const Feed = () => {
             <img 
               src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
               alt="SovetPay" 
-              className="h-8 w-auto"
+              className="h-12 w-auto"
             />
           </button>
           <Button onClick={() => navigate("/")}>
