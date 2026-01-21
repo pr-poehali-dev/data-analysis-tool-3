@@ -7,6 +7,10 @@ interface NavigationLink {
   href: string;
 }
 
+interface PortfolioNavbarProps {
+  onRegisterClick?: () => void;
+}
+
 const navigationLinks: NavigationLink[] = [
   { name: "Как работает", href: "#how-it-works" },
   { name: "Города", href: "#pricing" },
@@ -14,7 +18,7 @@ const navigationLinks: NavigationLink[] = [
   { name: "Частые вопросы", href: "#faq" },
 ];
 
-export const PortfolioNavbar = () => {
+export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -76,7 +80,7 @@ export const PortfolioNavbar = () => {
 
           <div className="hidden md:block">
             <button
-              onClick={() => handleLinkClick("#contact")}
+              onClick={onRegisterClick}
               className="bg-[#156d95] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
             >
               <span className="font-medium">Начать</span>
@@ -116,7 +120,7 @@ export const PortfolioNavbar = () => {
               ))}
               <div className="pt-4 border-t border-border">
                 <button
-                  onClick={() => handleLinkClick("#contact")}
+                  onClick={onRegisterClick}
                   className="w-full bg-[#156d95] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200"
                 >
                   <span>Начать</span>

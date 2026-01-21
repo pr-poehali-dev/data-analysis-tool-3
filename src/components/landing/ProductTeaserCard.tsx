@@ -11,6 +11,7 @@ interface ProductTeaserCardProps {
   primaryButtonHref?: string;
   secondaryButtonText?: string;
   secondaryButtonHref?: string;
+  onRegisterClick?: () => void;
 }
 
 export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
@@ -22,6 +23,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
     primaryButtonHref = "",
     secondaryButtonText = "Рекомендовать варианты",
     secondaryButtonHref = "",
+    onRegisterClick,
   } = props;
 
   return (
@@ -62,22 +64,20 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
 
             <ul className="flex gap-1.5 flex-wrap mt-10">
               <li>
-                <a
-                  href={primaryButtonHref}
-                  onClick={(e) => e.preventDefault()}
+                <button
+                  onClick={onRegisterClick}
                   className="block cursor-pointer text-white bg-[#156d95] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                 >
                   {primaryButtonText}
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href={secondaryButtonHref}
-                  onClick={(e) => e.preventDefault()}
+                <button
+                  onClick={onRegisterClick}
                   className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                 >
                   {secondaryButtonText}
-                </a>
+                </button>
               </li>
             </ul>
           </motion.div>
