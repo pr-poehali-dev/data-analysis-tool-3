@@ -34,7 +34,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 lg:col-span-6 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col justify-end aspect-square overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col justify-end min-h-[600px] overflow-hidden"
           >
             <a
               href={primaryButtonHref}
@@ -80,22 +80,6 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
                 </button>
               </li>
             </ul>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1], delay: 0.2 }}
-            className="col-span-12 lg:col-span-6 bg-gradient-to-br from-[#156d95]/10 to-[#156d95]/30 rounded-[40px] flex justify-center items-center aspect-square overflow-hidden"
-          >
-            <div className="flex flex-col items-center justify-center text-center p-8">
-              <div className="w-32 h-32 rounded-full bg-[#156d95]/20 flex items-center justify-center mb-6">
-                <svg className="w-16 h-16 text-[#156d95]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                </svg>
-              </div>
-              <p className="text-[#156d95] font-medium text-xl">Облачная аналитика</p>
-            </div>
           </motion.div>
         </div>
       </div>
