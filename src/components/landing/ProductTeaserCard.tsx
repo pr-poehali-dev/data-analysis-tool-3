@@ -12,6 +12,7 @@ interface ProductTeaserCardProps {
   secondaryButtonText?: string;
   secondaryButtonHref?: string;
   onRegisterClick?: () => void;
+  onRecommendClick?: () => void;
 }
 
 export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
@@ -24,6 +25,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
     secondaryButtonText = "Рекомендовать варианты",
     secondaryButtonHref = "",
     onRegisterClick,
+    onRecommendClick,
   } = props;
 
   return (
@@ -73,7 +75,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               </li>
               <li>
                 <button
-                  onClick={onRegisterClick}
+                  onClick={onRecommendClick}
                   className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                 >
                   {secondaryButtonText}

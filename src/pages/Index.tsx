@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PortfolioNavbar,
   ProductTeaserCard,
@@ -15,9 +16,14 @@ interface IndexProps {
 
 const Index = ({ onRegistrationSuccess }: IndexProps) => {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegistrationClick = () => {
     setIsRegistrationOpen(true);
+  };
+
+  const handleRecommendClick = () => {
+    navigate("/feed");
   };
 
   const handleRegistrationComplete = (data: any) => {
@@ -28,7 +34,10 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
   return (
     <>
       <PortfolioNavbar onRegisterClick={handleRegistrationClick} />
-      <ProductTeaserCard onRegisterClick={handleRegistrationClick} />
+      <ProductTeaserCard 
+        onRegisterClick={handleRegistrationClick}
+        onRecommendClick={handleRecommendClick}
+      />
       <BankingScaleHero />
       <PricingSection />
       <Footer onRegisterClick={handleRegistrationClick} />
