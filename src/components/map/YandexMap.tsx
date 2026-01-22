@@ -24,6 +24,8 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
   useEffect(() => {
     if (!mapRef.current) return;
 
+    let mapInstance: any = null;
+
     const initMap = () => {
       if (!window.ymaps) {
         setTimeout(initMap, 100);
@@ -31,7 +33,9 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
       }
 
       window.ymaps.ready(() => {
-        const mapInstance = new window.ymaps.Map(mapRef.current, {
+        if (!mapRef.current) return;
+        
+        mapInstance = new window.ymaps.Map(mapRef.current, {
           center: [55.751574, 37.573856],
           zoom: 10,
           controls: ["zoomControl", "fullscreenControl"],
@@ -39,7 +43,7 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
 
         mapInstance.events.add("click", (e: any) => {
           const coords = e.get("coords");
-          handleMapClick(coords);
+          handleMapClick(coords, mapInstance);
         });
 
         setMap(mapInstance);
@@ -50,17 +54,18 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
     initMap();
 
     return () => {
-      if (map) {
-        map.destroy();
+      if (mapInstance) {
+        mapInstance.destroy();
       }
     };
   }, []);
 
-  const handleMapClick = async (coords: [number, number]) => {
-    if (!map) return;
+  const handleMapClick = async (coords: [number, number], mapInstance?: any) => {
+    const currentMap = mapInstance || map;
+    if (!currentMap) return;
 
     if (placemark) {
-      map.geoObjects.remove(placemark);
+      currentMap.geoObjects.remove(placemark);
     }
 
     const newPlacemark = new window.ymaps.Placemark(coords, {}, {
@@ -73,7 +78,7 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
       getAddress(newCoords);
     });
 
-    map.geoObjects.add(newPlacemark);
+    currentMap.geoObjects.add(newPlacemark);
     setPlacemark(newPlacemark);
 
     getAddress(coords);
@@ -96,9 +101,13 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery || !map || !window.ymaps) return;
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!searchQuery || !map || !window.ymaps || !isMapReady) {
+      console.log("Search conditions not met:", { searchQuery, map: !!map, ymaps: !!window.ymaps, isMapReady });
+      return;
+    }
 
     try {
       const geocoder = await window.ymaps.geocode(searchQuery);
@@ -141,26 +150,42 @@ export const YandexMap = ({ onAddressSelect, initialAddress = "", height = "300p
 
   return (
     <div className="space-y-3">
-      <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Введите адрес или кликните на карте"
-          className="pl-10"
-        />
+      <form onSubmit={handleSearch} className="relative flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Введите адрес или кликните на карте"
+            className="pl-10"
+            disabled={!isMapReady}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={!isMapReady || !searchQuery}
+          className="px-4 py-2 bg-[#156d95] text-white rounded-md hover:bg-[#124d6b] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          Найти
+        </button>
       </form>
 
+      {!isMapReady && (
+        <div className="w-full rounded-lg border border-gray-200 flex items-center justify-center bg-gray-50" style={{ height }}>
+          <p className="text-gray-500">Загрузка карты...</p>
+        </div>
+      )}
+      
       <div 
         ref={mapRef} 
-        style={{ width: "100%", height }}
+        style={{ width: "100%", height, display: isMapReady ? "block" : "none" }}
         className="rounded-lg border border-gray-200 overflow-hidden"
       />
 
       <p className="text-xs text-gray-500 flex items-start gap-2">
         <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <span>
-          Кликните на карте или введите адрес в поле поиска. Метку можно перемещать для уточнения позиции.
+          Кликните на карте или введите адрес в поле поиска и нажмите "Найти". Метку можно перемещать для уточнения позиции.
         </span>
       </p>
     </div>
