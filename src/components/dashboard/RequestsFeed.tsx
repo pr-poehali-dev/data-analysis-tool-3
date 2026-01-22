@@ -15,6 +15,8 @@ import {
 
 interface RequestsFeedProps {
   onRegisterClick?: () => void;
+  onSuggestProperty?: () => void;
+  isAuthenticated?: boolean;
 }
 
 const oldMockRequests = [
@@ -80,12 +82,22 @@ const oldMockRequests = [
   },
 ];
 
-export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
+export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false }: RequestsFeedProps = {}) => {
   const navigate = useNavigate();
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
   const [requests, setRequests] = useState<Request[]>([]);
   const itemsPerPage = 6;
+
+  const handleSuggestClick = () => {
+    if (onSuggestProperty) {
+      onSuggestProperty();
+    } else if (!isAuthenticated && onRegisterClick) {
+      onRegisterClick();
+    } else {
+      navigate("/suggest-property");
+    }
+  };
 
   useEffect(() => {
     setRequests(requestsStore.getRequests());
@@ -251,7 +263,7 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
 
             <Button 
               className="w-full" 
-              onClick={() => navigate("/suggest-property")}
+              onClick={handleSuggestClick}
             >
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Feed } from "./pages/Feed";
 import { CreateRequest } from "./pages/CreateRequest";
 import { SuggestProperty } from "./pages/SuggestProperty";
+import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
 
@@ -25,20 +26,37 @@ const AppContent = () => {
     city?: string;
   } | null>(null);
 
+  useEffect(() => {
+    const savedUser = authStore.getUser();
+    if (savedUser) {
+      setUser(savedUser);
+    }
+
+    const unsubscribe = authStore.subscribe(() => {
+      setUser(authStore.getUser());
+    });
+
+    return unsubscribe;
+  }, []);
+
   const handleLogout = () => {
+    authStore.logout();
     setUser(null);
     navigate("/");
   };
 
   const handleRegistrationSuccess = (data: any) => {
-    setUser({
+    const userData = {
       firstName: data.firstName,
       lastName: data.lastName,
       role: data.role,
       email: data.email,
       phone: data.phone,
       city: data.city,
-    });
+    };
+    
+    authStore.setUser(userData);
+    setUser(userData);
     
     if (data.role === "tenant") {
       navigate("/create-request");

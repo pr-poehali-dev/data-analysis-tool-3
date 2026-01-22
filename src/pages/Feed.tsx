@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -6,18 +6,53 @@ import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { authStore } from "@/store/authStore";
 
 export const Feed = () => {
   const navigate = useNavigate();
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(authStore.isAuthenticated());
+    
+    const unsubscribe = authStore.subscribe(() => {
+      setIsAuthenticated(authStore.isAuthenticated());
+    });
+    
+    return unsubscribe;
+  }, []);
 
   const handleRegistrationClick = () => {
     setIsRegistrationOpen(true);
   };
 
-  const handleRegistrationComplete = () => {
+  const handleSuggestProperty = () => {
+    if (authStore.isAuthenticated()) {
+      navigate("/suggest-property");
+    } else {
+      setIsRegistrationOpen(true);
+    }
+  };
+
+  const handleRegistrationComplete = (data: any) => {
+    authStore.setUser({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: data.role,
+      email: data.email,
+      phone: data.phone,
+      city: data.city,
+    });
     setIsRegistrationOpen(false);
-    navigate("/");
+    
+    if (data.role === "recommender") {
+      navigate("/suggest-property");
+    } else if (data.role === "tenant") {
+      navigate("/create-request");
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -32,27 +67,33 @@ export const Feed = () => {
           </p>
         </div>
 
-        <RequestsFeed onRegisterClick={handleRegistrationClick} />
+        <RequestsFeed 
+          onRegisterClick={handleRegistrationClick}
+          onSuggestProperty={handleSuggestProperty}
+          isAuthenticated={isAuthenticated}
+        />
 
-        <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <Icon name="Info" className="text-white" size={20} />
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold text-foreground mb-2">
-                Зарегистрируйтесь, чтобы предлагать варианты
-              </h4>
-              <p className="text-muted-foreground mb-4">
-                Создайте аккаунт рекомендателя и начните зарабатывать на успешных рекомендациях жилья
-              </p>
-              <Button onClick={handleRegistrationClick}>
-                <Icon name="UserPlus" size={16} className="mr-2" />
-                Зарегистрироваться
-              </Button>
+        {!isAuthenticated && (
+          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Icon name="Info" className="text-white" size={20} />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-foreground mb-2">
+                  Зарегистрируйтесь, чтобы предлагать варианты
+                </h4>
+                <p className="text-muted-foreground mb-4">
+                  Создайте аккаунт рекомендателя и начните зарабатывать на успешных рекомендациях жилья
+                </p>
+                <Button onClick={handleRegistrationClick}>
+                  <Icon name="UserPlus" size={16} className="mr-2" />
+                  Зарегистрироваться
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
       <Footer onRegisterClick={handleRegistrationClick} />
