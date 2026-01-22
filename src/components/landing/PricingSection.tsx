@@ -88,7 +88,7 @@ export function PricingSection() {
               )}
             >
 С бонусом
-              <span className="ml-2 text-sm text-[#156d95]">+₽</span>
+              <span className="ml-2 text-sm text-[#155eef]">+₽</span>
             </button>
           </div>
         </div>
@@ -102,12 +102,12 @@ export function PricingSection() {
               className={cn(
                 "relative p-8 rounded-2xl text-left transition-all border-2",
                 selectedPlan === plan.level
-                  ? "border-[#156d95] bg-[#156d95]/5"
-                  : "border-border hover:border-[#156d95]/50"
+                  ? "border-[#155eef] bg-[#155eef]/5"
+                  : "border-border hover:border-[#155eef]/50"
               )}
             >
               {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#156d95] text-white px-4 py-1 rounded-full text-sm">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#155eef] text-white px-4 py-1 rounded-full text-sm">
                   Популярный
                 </span>
               )}
@@ -123,7 +123,7 @@ export function PricingSection() {
               <div
                 className={cn(
                   "w-full py-3 px-6 rounded-full text-lg transition-all text-center",
-                  selectedPlan === plan.level ? "bg-[#156d95] text-white" : "bg-secondary text-foreground"
+                  selectedPlan === plan.level ? "bg-[#155eef] text-white" : "bg-secondary text-foreground"
                 )}
               >
                 {selectedPlan === plan.level ? "Выбран" : "Выбрать"}
@@ -154,7 +154,7 @@ export function PricingSection() {
                   className={cn(
                     "flex items-center p-6 transition-colors",
                     index % 2 === 0 ? "bg-background" : "bg-secondary/30",
-                    feature.included === selectedPlan && "bg-[#156d95]/5"
+                    feature.included === selectedPlan && "bg-[#155eef]/5"
                   )}
                 >
                   <div className="flex-1">
@@ -164,7 +164,7 @@ export function PricingSection() {
                     {plans.map((plan) => (
                       <div key={plan.level} className="w-24 flex justify-center">
                         {shouldShowCheck(feature.included, plan.level) ? (
-                          <div className="w-6 h-6 rounded-full bg-[#156d95] flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-[#155eef] flex items-center justify-center">
                             <CheckIcon className="w-4 h-4 text-white" />
                           </div>
                         ) : (

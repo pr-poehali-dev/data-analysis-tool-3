@@ -137,7 +137,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarPr
             ) : (
               <button
                 onClick={onRegisterClick}
-                className="bg-[#156d95] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
+                className="bg-[#155eef] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
               >
                 <span className="font-medium">Начать</span>
               </button>
@@ -193,7 +193,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarPr
                 ) : (
                   <button
                     onClick={onRegisterClick}
-                    className="w-full bg-[#156d95] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200"
+                    className="w-full bg-[#155eef] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200"
                   >
                     <span>Начать</span>
                   </button>

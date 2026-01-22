@@ -83,7 +83,7 @@ export const BankingScaleHero = () => {
                   animate={{ width: "auto" }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   className="block whitespace-nowrap overflow-hidden relative z-10"
-                  style={{ color: "#146e96" }}
+                  style={{ color: "#155eef" }}
                 >
                   Аренда через доверие
                 </motion.span>
@@ -92,7 +92,7 @@ export const BankingScaleHero = () => {
                   animate={{ opacity: typingComplete ? [1, 0, 1, 0] : 0 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   className="block w-1.5 h-3 bg-[#167E6C] ml-0.5 relative z-10 rounded-sm"
-                  style={{ backgroundColor: "#146e96" }}
+                  style={{ backgroundColor: "#155eef" }}
                 />
               </div>
             </div>
@@ -152,7 +152,7 @@ export const BankingScaleHero = () => {
                         className="absolute -left-[1px] w-2 h-2 bg-[#167E6C] rounded-full"
                         style={{
                           top: point.direction === "down" ? "0px" : `${point.height - 8}px`,
-                          backgroundColor: "#146e96",
+                          backgroundColor: "#155eef",
                         }}
                       />
                     </motion.div>
@@ -187,7 +187,7 @@ export const BankingScaleHero = () => {
                     >
                       <span
                         className="text-2xl font-medium leading-[26.4px] tracking-tight"
-                        style={{ color: "#146e96" }}
+                        style={{ color: "#155eef" }}
                       >
                         {stat.value}
                       </span>

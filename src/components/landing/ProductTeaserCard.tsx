@@ -68,7 +68,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               <li>
                 <button
                   onClick={onRegisterClick}
-                  className="block cursor-pointer text-white bg-[#156d95] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+                  className="block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                 >
                   {primaryButtonText}
                 </button>
