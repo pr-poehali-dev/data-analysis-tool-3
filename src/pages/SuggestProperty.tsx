@@ -100,19 +100,19 @@ export const SuggestProperty = () => {
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-2">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "invite" ? "bg-[#156d95] text-white" : "bg-green-500 text-white"}`}>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "invite" ? "bg-primary text-white" : "bg-green-500 text-white"}`}>
               1
             </div>
             <div className={`flex-1 h-1 ${step === "property" ? "bg-green-500" : "bg-gray-300"}`} />
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "property" ? "bg-[#156d95] text-white" : "bg-gray-300 text-gray-600"}`}>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "property" ? "bg-primary text-white" : "bg-gray-300 text-gray-600"}`}>
               2
             </div>
           </div>
           <div className="flex justify-between text-sm">
-            <span className={step === "invite" ? "text-[#156d95] font-medium" : "text-gray-600"}>
+            <span className={step === "invite" ? "text-primary font-medium" : "text-gray-600"}>
               Пригласить владельца
             </span>
-            <span className={step === "property" ? "text-[#156d95] font-medium" : "text-gray-600"}>
+            <span className={step === "property" ? "text-primary font-medium" : "text-gray-600"}>
               Описание объекта
             </span>
           </div>
@@ -184,7 +184,7 @@ export const SuggestProperty = () => {
 
               <Button
                 onClick={handleInviteNext}
-                className="w-full bg-[#156d95] hover:bg-[#124d6b]"
+                className="w-full"
               >
                 Далее
               </Button>
@@ -351,7 +351,7 @@ export const SuggestProperty = () => {
 
               <Button
                 onClick={handleSubmit}
-                className="w-full bg-[#156d95] hover:bg-[#124d6b]"
+                className="w-full"
               >
                 Отправить предложение
               </Button>
