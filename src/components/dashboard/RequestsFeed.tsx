@@ -211,8 +211,21 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, scale: 1.02 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all cursor-pointer"
+            className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all cursor-pointer relative"
           >
+            {(() => {
+              const createdAt = new Date(request.createdAt);
+              const now = new Date();
+              const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+              return daysDiff <= 2 && (
+                <div className="absolute top-4 right-4">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary text-white text-xs font-semibold rounded-full">
+                    <Icon name="Sparkles" size={12} />
+                    Новая
+                  </span>
+                </div>
+              );
+            })()}
             <div className="flex items-center gap-3 mb-4">
               <img
                 src={request.avatar}

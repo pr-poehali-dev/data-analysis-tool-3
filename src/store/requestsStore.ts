@@ -29,7 +29,11 @@ class RequestsStore {
     if (typeof window === 'undefined') return [];
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return this.getInitialRequests();
-    return JSON.parse(stored);
+    const requests = JSON.parse(stored);
+    return requests.map((r: any) => ({
+      ...r,
+      createdAt: new Date(r.createdAt)
+    }));
   }
 
   addRequest(request: Omit<Request, 'id' | 'createdAt'>): Request {
