@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, Mail, Phone, Upload, MapPin, Home, Sofa, Zap } from "lucide-react";
+import { ArrowLeft, Search, Mail, Upload, Sofa, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { YandexMap } from "@/components/map/YandexMap";
 
 type Step = "invite" | "property";
 
@@ -22,6 +23,7 @@ export const SuggestProperty = () => {
   
   const [propertyData, setPropertyData] = useState({
     address: "",
+    coordinates: [55.751574, 37.573856] as [number, number],
     area: "",
     floor: "",
     totalFloors: "",
@@ -201,21 +203,13 @@ export const SuggestProperty = () => {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="address">Адрес объекта *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    id="address"
-                    placeholder="г. Москва, ул. Ленина, д. 1, кв. 10"
-                    value={propertyData.address}
-                    onChange={(e) => setPropertyData({ ...propertyData, address: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-                <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                  <MapPin className="w-8 h-8 mr-2" />
-                  <span>Карта будет здесь</span>
-                </div>
+                <YandexMap
+                  initialAddress={propertyData.address}
+                  onAddressSelect={(address, coordinates) => {
+                    setPropertyData({ ...propertyData, address, coordinates });
+                  }}
+                  height="400px"
+                />
               </div>
 
               <div className="space-y-2">
