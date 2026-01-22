@@ -54,7 +54,7 @@ const columns: BenefitColumn[] = [
 
 export function BenefitsSection() {
   return (
-    <section className="py-24 bg-[#fafafa]">
+    <section id="benefits" className="py-24 bg-[#fafafa]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -64,7 +64,7 @@ export function BenefitsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-[40px] font-normal leading-tight mb-4 text-[#202020]">
-            Плюсы для
+            Преимущества
           </h2>
         </motion.div>
 
