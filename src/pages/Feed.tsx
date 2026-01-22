@@ -57,7 +57,10 @@ export const Feed = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PortfolioNavbar onRegisterClick={handleRegistrationClick} />
+      <PortfolioNavbar 
+        onRegisterClick={handleRegistrationClick}
+        onLogout={() => navigate("/")}
+      />
 
       <main className="max-w-7xl mx-auto px-6 py-8 mt-20">
         <div className="mb-6">

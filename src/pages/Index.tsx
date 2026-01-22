@@ -33,7 +33,10 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
 
   return (
     <>
-      <PortfolioNavbar onRegisterClick={handleRegistrationClick} />
+      <PortfolioNavbar 
+        onRegisterClick={handleRegistrationClick}
+        onLogout={() => navigate("/")}
+      />
       <ProductTeaserCard 
         onRegisterClick={handleRegistrationClick}
         onRecommendClick={handleRecommendClick}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { authStore } from "@/store/authStore";
 
 interface NavigationLink {
   name: string;
@@ -10,6 +11,7 @@ interface NavigationLink {
 
 interface PortfolioNavbarProps {
   onRegisterClick?: () => void;
+  onLogout?: () => void;
 }
 
 const navigationLinks: NavigationLink[] = [
@@ -19,11 +21,12 @@ const navigationLinks: NavigationLink[] = [
   { name: "Лента заявок", href: "/feed" },
 ];
 
-export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) => {
+export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState(authStore.getUser());
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +34,16 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setUser(authStore.getUser());
+    
+    const unsubscribe = authStore.subscribe(() => {
+      setUser(authStore.getUser());
+    });
+    
+    return unsubscribe;
   }, []);
 
   const toggleMobileMenu = () => {
@@ -59,6 +72,15 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
     } else {
       navigate('/');
     }
+  };
+
+  const handleLogout = () => {
+    authStore.logout();
+    closeMobileMenu();
+    if (onLogout) {
+      onLogout();
+    }
+    navigate('/');
   };
 
   return (
@@ -97,13 +119,29 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
             </div>
           </div>
 
-          <div className="hidden md:block">
-            <button
-              onClick={onRegisterClick}
-              className="bg-[#156d95] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
-            >
-              <span className="font-medium">Начать</span>
-            </button>
+          <div className="hidden md:flex items-center gap-4">
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <User size={18} />
+                  <span>{user.firstName} {user.lastName}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-foreground hover:text-red-600 px-4 py-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                >
+                  <LogOut size={18} />
+                  <span>Выйти</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={onRegisterClick}
+                className="bg-[#156d95] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
+              >
+                <span className="font-medium">Начать</span>
+              </button>
+            )}
           </div>
 
           <div className="md:hidden">
@@ -138,12 +176,28 @@ export const PortfolioNavbar = ({ onRegisterClick }: PortfolioNavbarProps = {}) 
                 </button>
               ))}
               <div className="pt-4 border-t border-border">
-                <button
-                  onClick={onRegisterClick}
-                  className="w-full bg-[#156d95] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200"
-                >
-                  <span>Начать</span>
-                </button>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 text-foreground mb-4 px-3">
+                      <User size={20} />
+                      <span className="font-medium">{user.firstName} {user.lastName}</span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center gap-2 text-white bg-red-500 hover:bg-red-600 px-[18px] py-[15px] rounded-full text-base font-semibold transition-all duration-200"
+                    >
+                      <LogOut size={18} />
+                      <span>Выйти</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={onRegisterClick}
+                    className="w-full bg-[#156d95] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#156d95]/90 transition-all duration-200"
+                  >
+                    <span>Начать</span>
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
