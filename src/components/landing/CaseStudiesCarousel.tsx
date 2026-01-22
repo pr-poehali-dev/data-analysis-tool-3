@@ -37,11 +37,11 @@ const caseStudies: CaseStudy[] = [
       <svg fill="none" height="48" viewBox="0 0 48 48" width="48" xmlns="http://www.w3.org/2000/svg">
         <rect fill="url(#gradient1)" height="48" rx="12" width="48" />
         <circle cx="24" cy="24" r="12" fill="white" />
-        <circle cx="24" cy="24" r="8" fill="#3b82f6" />
+        <circle cx="24" cy="24" r="8" fill="#155eef" />
         <defs>
           <linearGradient id="gradient1" gradientUnits="userSpaceOnUse" x1="24" x2="24" y1="0" y2="48">
-            <stop stopColor="#3b82f6" />
-            <stop offset="1" stopColor="#1d4ed8" />
+            <stop stopColor="#155eef" />
+            <stop offset="1" stopColor="#0d3db8" />
           </linearGradient>
         </defs>
       </svg>
@@ -50,7 +50,7 @@ const caseStudies: CaseStudy[] = [
     features: ["Звонки в Slack", "Транскрипции встреч", "Отчеты о настроениях"],
     quote: "С СинхроЛинк мы видим паттерны взаимодействия, которые напрямую влияют на скорость разработки.",
     attribution: "Сергей Петров, VP Engineering, ДатаВью",
-    accentColor: "#3b82f6",
+    accentColor: "#155eef",
   },
   {
     id: "eightball",
@@ -152,10 +152,10 @@ const NotionCollaborationCard = ({ delay, zIndex }: { accentColor: string; delay
           </div>
           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <div className="w-2 h-2 rounded-full" style={{backgroundColor: '#155eef'}} />
               <span className="text-sm text-foreground">Разработка</span>
             </div>
-            <span className="text-sm font-semibold text-blue-600">94%</span>
+            <span className="text-sm font-semibold" style={{color: '#155eef'}}>94%</span>
           </div>
           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2">

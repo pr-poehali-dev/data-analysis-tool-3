@@ -77,9 +77,9 @@ export const Feed = () => {
         />
 
         {!isAuthenticated && (
-          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+          <div className="mt-8 p-6 rounded-xl" style={{backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px'}}>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor: '#155eef'}}>
                 <Icon name="Info" className="text-white" size={20} />
               </div>
               <div>
