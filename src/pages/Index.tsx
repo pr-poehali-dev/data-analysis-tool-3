@@ -4,6 +4,7 @@ import {
   PortfolioNavbar,
   ProductTeaserCard,
   BankingScaleHero,
+  BenefitsSection,
   Footer,
 } from "@/components/landing";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
@@ -41,6 +42,7 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
         onRecommendClick={handleRecommendClick}
       />
       <BankingScaleHero />
+      <BenefitsSection />
       <Footer onRegisterClick={handleRegistrationClick} />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>

@@ -1,6 +1,7 @@
 export { PortfolioNavbar } from "./PortfolioNavbar";
 export { ProductTeaserCard } from "./ProductTeaserCard";
 export { BankingScaleHero } from "./BankingScaleHero";
+export { BenefitsSection } from "./BenefitsSection";
 export { CaseStudiesCarousel } from "./CaseStudiesCarousel";
 export { IntegrationCarousel } from "./IntegrationCarousel";
 export { PricingSection } from "./PricingSection";
