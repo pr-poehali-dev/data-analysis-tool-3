@@ -68,7 +68,7 @@ def handler(event: dict, context) -> dict:
                 'message': 'SMS code sent successfully',
                 'codeHash': code_hash,
                 'expiresAt': timestamp + 300,
-                'devCode': code if os.environ.get('ENVIRONMENT') == 'development' else None
+                'devCode': code
             }),
             'isBase64Encoded': False
         }
