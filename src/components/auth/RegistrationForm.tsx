@@ -63,7 +63,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log("Form submitted with data:", data);
     setFormData(data);
+    console.log("Switching to phone-verify step");
     setStep("phone-verify");
   };
 
@@ -93,6 +95,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
       icon: "Home",
     },
   ];
+
+  console.log("Current step:", step);
+  console.log("Form data:", formData);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
