@@ -209,8 +209,9 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             key={request.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -8, scale: 1.02 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="bg-white border border-border rounded-xl p-6 hover:shadow-lg transition-shadow"
+            className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all cursor-pointer"
           >
             <div className="flex items-center gap-3 mb-4">
               <img
