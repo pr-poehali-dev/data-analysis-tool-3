@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -80,6 +81,7 @@ const oldMockRequests = [
 ];
 
 export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
+  const navigate = useNavigate();
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
   const [requests, setRequests] = useState<Request[]>([]);
@@ -247,7 +249,10 @@ export const RequestsFeed = ({ onRegisterClick }: RequestsFeedProps = {}) => {
               </div>
             </div>
 
-            <Button className="w-full" onClick={onRegisterClick}>
+            <Button 
+              className="w-full" 
+              onClick={() => navigate("/suggest-property")}
+            >
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант
             </Button>

@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import { Dashboard } from "./pages/Dashboard";
 import { Feed } from "./pages/Feed";
 import { CreateRequest } from "./pages/CreateRequest";
+import { SuggestProperty } from "./pages/SuggestProperty";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const AppContent = () => {
             />
       <Route path="/feed" element={<Feed />} />
       <Route path="/create-request" element={<CreateRequest />} />
+      <Route path="/suggest-property" element={<SuggestProperty />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
