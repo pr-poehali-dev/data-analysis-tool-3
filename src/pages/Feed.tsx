@@ -55,7 +55,7 @@ export const Feed = () => {
         </div>
       </main>
 
-      <Footer />
+      <Footer onRegisterClick={handleRegistrationClick} />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

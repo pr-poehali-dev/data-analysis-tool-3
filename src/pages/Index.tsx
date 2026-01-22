@@ -31,7 +31,7 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
       <ProductTeaserCard onRegisterClick={handleRegistrationClick} />
       <BankingScaleHero />
       <PricingSection />
-      <Footer />
+      <Footer onRegisterClick={handleRegistrationClick} />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

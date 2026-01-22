@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { PortfolioNavbar, Footer } from "@/components/landing";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
   user: {
@@ -35,6 +36,7 @@ const menuItems: MenuItem[] = [
 ];
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("requests");
 
   const filteredMenuItems = menuItems.filter((item) =>
@@ -57,7 +59,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             <div className="bg-white border border-border rounded-xl p-8 text-center">
               <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg text-muted-foreground">У вас пока нет активных заявок</p>
-              <Button className="mt-6">
+              <Button className="mt-6" onClick={() => navigate("/create-request")}>
                 <Icon name="Plus" size={16} className="mr-2" />
                 Создать заявку
               </Button>

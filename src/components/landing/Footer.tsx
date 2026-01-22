@@ -23,13 +23,14 @@ interface FooterProps {
     email?: string;
   };
   copyrightText?: string;
+  onRegisterClick?: () => void;
 }
 
 const defaultSections: FooterSection[] = [
   {
     title: "Для арендаторов",
     links: [
-      { label: "Найти жильё", href: "#search" },
+      { label: "Найти жильё", href: "#register" },
       { label: "Создать заявку", href: "/create-request" },
       { label: "Как это работает", href: "#how-it-works" },
       { label: "Гарантии безопасности", href: "#safety" },
@@ -75,13 +76,17 @@ export const Footer = ({
     email: "hello@sinhrolink.ru",
   },
   copyrightText,
+  onRegisterClick,
 }: FooterProps) => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const copyright = copyrightText || `© ${currentYear} ${companyName}. Все права защищены.`;
 
   const handleLinkClick = (href: string, e: React.MouseEvent) => {
-    if (href.startsWith('/')) {
+    if (href === '#register' && onRegisterClick) {
+      e.preventDefault();
+      onRegisterClick();
+    } else if (href.startsWith('/')) {
       e.preventDefault();
       navigate(href);
     } else if (href.startsWith('#')) {

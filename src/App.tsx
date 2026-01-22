@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Dashboard } from "./pages/Dashboard";
@@ -13,7 +13,8 @@ import { CreateRequest } from "./pages/CreateRequest";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppContent = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<{
     firstName: string;
     lastName: string;
@@ -25,6 +26,7 @@ const App = () => {
 
   const handleLogout = () => {
     setUser(null);
+    navigate("/");
   };
 
   const handleRegistrationSuccess = (data: any) => {
@@ -36,15 +38,14 @@ const App = () => {
       phone: data.phone,
       city: data.city,
     });
+    
+    if (data.role === "tenant") {
+      navigate("/create-request");
+    }
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+    <Routes>
             <Route
               path="/"
               element={
@@ -55,11 +56,22 @@ const App = () => {
                 )
               }
             />
-            <Route path="/feed" element={<Feed />} />
-            <Route path="/create-request" element={<CreateRequest />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+      <Route path="/feed" element={<Feed />} />
+      <Route path="/create-request" element={<CreateRequest />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
