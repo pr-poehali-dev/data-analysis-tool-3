@@ -523,10 +523,10 @@ export const CreateRequest = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="mt-4 p-3 rounded-lg" style={{backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px'}}>
                       <div className="flex gap-2">
-                        <Icon name="Info" size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-blue-800">
+                        <Icon name="Info" size={16} className="flex-shrink-0 mt-0.5" style={{color: '#155eef'}} />
+                        <p className="text-xs" style={{color: '#1e40af'}}>
                           Более высокое вознаграждение повышает интерес рекомендателей и ускоряет поиск жилья
                         </p>
                       </div>
