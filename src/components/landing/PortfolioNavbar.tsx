@@ -16,7 +16,6 @@ interface PortfolioNavbarProps {
 
 const navigationLinks: NavigationLink[] = [
   { name: "Как работает", href: "#how-it-works" },
-  { name: "Города", href: "#pricing" },
   { name: "Преимущества", href: "#benefits" },
   { name: "Лента заявок", href: "/feed" },
 ];
