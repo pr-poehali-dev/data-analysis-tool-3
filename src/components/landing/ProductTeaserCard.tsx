@@ -29,7 +29,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
   } = props;
 
   return (
-    <section className="w-full px-8 pt-32 pb-16">
+    <section className="w-full px-8 pt-32 pb-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-12 gap-2">
           <motion.div

@@ -59,7 +59,7 @@ const columns: BenefitColumn[] = [
 
 export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsSectionProps = {}) {
   return (
-    <section id="benefits" className="py-24 bg-[#fafafa]">
+    <section id="benefits" className="py-12 bg-[#fafafa]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
