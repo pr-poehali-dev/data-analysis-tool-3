@@ -260,7 +260,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                 delay: 0.8,
                 ease: "easeOut",
               }}
-              className="flex justify-center gap-4 flex-wrap"
+              className="flex justify-start gap-4 flex-wrap"
             >
               <button
                 onClick={onRegisterClick}
