@@ -162,44 +162,7 @@ export const BankingScaleHero = () => {
             </div>
           </div>
 
-          <div className="col-span-12">
-            <div className="overflow-visible pb-5">
-              <div className="grid grid-cols-12 gap-5 relative z-10">
-                {stats.map((stat, index) => (
-                  <div key={index} className="col-span-6 md:col-span-3">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-                      animate={
-                        isVisible
-                          ? {
-                              opacity: [0, 1, 1],
-                              y: [20, 0, 0],
-                              filter: ["blur(4px)", "blur(0px)", "blur(0px)"],
-                            }
-                          : {}
-                      }
-                      transition={{
-                        duration: 1.5,
-                        delay: stat.delay,
-                        ease: [0.1, 0, 0.1, 1],
-                      }}
-                      className="flex flex-col gap-2"
-                    >
-                      <span
-                        className="text-2xl font-medium leading-[26.4px] tracking-tight"
-                        style={{ color: "#155eef" }}
-                      >
-                        {stat.value}
-                      </span>
-                      <p className="text-xs leading-[13.2px] text-[#7C7F88] m-0 whitespace-pre-line">
-                        {stat.description}
-                      </p>
-                    </motion.div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
