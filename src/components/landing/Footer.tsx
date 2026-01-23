@@ -28,7 +28,7 @@ interface FooterProps {
 
 const defaultSections: FooterSection[] = [
   {
-    title: "Для арендаторов",
+    title: "Арендаторам",
     links: [
       { label: "Найти жильё", href: "#register" },
       { label: "Как это работает", href: "#how-it-works" },
@@ -36,7 +36,7 @@ const defaultSections: FooterSection[] = [
     ],
   },
   {
-    title: "Для рекомендателей",
+    title: "Рекомендателям",
     links: [
       { label: "Лента заявок", href: "/feed" },
       { label: "Вознаграждения", href: "#pricing" },
@@ -44,7 +44,7 @@ const defaultSections: FooterSection[] = [
     ],
   },
   {
-    title: "Для владельцев",
+    title: "Владельцам",
     links: [
       { label: "Сдать жильё", href: "#rent-out" },
       { label: "Без комиссий", href: "#no-commission" },
