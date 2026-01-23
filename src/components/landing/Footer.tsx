@@ -96,8 +96,8 @@ export const Footer = ({
 
   return (
     <footer className="w-full bg-[#fafafa] border-t border-[#e5e5e5]">
-      <div className="max-w-[1200px] mx-auto px-8 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12 items-start">
+      <div className="max-w-[1200px] mx-auto px-8 py-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8 items-start">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -166,10 +166,10 @@ export const Footer = ({
               transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
               className="col-span-1"
             >
-              <h4 className="text-sm font-medium text-[#202020] mb-4 uppercase tracking-wide">
+              <h4 className="text-sm font-medium text-[#202020] mb-3 uppercase tracking-wide">
                 {section.title}
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {section.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <a
@@ -191,9 +191,9 @@ export const Footer = ({
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="pt-8 border-t border-[#e5e5e5]"
+          className="pt-6 border-t border-[#e5e5e5]"
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <p className="text-sm text-[#666666]">
               {copyright}
             </p>
