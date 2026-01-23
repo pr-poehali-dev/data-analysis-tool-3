@@ -47,7 +47,6 @@ const defaultSections: FooterSection[] = [
     title: "Владельцам",
     links: [
       { label: "Сдать жильё", href: "#rent-out" },
-      { label: "Без комиссий", href: "#no-commission" },
       { label: "Верификация жильцов", href: "#verification" },
       { label: "Договоры аренды", href: "#contracts" },
     ],
@@ -55,7 +54,6 @@ const defaultSections: FooterSection[] = [
   {
     title: "Компания",
     links: [
-      { label: "Частые вопросы", href: "#faq" },
       { label: "Помощь", href: "#help" },
       { label: "Контакты", href: "#contact" },
       { label: "Политика конфиденциальности", href: "#privacy" },
