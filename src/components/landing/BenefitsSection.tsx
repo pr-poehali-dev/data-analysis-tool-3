@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 
+interface BenefitsSectionProps {
+  onRegisterClick?: () => void;
+  onRecommendClick?: () => void;
+}
+
 interface Benefit {
   text: string;
 }
@@ -52,7 +57,7 @@ const columns: BenefitColumn[] = [
   },
 ];
 
-export function BenefitsSection() {
+export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsSectionProps = {}) {
   return (
     <section id="benefits" className="py-24 bg-[#fafafa]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -114,6 +119,27 @@ export function BenefitsSection() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex justify-center gap-4 flex-wrap mt-16"
+        >
+          <button
+            onClick={onRegisterClick}
+            className="block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl shadow-sm hover:shadow-md"
+          >
+            Найти жильё
+          </button>
+          <button
+            onClick={onRecommendClick}
+            className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+          >
+            Рекомендовать варианты
+          </button>
+        </motion.div>
       </div>
     </section>
   );

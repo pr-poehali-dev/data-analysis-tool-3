@@ -41,8 +41,14 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
         onRegisterClick={handleRegistrationClick}
         onRecommendClick={handleRecommendClick}
       />
-      <BankingScaleHero />
-      <BenefitsSection />
+      <BankingScaleHero 
+        onRegisterClick={handleRegistrationClick}
+        onRecommendClick={handleRecommendClick}
+      />
+      <BenefitsSection 
+        onRegisterClick={handleRegistrationClick}
+        onRecommendClick={handleRecommendClick}
+      />
       <Footer onRegisterClick={handleRegistrationClick} />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>

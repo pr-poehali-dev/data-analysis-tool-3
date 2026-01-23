@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, UserCheck, Handshake, FileCheck, Wallet } from "lucide-react";
 
+interface BankingScaleHeroProps {
+  onRegisterClick?: () => void;
+  onRecommendClick?: () => void;
+}
+
 interface ProcessStep {
   icon: any;
   title: string;
@@ -71,7 +76,7 @@ const generateDataPoints = (): DataPoint[] => {
   return points;
 };
 
-export const BankingScaleHero = () => {
+export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingScaleHeroProps = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [dataPoints] = useState<DataPoint[]>(generateDataPoints());
   const [typingComplete, setTypingComplete] = useState(false);
@@ -237,6 +242,39 @@ export const BankingScaleHero = () => {
                 })}
               </div>
             </div>
+          </div>
+
+          <div className="col-span-12 mt-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={
+                isVisible
+                  ? {
+                      opacity: [0, 1],
+                      y: [20, 0],
+                    }
+                  : {}
+              }
+              transition={{
+                duration: 0.6,
+                delay: 0.8,
+                ease: "easeOut",
+              }}
+              className="flex justify-center gap-4 flex-wrap"
+            >
+              <button
+                onClick={onRegisterClick}
+                className="block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl shadow-sm hover:shadow-md"
+              >
+                Найти жильё
+              </button>
+              <button
+                onClick={onRecommendClick}
+                className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+              >
+                Рекомендовать варианты
+              </button>
+            </motion.div>
           </div>
 
         </div>
