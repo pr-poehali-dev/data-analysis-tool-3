@@ -244,7 +244,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
             </div>
           </div>
 
-          <div className="col-span-12 mt-12">
+          <div className="col-span-12 mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={
