@@ -103,23 +103,20 @@ export const Footer = ({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="col-span-2"
+            className="col-span-2 flex flex-col"
           >
-            <h4 className="text-sm font-medium text-[#202020] mb-4 uppercase tracking-wide opacity-0 pointer-events-none">
-              Placeholder
-            </h4>
-            <div>
+            <div className="mb-4">
               <img 
                 src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
                 alt={companyName} 
                 className="h-50 w-auto mb-4"
               />
-              <p className="text-sm leading-5 text-[#666666] max-w-xs mb-6">
+              <p className="text-sm leading-5 text-[#666666] max-w-xs">
                 {tagline}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-auto">
               {socialLinks.twitter && (
                 <a
                   href={socialLinks.twitter}
