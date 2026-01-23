@@ -57,6 +57,9 @@ export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarPr
     closeMobileMenu();
     if (href.startsWith('/')) {
       navigate(href);
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 0);
     } else {
       if (location.pathname !== '/') {
         navigate('/');
