@@ -97,26 +97,24 @@ export const Footer = ({
   return (
     <footer className="w-full bg-[#fafafa] border-t border-[#e5e5e5]">
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12 items-start">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="col-span-2 flex flex-col"
+            className="col-span-2"
           >
-            <div className="mb-4">
-              <img 
-                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
-                alt={companyName} 
-                className="h-50 w-auto mb-4"
-              />
-              <p className="text-sm leading-5 text-[#666666] max-w-xs">
-                {tagline}
-              </p>
-            </div>
+            <img 
+              src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
+              alt={companyName} 
+              className="h-50 w-auto mb-4"
+            />
+            <p className="text-sm leading-5 text-[#666666] max-w-xs mb-6">
+              {tagline}
+            </p>
 
-            <div className="flex items-center gap-3 mt-auto">
+            <div className="flex items-center gap-3">
               {socialLinks.twitter && (
                 <a
                   href={socialLinks.twitter}
