@@ -173,7 +173,7 @@ export const BankingScaleHero = () => {
             </div>
           </div>
 
-          <div className="col-span-12 mt-3">
+          <div className="col-span-12" style={{ marginTop: '0.8rem' }}>
             <div className="relative">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {processSteps.map((step, index) => {
