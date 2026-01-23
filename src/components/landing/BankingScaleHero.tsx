@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Search, UserCheck, Handshake, FileCheck, Wallet } from "lucide-react";
 
-interface StatItem {
-  value: string;
+interface ProcessStep {
+  icon: any;
+  title: string;
   description: string;
   delay: number;
 }
@@ -17,25 +18,35 @@ interface DataPoint {
   delay: number;
 }
 
-const stats: StatItem[] = [
+const processSteps: ProcessStep[] = [
   {
-    value: "0%",
-    description: "Комиссия для\nарендодателей",
+    icon: Search,
+    title: "Запрос",
+    description: "Арендатор публикует, что ищет",
     delay: 0,
   },
   {
-    value: "5-10к ₽",
-    description: "Вознаграждение\nрекомендателям",
-    delay: 0.2,
+    icon: UserCheck,
+    title: "Рекомендация",
+    description: "Рекомендатель предлагает вариант",
+    delay: 0.15,
   },
   {
-    value: "100%",
-    description: "Защита через\nэскроу-счета",
-    delay: 0.4,
+    icon: Handshake,
+    title: "Согласование",
+    description: "Владелец подтверждает показ и знакомится",
+    delay: 0.3,
   },
   {
-    value: "4 города",
-    description: "Москва, СПб, Казань,\nРязань",
+    icon: FileCheck,
+    title: "Сделка",
+    description: "Заселение и подписание договора",
+    delay: 0.45,
+  },
+  {
+    icon: Wallet,
+    title: "Вознаграждение",
+    description: "Рекомендатель получает деньги после заселения",
     delay: 0.6,
   },
 ];
@@ -162,6 +173,71 @@ export const BankingScaleHero = () => {
             </div>
           </div>
 
+          <div className="col-span-12 mt-8">
+            <div className="relative">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {processSteps.map((step, index) => {
+                  const Icon = step.icon;
+                  return (
+                    <div key={index} className="relative">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={
+                          isVisible
+                            ? {
+                                opacity: [0, 1],
+                                y: [20, 0],
+                              }
+                            : {}
+                        }
+                        transition={{
+                          duration: 0.6,
+                          delay: step.delay,
+                          ease: "easeOut",
+                        }}
+                        className="flex flex-col items-center text-center gap-3 p-4 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-100 hover:border-[#155eef]/20 transition-all duration-300 hover:shadow-lg group"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-[#155eef]/10 flex items-center justify-center group-hover:bg-[#155eef]/20 transition-colors duration-300">
+                          <Icon className="w-6 h-6 text-[#155eef]" strokeWidth={2} />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <h3 className="text-base font-semibold text-[#111A4A]">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-[#7C7F88] leading-relaxed">
+                            {step.description}
+                          </p>
+                        </div>
+                      </motion.div>
+                      {index < processSteps.length - 1 && (
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={
+                            isVisible
+                              ? {
+                                  scaleX: [0, 1],
+                                }
+                              : {}
+                          }
+                          transition={{
+                            duration: 0.5,
+                            delay: step.delay + 0.3,
+                            ease: "easeOut",
+                          }}
+                          className="hidden md:block absolute top-8 -right-2 w-4 h-0.5 bg-gradient-to-r from-[#155eef]/30 to-[#155eef]/10 origin-left"
+                          style={{
+                            transform: 'translateX(100%)'
+                          }}
+                        >
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-4 border-l-[#155eef]/30 border-y-2 border-y-transparent" />
+                        </motion.div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
