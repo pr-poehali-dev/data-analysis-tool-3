@@ -22,29 +22,21 @@ type MenuItem = {
   id: string;
   label: string;
   icon: string;
-  roles: ("tenant" | "recommender" | "landlord")[];
 };
 
 const menuItems: MenuItem[] = [
-  { id: "feed", label: "Лента заявок", icon: "List", roles: ["recommender", "landlord"] },
-  { id: "requests", label: "Мои заявки", icon: "FileText", roles: ["tenant"] },
-  { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp", roles: ["tenant", "recommender", "landlord"] },
-  { id: "messages", label: "Сообщения", icon: "MessageSquare", roles: ["tenant", "recommender", "landlord"] },
-  { id: "documents", label: "Документы", icon: "FolderOpen", roles: ["tenant", "recommender", "landlord"] },
-  { id: "balance", label: "Баланс", icon: "Wallet", roles: ["recommender"] },
-  { id: "settings", label: "Настройки профиля", icon: "Settings", roles: ["tenant", "recommender", "landlord"] },
+  { id: "feed", label: "Лента заявок", icon: "List" },
+  { id: "requests", label: "Мои заявки", icon: "FileText" },
+  { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp" },
+  { id: "messages", label: "Сообщения", icon: "MessageSquare" },
+  { id: "documents", label: "Документы", icon: "FolderOpen" },
+  { id: "balance", label: "Баланс", icon: "Wallet" },
+  { id: "settings", label: "Настройки профиля", icon: "Settings" },
 ];
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
-  
-  const filteredMenuItems = menuItems.filter((item) =>
-    item.roles.includes(user.role)
-  );
-
-  const [activeSection, setActiveSection] = useState(
-    filteredMenuItems[0]?.id || "requests"
-  );
+  const [activeSection, setActiveSection] = useState("feed");
 
   const renderContent = () => {
     switch (activeSection) {
@@ -200,7 +192,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <div className="flex max-w-7xl mx-auto pt-[80px]">
         <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start">
           <nav className="space-y-2">
-            {filteredMenuItems.map((item) => (
+            {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
