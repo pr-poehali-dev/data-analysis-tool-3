@@ -191,22 +191,11 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed top-0 left-0 right-0 z-50 bg-background">
-        <PortfolioNavbar />
-        <div className="bg-white border-b border-border">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-end gap-4">
-            <span className="text-sm text-muted-foreground">
-              {user.firstName} {user.lastName}
-            </span>
-            <Button variant="outline" onClick={onLogout}>
-              <Icon name="LogOut" size={16} className="mr-2" />
-              Выйти
-            </Button>
-          </div>
-        </div>
+        <PortfolioNavbar onLogout={onLogout} />
       </div>
 
-      <div className="flex max-w-7xl mx-auto pt-[140px]">
-        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-140px)] p-6 sticky top-[140px] self-start">
+      <div className="flex max-w-7xl mx-auto pt-[80px]">
+        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start">
           <nav className="space-y-2">
             {filteredMenuItems.map((item) => (
               <button
