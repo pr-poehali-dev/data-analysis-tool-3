@@ -1,3 +1,5 @@
+export type RequestStatus = 'active' | 'in_progress' | 'archived';
+
 export interface Request {
   id: string;
   userId: string;
@@ -18,6 +20,7 @@ export interface Request {
   roomsCount: string;
   rentalPeriod: string;
   moveInDate: string;
+  status: RequestStatus;
   createdAt: Date;
 }
 
@@ -37,10 +40,11 @@ class RequestsStore {
     }));
   }
 
-  addRequest(request: Omit<Request, 'id' | 'createdAt'>): Request {
+  addRequest(request: Omit<Request, 'id' | 'createdAt' | 'status'>): Request {
     const newRequest: Request = {
       ...request,
       id: Date.now().toString(),
+      status: 'active',
       createdAt: new Date(),
     };
     
@@ -81,6 +85,10 @@ class RequestsStore {
     }
   }
 
+  updateRequestStatus(requestId: string, status: RequestStatus): void {
+    this.updateRequest(requestId, { status });
+  }
+
   getRequestById(requestId: string): Request | undefined {
     return this.getRequests().find(r => r.id === requestId);
   }
@@ -107,6 +115,7 @@ class RequestsStore {
         roomsCount: "1",
         rentalPeriod: "6-12 месяцев",
         moveInDate: "2024-02-01",
+        status: "active" as RequestStatus,
         createdAt: new Date("2024-01-15"),
       },
       {
@@ -129,6 +138,7 @@ class RequestsStore {
         roomsCount: "2",
         rentalPeriod: "6-12 месяцев",
         moveInDate: "2024-02-15",
+        status: "active" as RequestStatus,
         createdAt: new Date("2024-01-16"),
       },
       {
@@ -151,6 +161,7 @@ class RequestsStore {
         roomsCount: "Студия",
         rentalPeriod: "6-12 месяцев",
         moveInDate: "2024-02-10",
+        status: "active" as RequestStatus,
         createdAt: new Date("2024-01-17"),
       },
       {
@@ -173,6 +184,7 @@ class RequestsStore {
         roomsCount: "3",
         rentalPeriod: "Более года",
         moveInDate: "2024-03-01",
+        status: "in_progress" as RequestStatus,
         createdAt: new Date("2024-01-18"),
       },
       {
@@ -195,6 +207,7 @@ class RequestsStore {
         roomsCount: "1",
         rentalPeriod: "6-12 месяцев",
         moveInDate: "2024-02-20",
+        status: "active" as RequestStatus,
         createdAt: new Date("2024-01-19"),
       },
     ];

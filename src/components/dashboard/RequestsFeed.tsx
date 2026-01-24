@@ -100,10 +100,14 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   };
 
   useEffect(() => {
-    setRequests(requestsStore.getRequests());
+    const allRequests = requestsStore.getRequests();
+    const activeRequests = allRequests.filter(r => r.status === 'active');
+    setRequests(activeRequests);
     
     const unsubscribe = requestsStore.subscribe(() => {
-      setRequests(requestsStore.getRequests());
+      const allRequests = requestsStore.getRequests();
+      const activeRequests = allRequests.filter(r => r.status === 'active');
+      setRequests(activeRequests);
     });
     
     return unsubscribe;

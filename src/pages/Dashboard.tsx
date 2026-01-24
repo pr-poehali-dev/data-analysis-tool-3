@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { useNavigate } from "react-router-dom";
-import { requestsStore, Request } from "@/store/requestsStore";
+import { requestsStore, Request, RequestStatus } from "@/store/requestsStore";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DashboardProps {
   user: {
@@ -61,6 +68,26 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     }
   };
 
+  const handleStatusChange = (requestId: string, status: RequestStatus) => {
+    requestsStore.updateRequestStatus(requestId, status);
+  };
+
+  const getStatusLabel = (status: RequestStatus) => {
+    switch (status) {
+      case 'active': return 'Активна';
+      case 'in_progress': return 'В работе';
+      case 'archived': return 'Архивная';
+    }
+  };
+
+  const getStatusColor = (status: RequestStatus) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'archived': return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "feed":
@@ -105,8 +132,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                         className="w-16 h-16 rounded-full"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-xl font-semibold text-foreground">{request.name}</h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-semibold text-foreground">{request.name}</h3>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                              {getStatusLabel(request.status)}
+                            </span>
+                          </div>
                           <span className="text-sm text-muted-foreground">
                             {new Date(request.createdAt).toLocaleDateString('ru-RU')}
                           </span>
@@ -133,24 +165,42 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                           <p className="text-sm text-muted-foreground">О себе:</p>
                           <p className="text-sm text-foreground mt-1">{request.aboutYourself}</p>
                         </div>
-                        <div className="flex gap-3 mt-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/edit-request/${request.id}`)}
-                          >
-                            <Icon name="Edit" size={16} className="mr-2" />
-                            Редактировать
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteRequest(request.id)}
-                            className="text-red-600 hover:text-red-700 hover:border-red-600"
-                          >
-                            <Icon name="Trash2" size={16} className="mr-2" />
-                            Удалить
-                          </Button>
+                        <div className="flex items-center gap-3 mt-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Статус:</span>
+                            <Select
+                              value={request.status}
+                              onValueChange={(value) => handleStatusChange(request.id, value as RequestStatus)}
+                            >
+                              <SelectTrigger className="w-[150px] h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Активна</SelectItem>
+                                <SelectItem value="in_progress">В работе</SelectItem>
+                                <SelectItem value="archived">Архивная</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex gap-2 ml-auto">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/edit-request/${request.id}`)}
+                            >
+                              <Icon name="Edit" size={16} className="mr-2" />
+                              Редактировать
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteRequest(request.id)}
+                              className="text-red-600 hover:text-red-700 hover:border-red-600"
+                            >
+                              <Icon name="Trash2" size={16} className="mr-2" />
+                              Удалить
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
