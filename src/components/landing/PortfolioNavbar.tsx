@@ -151,9 +151,9 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
               <>
                 <button
                   onClick={onLoginClick}
-                  className="bg-[#155eef] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
+                  className="text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                 >
-                  <span className="font-medium">Войти</span>
+                  Войти
                 </button>
                 <button
                   onClick={onRegisterClick}
@@ -218,9 +218,9 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
                         closeMobileMenu();
                         if (onLoginClick) onLoginClick();
                       }}
-                      className="w-full bg-[#155eef] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200"
+                      className="w-full text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                     >
-                      <span>Войти</span>
+                      Войти
                     </button>
                     <button
                       onClick={() => {
