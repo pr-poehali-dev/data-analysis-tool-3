@@ -107,7 +107,7 @@ export const Footer = ({
             <img 
               src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/a4ac9eb0-168f-4e70-9683-6e2ed5077b24.JPG" 
               alt={companyName} 
-              className="h-12 w-auto mb-4"
+              className="h-16 w-auto mb-4"
             />
             <p className="text-sm leading-5 text-[#666666] max-w-xs mb-1.5">
               {tagline}
