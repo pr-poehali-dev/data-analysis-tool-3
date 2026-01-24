@@ -37,10 +37,13 @@ const menuItems: MenuItem[] = [
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("requests");
-
+  
   const filteredMenuItems = menuItems.filter((item) =>
     item.roles.includes(user.role)
+  );
+
+  const [activeSection, setActiveSection] = useState(
+    filteredMenuItems[0]?.id || "requests"
   );
 
   const renderContent = () => {
