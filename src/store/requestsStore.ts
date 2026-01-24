@@ -65,6 +65,26 @@ class RequestsStore {
     return this.getRequests().filter(r => r.userId === userId);
   }
 
+  deleteRequest(requestId: string): void {
+    const requests = this.getRequests().filter(r => r.id !== requestId);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+    this.notifyListeners();
+  }
+
+  updateRequest(requestId: string, updates: Partial<Omit<Request, 'id' | 'userId' | 'createdAt'>>): void {
+    const requests = this.getRequests();
+    const index = requests.findIndex(r => r.id === requestId);
+    if (index !== -1) {
+      requests[index] = { ...requests[index], ...updates };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+      this.notifyListeners();
+    }
+  }
+
+  getRequestById(requestId: string): Request | undefined {
+    return this.getRequests().find(r => r.id === requestId);
+  }
+
   private getInitialRequests(): Request[] {
     const initial = [
       {

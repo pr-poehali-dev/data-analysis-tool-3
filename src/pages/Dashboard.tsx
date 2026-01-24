@@ -55,6 +55,12 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     setActiveSection(itemId);
   };
 
+  const handleDeleteRequest = (requestId: string) => {
+    if (window.confirm('Вы уверены, что хотите удалить эту заявку?')) {
+      requestsStore.deleteRequest(requestId);
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "feed":
@@ -126,6 +132,25 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                         <div className="mt-4">
                           <p className="text-sm text-muted-foreground">О себе:</p>
                           <p className="text-sm text-foreground mt-1">{request.aboutYourself}</p>
+                        </div>
+                        <div className="flex gap-3 mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/edit-request/${request.id}`)}
+                          >
+                            <Icon name="Edit" size={16} className="mr-2" />
+                            Редактировать
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteRequest(request.id)}
+                            className="text-red-600 hover:text-red-700 hover:border-red-600"
+                          >
+                            <Icon name="Trash2" size={16} className="mr-2" />
+                            Удалить
+                          </Button>
                         </div>
                       </div>
                     </div>
