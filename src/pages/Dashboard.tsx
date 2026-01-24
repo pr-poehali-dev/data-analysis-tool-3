@@ -215,6 +215,15 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                             </Button>
                           </div>
                         </div>
+                        <div className="mt-4">
+                          <Button
+                            className="w-full bg-[#155eef] hover:bg-[#155eef]/90"
+                            onClick={() => navigate(`/request-offers/${request.id}`)}
+                          >
+                            <Icon name="Eye" size={16} className="mr-2" />
+                            Смотреть предложения
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

@@ -13,6 +13,7 @@ import { CreateRequest } from "./pages/CreateRequest";
 import { EditRequest } from "./pages/EditRequest";
 import { SuggestProperty } from "./pages/SuggestProperty";
 import { EditRecommendation } from "./pages/EditRecommendation";
+import { RequestOffers } from "./pages/RequestOffers";
 import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
@@ -78,6 +79,7 @@ const AppContent = () => {
       <Route path="/edit-request/:requestId" element={<EditRequest />} />
       <Route path="/suggest-property" element={<SuggestProperty />} />
       <Route path="/edit-recommendation/:recommendationId" element={<EditRecommendation />} />
+      <Route path="/request-offers/:requestId" element={<RequestOffers />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

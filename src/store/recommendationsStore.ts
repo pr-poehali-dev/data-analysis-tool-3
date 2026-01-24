@@ -58,6 +58,10 @@ class RecommendationsStore {
     return this.getRecommendations().filter(r => r.userId === userId);
   }
 
+  getRecommendationsByRequestId(requestId: string): Recommendation[] {
+    return this.getRecommendations().filter(r => r.requestId === requestId);
+  }
+
   deleteRecommendation(recommendationId: string): void {
     const recommendations = this.getRecommendations().filter(r => r.id !== recommendationId);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
