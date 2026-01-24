@@ -104,7 +104,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex items-center">
             <button
               onClick={handleLogoClick}
               className="hover:opacity-80 transition-opacity duration-200 relative z-0"
@@ -112,13 +112,13 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
               <img 
                 src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bf9825ff-384f-4373-81c0-67ea99aefa6f.png" 
                 alt="SovetPay" 
-                className="h-16 w-auto object-contain"
+                className="h-10 w-auto object-contain"
               />
             </button>
           </div>
 
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-10 flex items-center space-x-8">
               {navigationLinks.map((link) => (
                 <button
                   key={link.name}
