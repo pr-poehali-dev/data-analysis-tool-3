@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Search, Mail, Upload, Sofa, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { YandexMap } from "@/components/map/YandexMap";
+import { authStore } from "@/store/authStore";
+import { recommendationsStore } from "@/store/recommendationsStore";
 
 type Step = "invite" | "property";
 
 export const SuggestProperty = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("invite");
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +23,8 @@ export const SuggestProperty = () => {
   const [inviteMessage, setInviteMessage] = useState(
     "Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект."
   );
+  
+  const requestData = location.state as { requestId?: string; requestName?: string } | undefined;
   
   const [propertyData, setPropertyData] = useState({
     address: "",
@@ -75,12 +80,42 @@ export const SuggestProperty = () => {
       return;
     }
 
+    const user = authStore.getUser();
+    if (!user) {
+      toast({
+        title: "Ошибка",
+        description: "Необходимо войти в систему",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    const photoUrls = photos.map(photo => URL.createObjectURL(photo));
+
+    recommendationsStore.addRecommendation({
+      userId: user.email,
+      requestId: requestData?.requestId,
+      requestName: requestData?.requestName,
+      ownerEmail: inviteEmail,
+      inviteMessage,
+      propertyData: {
+        ...propertyData,
+        area: propertyData.area || '',
+        floor: propertyData.floor || '',
+        totalFloors: propertyData.totalFloors || '',
+        rooms: propertyData.rooms || '',
+        comments: propertyData.comments || '',
+      },
+      photos: photoUrls,
+    });
+
     toast({
       title: "Предложение отправлено!",
       description: "Арендатор получит уведомление о вашей рекомендации",
     });
     
-    navigate("/feed");
+    navigate("/dashboard");
   };
 
   return (

@@ -89,13 +89,18 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [requests, setRequests] = useState<Request[]>([]);
   const itemsPerPage = 6;
 
-  const handleSuggestClick = () => {
+  const handleSuggestClick = (request?: Request) => {
     if (onSuggestProperty) {
       onSuggestProperty();
     } else if (!isAuthenticated && onRegisterClick) {
       onRegisterClick();
     } else {
-      navigate("/suggest-property");
+      navigate("/suggest-property", {
+        state: {
+          requestId: request?.id,
+          requestName: request?.name
+        }
+      });
     }
   };
 
@@ -281,7 +286,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
 
             <Button 
               className="w-full" 
-              onClick={handleSuggestClick}
+              onClick={() => handleSuggestClick(request)}
             >
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант
