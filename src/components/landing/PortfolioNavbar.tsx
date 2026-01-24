@@ -11,6 +11,7 @@ interface NavigationLink {
 
 interface PortfolioNavbarProps {
   onRegisterClick?: () => void;
+  onLoginClick?: () => void;
   onLogout?: () => void;
 }
 
@@ -20,7 +21,7 @@ const navigationLinks: NavigationLink[] = [
   { name: "Лента заявок", href: "/feed" },
 ];
 
-export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarProps = {}) => {
+export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: PortfolioNavbarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -147,12 +148,20 @@ export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarPr
                 </button>
               </>
             ) : (
-              <button
-                onClick={onRegisterClick}
-                className="bg-[#155eef] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
-              >
-                <span className="font-medium">Попробовать</span>
-              </button>
+              <>
+                <button
+                  onClick={onLoginClick}
+                  className="text-[#155eef] border-2 border-[#155eef] px-[18px] rounded-full text-base font-semibold hover:bg-[#155eef]/5 transition-all duration-200 hover:rounded-2xl shadow-sm whitespace-nowrap leading-4 py-[13px]"
+                >
+                  <span className="font-medium">Войти</span>
+                </button>
+                <button
+                  onClick={onRegisterClick}
+                  className="bg-[#155eef] text-white px-[18px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200 hover:rounded-2xl shadow-sm hover:shadow-md whitespace-nowrap leading-4 py-[15px]"
+                >
+                  <span className="font-medium">Попробовать</span>
+                </button>
+              </>
             )}
           </div>
 
@@ -203,12 +212,26 @@ export const PortfolioNavbar = ({ onRegisterClick, onLogout }: PortfolioNavbarPr
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={onRegisterClick}
-                    className="w-full bg-[#155eef] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200"
-                  >
-                    <span>Попробовать</span>
-                  </button>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => {
+                        closeMobileMenu();
+                        if (onLoginClick) onLoginClick();
+                      }}
+                      className="w-full text-[#155eef] border-2 border-[#155eef] px-[18px] py-[13px] rounded-full text-base font-semibold hover:bg-[#155eef]/5 transition-all duration-200"
+                    >
+                      <span>Войти</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        closeMobileMenu();
+                        if (onRegisterClick) onRegisterClick();
+                      }}
+                      className="w-full bg-[#155eef] text-white px-[18px] py-[15px] rounded-full text-base font-semibold hover:bg-[#155eef]/90 transition-all duration-200"
+                    >
+                      <span>Попробовать</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
