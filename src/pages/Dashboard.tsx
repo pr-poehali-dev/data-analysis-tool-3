@@ -196,18 +196,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start">
+        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start z-10">
           <nav className="space-y-2">
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setActiveSection(item.id);
-                }}
-                type="button"
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
                   activeSection === item.id
                     ? "bg-primary text-white"
                     : "text-foreground hover:bg-gray-100"
