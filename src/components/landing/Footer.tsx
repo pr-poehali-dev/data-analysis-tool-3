@@ -102,7 +102,6 @@ export const Footer = ({
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="col-span-2"
-            style={{ marginTop: '-4.5rem' }}
           >
             <img 
               src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bf9825ff-384f-4373-81c0-67ea99aefa6f.png" 
