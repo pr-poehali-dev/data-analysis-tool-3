@@ -118,7 +118,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
           </div>
 
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-10 flex items-center space-x-8">
               {navigationLinks.map((link) => (
                 <button
                   key={link.name}
