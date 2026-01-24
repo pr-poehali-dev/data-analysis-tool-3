@@ -54,7 +54,7 @@ export const RequestOffers = () => {
         <div className="mb-8">
           <Button
             variant="outline"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/", { state: { activeSection: "requests" } })}
             className="mb-4"
           >
             <Icon name="ArrowLeft" size={16} className="mr-2" />
