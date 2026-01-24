@@ -49,18 +49,14 @@ const AppContent = () => {
     const userData = {
       firstName: data.firstName,
       lastName: data.lastName,
-      role: data.role,
+      role: "tenant",
       email: data.email,
       phone: data.phone,
-      city: data.city,
     };
     
     authStore.setUser(userData);
     setUser(userData);
-    
-    if (data.role === "tenant") {
-      navigate("/create-request");
-    }
+    navigate("/");
   };
 
   return (
