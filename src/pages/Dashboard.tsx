@@ -100,21 +100,21 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start">
-          <nav className="space-y-2">
+        <aside className="w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
+          <nav className="space-y-1">
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleMenuClick(item.id)}
                 type="button"
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
                   activeSection === item.id
                     ? "bg-primary text-white"
                     : "text-foreground hover:bg-gray-100"
                 }`}
               >
-                <Icon name={item.icon} size={20} />
-                <span className="font-medium">{item.label}</span>
+                <Icon name={item.icon} size={18} />
+                <span className="text-sm font-medium">{item.label}</span>
               </button>
             ))}
           </nav>
