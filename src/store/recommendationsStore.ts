@@ -74,6 +74,20 @@ class RecommendationsStore {
     }
   }
 
+  getRecommendationById(recommendationId: string): Recommendation | undefined {
+    return this.getRecommendations().find(r => r.id === recommendationId);
+  }
+
+  updateRecommendation(recommendationId: string, updates: Partial<Omit<Recommendation, 'id' | 'userId' | 'createdAt'>>): void {
+    const recommendations = this.getRecommendations();
+    const index = recommendations.findIndex(r => r.id === recommendationId);
+    if (index !== -1) {
+      recommendations[index] = { ...recommendations[index], ...updates };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
+      this.notifyListeners();
+    }
+  }
+
   subscribe(listener: () => void) {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);

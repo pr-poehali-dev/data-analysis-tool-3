@@ -333,7 +333,19 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => recommendationsStore.deleteRecommendation(recommendation.id)}
+                            onClick={() => navigate(`/edit-recommendation/${recommendation.id}`)}
+                          >
+                            <Icon name="Edit" size={16} className="mr-2" />
+                            Редактировать
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (window.confirm('Вы уверены, что хотите удалить эту рекомендацию?')) {
+                                recommendationsStore.deleteRecommendation(recommendation.id);
+                              }
+                            }}
                             className="text-red-600 hover:text-red-700 hover:border-red-600"
                           >
                             <Icon name="Trash2" size={16} className="mr-2" />
