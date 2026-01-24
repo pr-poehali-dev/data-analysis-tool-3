@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,10 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("feed");
 
+  const handleSectionChange = useCallback((sectionId: string) => {
+    setActiveSection(sectionId);
+  }, []);
+
   const renderContent = () => {
     switch (activeSection) {
       case "feed":
@@ -54,7 +58,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             <div className="bg-white border border-border rounded-xl p-8 text-center">
               <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg text-muted-foreground">У вас пока нет активных заявок</p>
-              <Button className="mt-6" onClick={() => navigate("/create-request")}>
+              <Button 
+                className="mt-6" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/create-request");
+                }}
+              >
                 <Icon name="Plus" size={16} className="mr-2" />
                 Создать заявку
               </Button>
@@ -195,7 +205,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => handleSectionChange(item.id)}
+                type="button"
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
                     ? "bg-primary text-white"
