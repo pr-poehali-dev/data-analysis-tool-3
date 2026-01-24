@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { useNavigate } from "react-router-dom";
 import { requestsStore } from "@/store/requestsStore";
+import { authStore } from "@/store/authStore";
 import { StepIndicator } from "@/components/request/StepIndicator";
 import { Step1AboutYourself } from "@/components/request/Step1AboutYourself";
 import { Step2HousingParameters } from "@/components/request/Step2HousingParameters";
@@ -122,9 +123,12 @@ export const CreateRequest = () => {
 
   const handleSubmit = () => {
     const districtsText = formData.districts.join(", ");
+    const user = authStore.getUser();
+    const userId = user?.email || 'anonymous';
     
     requestsStore.addRequest({
-      name: "Вы",
+      userId,
+      name: user ? `${user.firstName} ${user.lastName}` : "Вы",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NewUser",
       location: `${formData.city}, ${districtsText}`,
       budget: `${parseInt(formData.budgetMin).toLocaleString('ru-RU')} - ${parseInt(formData.budgetMax).toLocaleString('ru-RU')} ₽`,

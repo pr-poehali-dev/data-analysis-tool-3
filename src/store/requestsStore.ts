@@ -1,5 +1,6 @@
 export interface Request {
   id: string;
+  userId: string;
   name: string;
   avatar: string;
   location: string;
@@ -60,10 +61,15 @@ class RequestsStore {
     this.listeners.forEach(listener => listener());
   }
 
+  getUserRequests(userId: string): Request[] {
+    return this.getRequests().filter(r => r.userId === userId);
+  }
+
   private getInitialRequests(): Request[] {
     const initial = [
       {
         id: "1",
+        userId: "demo",
         name: "Анна Петрова",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anna",
         location: "Москва, ЦАО или ЮЗАО",
@@ -85,6 +91,7 @@ class RequestsStore {
       },
       {
         id: "2",
+        userId: "demo",
         name: "Дмитрий Соколов",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry",
         location: "Москва, САО или СВАО",
@@ -106,6 +113,7 @@ class RequestsStore {
       },
       {
         id: "3",
+        userId: "demo",
         name: "Елена Иванова",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
         location: "Москва, ЗАО или СЗАО",
@@ -127,6 +135,7 @@ class RequestsStore {
       },
       {
         id: "4",
+        userId: "demo",
         name: "Сергей Морозов",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey",
         location: "Москва, ВАО",
@@ -148,6 +157,7 @@ class RequestsStore {
       },
       {
         id: "5",
+        userId: "demo",
         name: "Мария Кузнецова",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
         location: "Москва, ЮВАО или ЮАО",

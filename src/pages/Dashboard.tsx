@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { useNavigate } from "react-router-dom";
+import { requestsStore, Request } from "@/store/requestsStore";
 
 interface DashboardProps {
   user: {
@@ -37,6 +38,18 @@ const menuItems: MenuItem[] = [
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>("feed");
+  const [userRequests, setUserRequests] = useState<Request[]>([]);
+
+  useEffect(() => {
+    const updateUserRequests = () => {
+      const requests = requestsStore.getUserRequests(user.email);
+      setUserRequests(requests);
+    };
+
+    updateUserRequests();
+    const unsubscribe = requestsStore.subscribe(updateUserRequests);
+    return unsubscribe;
+  }, [user.email]);
 
   const handleMenuClick = (itemId: string) => {
     setActiveSection(itemId);
@@ -55,20 +68,82 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return (
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-6">Мои заявки</h2>
-            <div className="bg-white border border-border rounded-xl p-8 text-center">
-              <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg text-muted-foreground">У вас пока нет активных заявок</p>
-              <Button 
-                className="mt-6" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/create-request");
-                }}
-              >
-                <Icon name="Plus" size={16} className="mr-2" />
-                Создать заявку
-              </Button>
-            </div>
+            {userRequests.length === 0 ? (
+              <div className="bg-white border border-border rounded-xl p-8 text-center">
+                <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
+                <p className="text-lg text-muted-foreground">У вас пока нет активных заявок</p>
+                <Button 
+                  className="mt-6" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/create-request");
+                  }}
+                >
+                  <Icon name="Plus" size={16} className="mr-2" />
+                  Создать заявку
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userRequests.map((request) => (
+                  <motion.div
+                    key={request.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white border border-border rounded-xl p-6"
+                  >
+                    <div className="flex items-start gap-4">
+                      <img
+                        src={request.avatar}
+                        alt={request.name}
+                        className="w-16 h-16 rounded-full"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-xl font-semibold text-foreground">{request.name}</h3>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(request.createdAt).toLocaleDateString('ru-RU')}
+                          </span>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Локация:</span>
+                            <span className="ml-2 text-foreground">{request.location}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Бюджет:</span>
+                            <span className="ml-2 text-foreground">{request.budget}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Тип жилья:</span>
+                            <span className="ml-2 text-foreground">{request.housingType}, {request.roomsCount}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Вознаграждение:</span>
+                            <span className="ml-2 text-primary font-semibold">{request.reward}</span>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <p className="text-sm text-muted-foreground">О себе:</p>
+                          <p className="text-sm text-foreground mt-1">{request.aboutYourself}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                <Button 
+                  className="w-full mt-4" 
+                  variant="outline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/create-request");
+                  }}
+                >
+                  <Icon name="Plus" size={16} className="mr-2" />
+                  Создать ещё одну заявку
+                </Button>
+              </div>
+            )}
           </div>
         );
       case "recommendations":
