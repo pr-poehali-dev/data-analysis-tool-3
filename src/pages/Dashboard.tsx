@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,7 @@ const menuItems: MenuItem[] = [
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("feed");
-
-  const handleSectionChange = useCallback((sectionId: string) => {
-    setActiveSection(sectionId);
-  }, []);
+  const [activeSection, setActiveSection] = useState<string>("feed");
 
   const renderContent = () => {
     switch (activeSection) {
@@ -205,7 +201,11 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleSectionChange(item.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveSection(item.id);
+                }}
                 type="button"
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
