@@ -110,9 +110,9 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
               className="hover:opacity-80 transition-opacity duration-200 relative z-0"
             >
               <img 
-                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/34962643-9b8b-4fd1-bec2-5ba3e9cbbfcc.png" 
+                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/a4ac9eb0-168f-4e70-9683-6e2ed5077b24.JPG" 
                 alt="SovetPay" 
-                className="h-14 w-auto max-w-[200px] object-contain"
+                className="h-12 w-auto object-contain"
               />
             </button>
           </div>
