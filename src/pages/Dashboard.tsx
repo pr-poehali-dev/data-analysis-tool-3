@@ -47,6 +47,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   const renderContent = () => {
+    console.log("=== Rendering Content ===");
+    console.log("Active section:", activeSection);
     switch (activeSection) {
       case "feed":
         return (
