@@ -38,6 +38,14 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>("feed");
 
+  const handleMenuClick = (itemId: string) => {
+    console.log("=== Menu Click Debug ===");
+    console.log("Item clicked:", itemId);
+    console.log("Current activeSection:", activeSection);
+    setActiveSection(itemId);
+    console.log("New activeSection set to:", itemId);
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "feed":
@@ -196,13 +204,14 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start z-10">
+        <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-80px)] p-6 sticky top-[80px] self-start">
           <nav className="space-y-2">
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                onClick={() => handleMenuClick(item.id)}
+                type="button"
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
                     ? "bg-primary text-white"
                     : "text-foreground hover:bg-gray-100"
@@ -216,9 +225,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         </aside>
 
         <main className="flex-1 p-8">
-          <div>
-            {renderContent()}
-          </div>
+          {renderContent()}
         </main>
       </div>
 
