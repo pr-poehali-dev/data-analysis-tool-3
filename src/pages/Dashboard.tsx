@@ -39,16 +39,10 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [activeSection, setActiveSection] = useState<string>("feed");
 
   const handleMenuClick = (itemId: string) => {
-    console.log("=== Menu Click Debug ===");
-    console.log("Item clicked:", itemId);
-    console.log("Current activeSection:", activeSection);
     setActiveSection(itemId);
-    console.log("New activeSection set to:", itemId);
   };
 
   const renderContent = () => {
-    console.log("=== Rendering Content ===");
-    console.log("Active section:", activeSection);
     switch (activeSection) {
       case "feed":
         return (
