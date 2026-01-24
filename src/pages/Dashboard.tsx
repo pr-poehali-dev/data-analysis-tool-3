@@ -85,6 +85,10 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     requestsStore.updateRequestStatus(requestId, status);
   };
 
+  const getOffersCount = (requestId: string): number => {
+    return recommendationsStore.getRecommendationsByRequestId(requestId).length;
+  };
+
   const getStatusLabel = (status: RequestStatus) => {
     switch (status) {
       case 'active': return 'Активна';
@@ -217,11 +221,16 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                         </div>
                         <div className="mt-4">
                           <Button
-                            className="w-full bg-[#155eef] hover:bg-[#155eef]/90"
+                            className="w-full bg-[#155eef] hover:bg-[#155eef]/90 relative"
                             onClick={() => navigate(`/request-offers/${request.id}`)}
                           >
                             <Icon name="Eye" size={16} className="mr-2" />
                             Смотреть предложения
+                            {getOffersCount(request.id) > 0 && (
+                              <span className="ml-2 bg-white text-[#155eef] px-2 py-0.5 rounded-full text-xs font-semibold">
+                                {getOffersCount(request.id)}
+                              </span>
+                            )}
                           </Button>
                         </div>
                       </div>
