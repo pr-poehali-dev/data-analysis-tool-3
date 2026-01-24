@@ -308,6 +308,24 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                             <span className="ml-2 text-foreground">{recommendation.ownerEmail}</span>
                           </div>
                         </div>
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Статус:</span>
+                            <Select
+                              value={recommendation.status}
+                              onValueChange={(value) => recommendationsStore.updateRecommendationStatus(recommendation.id, value as 'pending' | 'accepted' | 'rejected')}
+                            >
+                              <SelectTrigger className="w-[150px] h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Ожидает</SelectItem>
+                                <SelectItem value="accepted">Принято</SelectItem>
+                                <SelectItem value="rejected">Отклонено</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                         {recommendation.propertyData.comments && (
                           <div className="mb-4">
                             <p className="text-sm text-muted-foreground">Комментарий:</p>
