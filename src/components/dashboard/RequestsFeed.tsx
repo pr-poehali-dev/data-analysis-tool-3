@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 
 interface RequestsFeedProps {
   onRegisterClick?: () => void;
-  onSuggestProperty?: () => void;
+  onSuggestProperty?: (requestId?: string, requestName?: string) => void;
   isAuthenticated?: boolean;
 }
 
@@ -194,7 +194,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
 
   const handleSuggestClick = (request?: Request) => {
     if (onSuggestProperty) {
-      onSuggestProperty();
+      onSuggestProperty(request?.id, request?.name);
     } else if (!isAuthenticated && onRegisterClick) {
       onRegisterClick();
     } else {
@@ -202,7 +202,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
         state: {
           requestId: request?.id,
           requestName: request?.name,
-          fromDashboard: isAuthenticated
+          fromDashboard: false
         }
       });
     }

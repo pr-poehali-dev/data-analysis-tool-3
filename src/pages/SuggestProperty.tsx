@@ -26,6 +26,8 @@ export const SuggestProperty = () => {
   
   const requestData = location.state as { requestId?: string; requestName?: string; fromDashboard?: boolean } | undefined;
   
+  console.log('SuggestProperty - requestData:', requestData);
+  
   const [propertyData, setPropertyData] = useState({
     address: "",
     coordinates: [55.751574, 37.573856] as [number, number],

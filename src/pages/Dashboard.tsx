@@ -81,7 +81,18 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return (
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-6">Лента заявок</h2>
-            <RequestsFeed />
+            <RequestsFeed 
+              isAuthenticated={true}
+              onSuggestProperty={(requestId, requestName) => {
+                navigate("/suggest-property", {
+                  state: {
+                    requestId,
+                    requestName,
+                    fromDashboard: true
+                  }
+                });
+              }}
+            />
           </div>
         );
       case "requests":
