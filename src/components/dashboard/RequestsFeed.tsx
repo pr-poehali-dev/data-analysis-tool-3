@@ -220,6 +220,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, scale: 1.02 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
+            onClick={() => navigate(`/request/${request.id}`)}
             className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all cursor-pointer relative"
           >
             {(() => {
@@ -286,7 +287,10 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
 
             <Button 
               className="w-full" 
-              onClick={() => handleSuggestClick(request)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSuggestClick(request);
+              }}
             >
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант
