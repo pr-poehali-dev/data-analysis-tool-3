@@ -492,11 +492,14 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             </div>
 
             <Button 
-              className="w-full" 
+              className="w-full relative z-10" 
               onClick={(e) => {
+                console.log('Button onClick fired!', e);
                 e.stopPropagation();
+                e.preventDefault();
                 handleSuggestClick(request);
               }}
+              type="button"
             >
               <Icon name="Send" size={16} className="mr-2" />
               Предложить вариант
