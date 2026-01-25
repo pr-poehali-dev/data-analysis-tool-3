@@ -172,6 +172,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
   const [selectedHousingType, setSelectedHousingType] = useState<string | undefined>(undefined);
   const [selectedRentalPeriod, setSelectedRentalPeriod] = useState<string | undefined>(undefined);
+  const [selectedRoomsCount, setSelectedRoomsCount] = useState<string | undefined>(undefined);
   const [filtersApplied, setFiltersApplied] = useState(false);
   const itemsPerPage = 6;
 
@@ -240,6 +241,16 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
       }
     }
     
+    if (selectedRoomsCount) {
+      const requestRooms = parseInt(request.roomsCount?.replace(/\D/g, '') || '0');
+      if (selectedRoomsCount === "4+") {
+        if (requestRooms < 4) return false;
+      } else {
+        const filterRooms = parseInt(selectedRoomsCount);
+        if (requestRooms !== filterRooms) return false;
+      }
+    }
+    
     const requestBudget = parseInt(request.budgetMax?.replace(/\D/g, '') || request.budget?.replace(/\D/g, '') || '0');
     if (requestBudget > budget[0]) return false;
     
@@ -259,6 +270,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     setSelectedDistrict(undefined);
     setSelectedHousingType(undefined);
     setSelectedRentalPeriod(undefined);
+    setSelectedRoomsCount(undefined);
     setBudget([50000]);
     setFiltersApplied(false);
   };
@@ -273,7 +285,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
       <div className="bg-white border border-border rounded-xl p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Фильтры</h3>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Город</label>
             <Combobox
@@ -336,6 +348,23 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
                 <SelectItem value="6">6 месяцев</SelectItem>
                 <SelectItem value="12">12 месяцев</SelectItem>
                 <SelectItem value="12+">Более года</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">Количество комнат</label>
+            <Select value={selectedRoomsCount} onValueChange={(value) => setSelectedRoomsCount(value === "all" ? undefined : value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Любое количество" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Любое количество</SelectItem>
+                <SelectItem value="1">1</SelectItem>
+                <SelectItem value="2">2</SelectItem>
+                <SelectItem value="3">3</SelectItem>
+                <SelectItem value="4">4</SelectItem>
+                <SelectItem value="4+">Более</SelectItem>
               </SelectContent>
             </Select>
           </div>
