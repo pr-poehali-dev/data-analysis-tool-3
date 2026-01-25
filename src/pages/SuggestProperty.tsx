@@ -115,7 +115,7 @@ export const SuggestProperty = () => {
       description: "Арендатор получит уведомление о вашей рекомендации",
     });
     
-    navigate("/dashboard");
+    navigate("/", { state: { activeSection: "feed" } });
   };
 
   return (
