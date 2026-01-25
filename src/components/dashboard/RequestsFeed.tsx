@@ -84,6 +84,7 @@ const oldMockRequests = [
 
 const citiesWithDistricts: Record<string, string[]> = {
   "Москва": ["Центральный", "Северный", "Северо-Восточный", "Восточный", "Юго-Восточный", "Южный", "Юго-Западный", "Западный", "Северо-Западный", "Зеленоградский", "Новомосковский", "Троицкий"],
+  "Московская область": [],
   "Санкт-Петербург": ["Адмиралтейский", "Василеостровский", "Выборгский", "Калининский", "Кировский", "Колпинский", "Красногвардейский", "Красносельский", "Кронштадтский", "Курортный", "Московский", "Невский", "Петроградский", "Петродворцовый", "Приморский", "Пушкинский", "Фрунзенский", "Центральный"],
   "Новосибирск": ["Дзержинский", "Железнодорожный", "Заельцовский", "Калининский", "Кировский", "Ленинский", "Октябрьский", "Первомайский", "Советский", "Центральный"],
   "Екатеринбург": ["Верх-Исетский", "Железнодорожный", "Кировский", "Ленинский", "Октябрьский", "Орджоникидзевский", "Чкаловский"],
@@ -168,6 +169,16 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
   const itemsPerPage = 6;
 
+  const getSortedCities = () => {
+    const priorityCities = ["Москва", "Московская область", "Санкт-Петербург"];
+    const allCities = Object.keys(citiesWithDistricts);
+    const otherCities = allCities
+      .filter(city => !priorityCities.includes(city))
+      .sort((a, b) => a.localeCompare(b, 'ru'));
+    
+    return [...priorityCities, ...otherCities];
+  };
+
   const handleSuggestClick = (request?: Request) => {
     if (onSuggestProperty) {
       onSuggestProperty();
@@ -229,7 +240,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все города</SelectItem>
-                {Object.keys(citiesWithDistricts).map(city => (
+                {getSortedCities().map(city => (
                   <SelectItem key={city} value={city}>{city}</SelectItem>
                 ))}
               </SelectContent>
