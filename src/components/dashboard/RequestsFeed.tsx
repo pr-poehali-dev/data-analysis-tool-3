@@ -260,10 +260,10 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
               onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
               disabled={!selectedCity}
             >
-              <SelectTrigger>
+              <SelectTrigger className={!selectedCity ? "opacity-50" : ""}>
                 <SelectValue placeholder={selectedCity ? "Все районы" : "Сначала выберите город"} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px]">
                 <SelectItem value="all">Все районы</SelectItem>
                 {selectedCity && citiesWithDistricts[selectedCity]?.map(district => (
                   <SelectItem key={district} value={district}>{district}</SelectItem>

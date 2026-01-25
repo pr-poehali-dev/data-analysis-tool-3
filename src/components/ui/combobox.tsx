@@ -46,9 +46,13 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between", className)}
+          className={cn(
+            "w-full justify-between font-normal text-left hover:bg-accent/50 transition-colors",
+            !value && "text-muted-foreground",
+            className
+          )}
         >
-          {value || placeholder}
+          <span className="truncate">{value || placeholder}</span>
           <Icon
             name="ChevronsUpDown"
             size={16}
@@ -56,26 +60,30 @@ export function Combobox({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command shouldFilter={false} className="rounded-lg border shadow-md">
           <CommandInput 
             placeholder={searchPlaceholder}
             value={inputValue}
             onValueChange={setInputValue}
+            className="border-b"
           />
-          <CommandList>
+          <CommandList className="max-h-[300px]">
             <CommandEmpty>
-              <div className="flex flex-col items-center gap-2 py-2">
-                <p className="text-sm text-muted-foreground">{emptyText}</p>
+              <div className="flex flex-col items-center gap-3 py-6 px-4">
+                <Icon name="Search" size={32} className="text-muted-foreground opacity-50" />
+                <p className="text-sm text-muted-foreground text-center">{emptyText}</p>
                 {inputValue && (
                   <Button
                     size="sm"
+                    className="gap-2"
                     onClick={() => {
                       onValueChange?.(inputValue)
                       setOpen(false)
                       setInputValue("")
                     }}
                   >
+                    <Icon name="Plus" size={14} />
                     Использовать "{inputValue}"
                   </Button>
                 )}
@@ -95,14 +103,15 @@ export function Combobox({
                     setOpen(false)
                     setInputValue("")
                   }}
+                  className="cursor-pointer"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 text-primary",
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  <span className="flex-1">{option.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
