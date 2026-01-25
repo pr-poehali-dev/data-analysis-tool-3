@@ -280,13 +280,13 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const currentRequests = filteredRequests.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white border border-border rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Фильтры</h3>
+    <div className="space-y-4">
+      <div className="bg-white border border-border rounded-lg p-4">
+        <h3 className="text-base font-semibold text-foreground mb-3">Фильтры</h3>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Город</label>
+            <label className="text-xs font-medium text-foreground mb-1.5 block">Город</label>
             <Combobox
               value={selectedCity}
               onValueChange={(value) => {
@@ -301,7 +301,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Район / Округ</label>
+            <label className="text-xs font-medium text-foreground mb-1.5 block">Район / Округ</label>
             <Select 
               value={selectedDistrict} 
               onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
@@ -320,7 +320,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Тип жилья</label>
+            <label className="text-xs font-medium text-foreground mb-1.5 block">Тип жилья</label>
             <Select value={selectedHousingType} onValueChange={(value) => setSelectedHousingType(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Все типы" />
@@ -336,7 +336,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Количество комнат</label>
+            <label className="text-xs font-medium text-foreground mb-1.5 block">Количество комнат</label>
             <Select value={selectedRoomsCount} onValueChange={(value) => setSelectedRoomsCount(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Любое количество" />
@@ -353,7 +353,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Срок аренды</label>
+            <label className="text-xs font-medium text-foreground mb-1.5 block">Срок аренды</label>
             <Select value={selectedRentalPeriod} onValueChange={(value) => setSelectedRentalPeriod(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Любой срок" />
@@ -369,8 +369,8 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Бюджет до, ₽/мес
+            <label className="text-xs font-medium text-foreground mb-1.5 block">
+              Бюджет до, ₽
             </label>
             <Input
               type="number"
@@ -384,13 +384,13 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <Button onClick={handleApplyFilters}>
-            <Icon name="Search" size={16} className="mr-2" />
-            Применить фильтры
+        <div className="flex gap-2 mt-4">
+          <Button onClick={handleApplyFilters} size="sm">
+            <Icon name="Search" size={14} className="mr-1.5" />
+            Применить
           </Button>
-          <Button variant="outline" onClick={handleResetFilters}>
-            <Icon name="RotateCcw" size={16} className="mr-2" />
+          <Button variant="outline" onClick={handleResetFilters} size="sm">
+            <Icon name="RotateCcw" size={14} className="mr-1.5" />
             Сбросить
           </Button>
         </div>
