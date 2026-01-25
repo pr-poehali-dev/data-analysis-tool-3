@@ -89,7 +89,7 @@ export const Step2HousingParameters = ({
 
         <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
-            Районы/метро <span className="text-red-500">*</span>
+            Районы/Округа <span className="text-red-500">*</span>
           </label>
           <p className="text-sm text-muted-foreground mb-3">
             Выберите один или несколько районов
