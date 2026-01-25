@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
+import { Input } from "@/components/ui/input";
 
 interface RequestsFeedProps {
   onRegisterClick?: () => void;
@@ -282,6 +283,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
                 <SelectItem value="apartment">Квартира</SelectItem>
                 <SelectItem value="studio">Студия</SelectItem>
                 <SelectItem value="room">Комната</SelectItem>
+                <SelectItem value="house">Дом</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -296,6 +298,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
                 <SelectItem value="3">3 месяца</SelectItem>
                 <SelectItem value="6">6 месяцев</SelectItem>
                 <SelectItem value="12">12 месяцев</SelectItem>
+                <SelectItem value="12+">Более года</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -304,13 +307,27 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             <label className="text-sm font-medium text-foreground mb-2 block">
               Бюджет: до {budget[0].toLocaleString('ru-RU')} ₽/мес
             </label>
-            <Slider
-              value={budget}
-              onValueChange={setBudget}
-              max={100000}
-              step={5000}
-              className="mt-2"
-            />
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Slider
+                  value={budget}
+                  onValueChange={setBudget}
+                  max={100000}
+                  step={5000}
+                  className="mt-2"
+                />
+              </div>
+              <Input
+                type="number"
+                value={budget[0]}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  setBudget([Math.min(Math.max(0, value), 100000)]);
+                }}
+                className="w-32"
+                placeholder="Бюджет"
+              />
+            </div>
           </div>
         </div>
 
