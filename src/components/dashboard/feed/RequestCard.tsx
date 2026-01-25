@@ -9,9 +9,10 @@ interface RequestCardProps {
   index: number;
   handleSuggestClick: (request?: Request) => void;
   alreadySuggested?: boolean;
+  fromDashboard?: boolean;
 }
 
-export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggested = false }: RequestCardProps) => {
+export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggested = false, fromDashboard = false }: RequestCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -38,7 +39,7 @@ export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggest
       })()}
       <div 
         className="flex items-center gap-3 mb-4 cursor-pointer"
-        onClick={() => navigate(`/request/${request.id}`)}
+        onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
       >
         <img
           src={request.avatar}
@@ -55,7 +56,7 @@ export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggest
 
       <div 
         className="space-y-3 mb-4 cursor-pointer"
-        onClick={() => navigate(`/request/${request.id}`)}
+        onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
       >
         <div className="flex items-center gap-2 text-sm">
           <Icon name="DollarSign" size={16} className="text-muted-foreground" />

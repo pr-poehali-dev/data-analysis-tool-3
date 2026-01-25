@@ -26,8 +26,6 @@ export const SuggestProperty = () => {
   
   const requestData = location.state as { requestId?: string; requestName?: string; fromDashboard?: boolean } | undefined;
   
-  console.log('SuggestProperty - requestData:', requestData);
-  
   const [propertyData, setPropertyData] = useState({
     address: "",
     coordinates: [55.751574, 37.573856] as [number, number],
@@ -130,7 +128,7 @@ export const SuggestProperty = () => {
                 setStep("invite");
               } else {
                 const user = authStore.getUser();
-                if (user) {
+                if (user || requestData?.fromDashboard) {
                   navigate("/dashboard", { state: { activeSection: "feed" } });
                 } else {
                   navigate("/feed");

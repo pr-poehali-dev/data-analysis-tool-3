@@ -252,6 +252,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             index={index}
             handleSuggestClick={handleSuggestClick}
             alreadySuggested={hasAlreadySuggested(request.id)}
+            fromDashboard={isAuthenticated}
           />
         ))}
       </div>

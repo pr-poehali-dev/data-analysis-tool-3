@@ -1,30 +1,43 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
+import { authStore } from "@/store/authStore";
 
 export const RequestDetails = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { requestId } = useParams<{ requestId: string }>();
   const [request, setRequest] = useState<Request | null>(null);
+  
+  const fromDashboard = location.state?.fromDashboard || false;
+
+  const goBack = () => {
+    const user = authStore.getUser();
+    if (user || fromDashboard) {
+      navigate("/dashboard", { state: { activeSection: "feed" } });
+    } else {
+      navigate("/", { state: { activeSection: "feed" } });
+    }
+  };
 
   useEffect(() => {
     if (!requestId) {
-      navigate("/", { state: { activeSection: "feed" } });
+      goBack();
       return;
     }
 
     const fetchedRequest = requestsStore.getRequestById(requestId);
     if (!fetchedRequest) {
-      navigate("/", { state: { activeSection: "feed" } });
+      goBack();
       return;
     }
 
     setRequest(fetchedRequest);
-  }, [requestId, navigate]);
+  }, [requestId]);
 
   if (!request) return null;
 
@@ -40,7 +53,7 @@ export const RequestDetails = () => {
       <main className="max-w-4xl mx-auto px-6 py-8 mt-20 mb-20">
         <Button
           variant="outline"
-          onClick={() => navigate("/", { state: { activeSection: "feed" } })}
+          onClick={goBack}
           className="mb-6"
         >
           <Icon name="ArrowLeft" size={16} className="mr-2" />
@@ -150,7 +163,8 @@ export const RequestDetails = () => {
               onClick={() => navigate("/suggest-property", {
                 state: {
                   requestId: request.id,
-                  requestName: request.name
+                  requestName: request.name,
+                  fromDashboard: fromDashboard || !!authStore.getUser()
                 }
               })}
             >
@@ -159,7 +173,7 @@ export const RequestDetails = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate("/", { state: { activeSection: "feed" } })}
+              onClick={goBack}
             >
               <Icon name="ArrowLeft" size={16} className="mr-2" />
               Назад
