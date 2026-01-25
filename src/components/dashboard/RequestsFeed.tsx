@@ -421,8 +421,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, scale: 1.02 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            onClick={() => navigate(`/request/${request.id}`)}
-            className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all cursor-pointer relative"
+            className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all relative"
           >
             {(() => {
               const createdAt = new Date(request.createdAt);
@@ -437,7 +436,10 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
                 </div>
               );
             })()}
-            <div className="flex items-center gap-3 mb-4">
+            <div 
+              className="flex items-center gap-3 mb-4 cursor-pointer"
+              onClick={() => navigate(`/request/${request.id}`)}
+            >
               <img
                 src={request.avatar}
                 alt={request.name}
@@ -451,7 +453,10 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
               </div>
             </div>
 
-            <div className="space-y-3 mb-4">
+            <div 
+              className="space-y-3 mb-4 cursor-pointer"
+              onClick={() => navigate(`/request/${request.id}`)}
+            >
               <div className="flex items-center gap-2 text-sm">
                 <Icon name="DollarSign" size={16} className="text-muted-foreground" />
                 <span className="text-foreground">
