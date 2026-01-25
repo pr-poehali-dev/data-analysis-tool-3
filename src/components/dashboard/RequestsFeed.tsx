@@ -254,17 +254,17 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Район</label>
+            <label className="text-sm font-medium text-foreground mb-2 block">Район / Округ</label>
             <Select 
               value={selectedDistrict} 
               onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
               disabled={!selectedCity}
             >
               <SelectTrigger className={!selectedCity ? "opacity-50" : ""}>
-                <SelectValue placeholder={selectedCity ? "Все районы" : "Сначала выберите город"} />
+                <SelectValue placeholder={selectedCity ? "Все районы / округа" : "Сначала выберите город"} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                <SelectItem value="all">Все районы</SelectItem>
+                <SelectItem value="all">Все районы / округа</SelectItem>
                 {selectedCity && citiesWithDistricts[selectedCity]?.map(district => (
                   <SelectItem key={district} value={district}>{district}</SelectItem>
                 ))}
