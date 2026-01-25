@@ -90,19 +90,20 @@ export const RequestCard = ({ request, index, handleSuggestClick }: RequestCardP
         </div>
       </div>
 
-      <Button 
-        className="w-full relative z-10" 
-        onClick={(e) => {
-          console.log('Button onClick fired!', e);
-          e.stopPropagation();
-          e.preventDefault();
-          handleSuggestClick(request);
-        }}
-        type="button"
-      >
-        <Icon name="Send" size={16} className="mr-2" />
-        Предложить вариант
-      </Button>
+      <div className="relative z-10">
+        <Button 
+          className="w-full" 
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleSuggestClick(request);
+          }}
+          type="button"
+        >
+          <Icon name="Send" size={16} className="mr-2" />
+          Предложить вариант
+        </Button>
+      </div>
     </motion.div>
   );
 };

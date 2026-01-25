@@ -121,24 +121,14 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   };
 
   const handleSuggestClick = (request?: Request) => {
-    console.log('handleSuggestClick called', {
-      request,
-      isAuthenticated,
-      hasOnSuggestProperty: !!onSuggestProperty,
-      hasOnRegisterClick: !!onRegisterClick
-    });
-
     if (!isAuthenticated && onRegisterClick) {
-      console.log('Calling onRegisterClick');
       onRegisterClick();
       return;
     }
     
     if (onSuggestProperty) {
-      console.log('Calling onSuggestProperty with', request?.id, request?.name);
       onSuggestProperty(request?.id, request?.name);
     } else {
-      console.log('Navigating directly');
       navigate("/suggest-property", {
         state: {
           requestId: request?.id,
