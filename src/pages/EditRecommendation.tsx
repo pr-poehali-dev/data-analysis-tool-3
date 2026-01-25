@@ -35,7 +35,7 @@ export const EditRecommendation = () => {
 
   useEffect(() => {
     if (!recommendationId) {
-      navigate("/dashboard");
+      navigate("/", { state: { activeSection: "recommendations" } });
       return;
     }
 
@@ -46,7 +46,7 @@ export const EditRecommendation = () => {
         description: "Рекомендация не найдена",
         variant: "destructive",
       });
-      navigate("/dashboard");
+      navigate("/", { state: { activeSection: "recommendations" } });
       return;
     }
 
@@ -57,7 +57,7 @@ export const EditRecommendation = () => {
         description: "У вас нет прав для редактирования этой рекомендации",
         variant: "destructive",
       });
-      navigate("/dashboard");
+      navigate("/", { state: { activeSection: "recommendations" } });
       return;
     }
 
@@ -109,7 +109,7 @@ export const EditRecommendation = () => {
       description: "Рекомендация обновлена",
     });
     
-    navigate("/dashboard");
+    navigate("/", { state: { activeSection: "recommendations" } });
   };
 
   return (
@@ -117,7 +117,7 @@ export const EditRecommendation = () => {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/", { state: { activeSection: "recommendations" } })}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
