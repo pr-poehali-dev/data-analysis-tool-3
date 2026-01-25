@@ -34,126 +34,98 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
           {userRecommendations.map((recommendation) => (
             <motion.div
               key={recommendation.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-border rounded-xl p-6"
+              className="bg-white border border-border rounded-lg p-4"
             >
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon name="Home" size={32} className="text-primary" />
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon name="Home" size={20} className="text-primary" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {recommendation.requestName || 'Рекомендация объекта'}
-                      </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        recommendation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        recommendation.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {recommendation.status === 'pending' ? 'Ожидает' :
-                         recommendation.status === 'accepted' ? 'Принято' : 'Отклонено'}
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(recommendation.createdAt).toLocaleDateString('ru-RU')}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-base font-semibold text-foreground truncate">
+                      {recommendation.requestName || 'Рекомендация объекта'}
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+                      recommendation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      recommendation.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {recommendation.status === 'pending' ? 'Ожидает' :
+                       recommendation.status === 'accepted' ? 'Принято' : 'Отклонено'}
                     </span>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm mb-4">
-                    <div>
-                      <span className="text-muted-foreground">Адрес:</span>
-                      <span className="ml-2 text-foreground">{recommendation.propertyData.address}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Аренда:</span>
-                      <span className="ml-2 text-foreground">{parseInt(recommendation.propertyData.rent).toLocaleString('ru-RU')} ₽/мес</span>
-                    </div>
-                    {recommendation.propertyData.rooms && (
-                      <div>
-                        <span className="text-muted-foreground">Комнат:</span>
-                        <span className="ml-2 text-foreground">{recommendation.propertyData.rooms}</span>
-                      </div>
-                    )}
-                    {recommendation.propertyData.area && (
-                      <div>
-                        <span className="text-muted-foreground">Площадь:</span>
-                        <span className="ml-2 text-foreground">{recommendation.propertyData.area} м²</span>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-muted-foreground">Владелец:</span>
-                      <span className="ml-2 text-foreground">{recommendation.ownerEmail}</span>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Статус:</span>
-                      <Select
-                        value={recommendation.status}
-                        onValueChange={(value) => recommendationsStore.updateRecommendationStatus(recommendation.id, value as 'pending' | 'accepted' | 'rejected')}
-                      >
-                        <SelectTrigger className="w-[150px] h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Ожидает</SelectItem>
-                          <SelectItem value="accepted">Принято</SelectItem>
-                          <SelectItem value="rejected">Отклонено</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  {recommendation.propertyData.comments && (
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground">Комментарий:</p>
-                      <p className="text-sm text-foreground mt-1">{recommendation.propertyData.comments}</p>
-                    </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(recommendation.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm mb-3">
+                <div className="flex items-center gap-2">
+                  <Icon name="MapPin" size={14} className="text-muted-foreground flex-shrink-0" />
+                  <span className="text-foreground truncate">{recommendation.propertyData.address}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon name="DollarSign" size={14} className="text-muted-foreground flex-shrink-0" />
+                  <span className="text-foreground font-semibold">{parseInt(recommendation.propertyData.rent).toLocaleString('ru-RU')} ₽/мес</span>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  {recommendation.propertyData.rooms && (
+                    <span className="text-muted-foreground">
+                      {recommendation.propertyData.rooms} комн.
+                    </span>
                   )}
-                  {recommendation.photos.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground mb-2">Фотографии ({recommendation.photos.length}):</p>
-                      <div className="grid grid-cols-4 gap-2">
-                        {recommendation.photos.slice(0, 4).map((photo, index) => (
-                          <img
-                            key={index}
-                            src={photo}
-                            alt={`Фото ${index + 1}`}
-                            className="w-full h-20 object-cover rounded-lg"
-                          />
-                        ))}
-                      </div>
-                    </div>
+                  {recommendation.propertyData.area && (
+                    <span className="text-muted-foreground">
+                      {recommendation.propertyData.area} м²
+                    </span>
                   )}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/edit-recommendation/${recommendation.id}`)}
-                    >
-                      <Icon name="Edit" size={16} className="mr-2" />
-                      Редактировать
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (window.confirm('Вы уверены, что хотите удалить эту рекомендацию?')) {
-                          recommendationsStore.deleteRecommendation(recommendation.id);
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:border-red-600"
-                    >
-                      <Icon name="Trash2" size={16} className="mr-2" />
-                      Удалить
-                    </Button>
+                </div>
+              </div>
+
+              {recommendation.photos.length > 0 && (
+                <div className="mb-3">
+                  <div className="grid grid-cols-4 gap-1">
+                    {recommendation.photos.slice(0, 4).map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`Фото ${index + 1}`}
+                        className="w-full h-14 object-cover rounded"
+                      />
+                    ))}
                   </div>
                 </div>
+              )}
+
+              <div className="flex gap-2 pt-2 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/edit-recommendation/${recommendation.id}`)}
+                  className="h-8 text-xs flex-1"
+                >
+                  <Icon name="Edit" size={14} className="mr-1" />
+                  Изменить
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm('Удалить рекомендацию?')) {
+                      recommendationsStore.deleteRecommendation(recommendation.id);
+                    }
+                  }}
+                  className="h-8 text-xs text-red-600 hover:text-red-700 hover:border-red-600"
+                >
+                  <Icon name="Trash2" size={14} />
+                </Button>
               </div>
             </motion.div>
           ))}
