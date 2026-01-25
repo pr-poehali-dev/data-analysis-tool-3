@@ -201,7 +201,8 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
       navigate("/suggest-property", {
         state: {
           requestId: request?.id,
-          requestName: request?.name
+          requestName: request?.name,
+          fromDashboard: isAuthenticated
         }
       });
     }

@@ -24,7 +24,7 @@ export const SuggestProperty = () => {
     "Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект."
   );
   
-  const requestData = location.state as { requestId?: string; requestName?: string } | undefined;
+  const requestData = location.state as { requestId?: string; requestName?: string; fromDashboard?: boolean } | undefined;
   
   const [propertyData, setPropertyData] = useState({
     address: "",
@@ -115,7 +115,11 @@ export const SuggestProperty = () => {
       description: "Арендатор получит уведомление о вашей рекомендации",
     });
     
-    navigate("/", { state: { activeSection: "feed" } });
+    if (requestData?.fromDashboard) {
+      navigate("/dashboard", { state: { activeSection: "feed" } });
+    } else {
+      navigate("/feed");
+    }
   };
 
   return (
@@ -123,7 +127,17 @@ export const SuggestProperty = () => {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <button
-            onClick={() => step === "property" ? setStep("invite") : navigate("/feed")}
+            onClick={() => {
+              if (step === "property") {
+                setStep("invite");
+              } else {
+                if (requestData?.fromDashboard) {
+                  navigate("/dashboard", { state: { activeSection: "feed" } });
+                } else {
+                  navigate("/feed");
+                }
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
