@@ -230,13 +230,15 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     if (selectedHousingType && request.housingType !== selectedHousingType) return false;
     
     if (selectedRentalPeriod) {
-      if (selectedRentalPeriod === "12+") {
-        const months = parseInt(request.rentalPeriod);
-        if (isNaN(months) || months <= 12) return false;
-      } else {
-        const requestMonths = parseInt(request.rentalPeriod);
-        const filterMonths = parseInt(selectedRentalPeriod);
-        if (requestMonths !== filterMonths) return false;
+      const requestMonths = parseInt(request.rentalPeriod);
+      if (selectedRentalPeriod === "1-3") {
+        if (isNaN(requestMonths) || requestMonths < 1 || requestMonths > 3) return false;
+      } else if (selectedRentalPeriod === "3-6") {
+        if (isNaN(requestMonths) || requestMonths < 3 || requestMonths > 6) return false;
+      } else if (selectedRentalPeriod === "6-12") {
+        if (isNaN(requestMonths) || requestMonths < 6 || requestMonths > 12) return false;
+      } else if (selectedRentalPeriod === "12+") {
+        if (isNaN(requestMonths) || requestMonths <= 12) return false;
       }
     }
     
@@ -372,9 +374,9 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Любой срок</SelectItem>
-                <SelectItem value="3">3 месяца</SelectItem>
-                <SelectItem value="6">6 месяцев</SelectItem>
-                <SelectItem value="12">12 месяцев</SelectItem>
+                <SelectItem value="1-3">1-3 месяца</SelectItem>
+                <SelectItem value="3-6">3-6 месяцев</SelectItem>
+                <SelectItem value="6-12">6-12 месяцев</SelectItem>
                 <SelectItem value="12+">Более года</SelectItem>
               </SelectContent>
             </Select>
