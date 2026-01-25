@@ -47,12 +47,14 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between font-normal text-left hover:bg-accent/50 transition-colors",
+            "w-full justify-between font-normal text-left h-10 px-3 py-2",
+            "hover:bg-accent hover:text-accent-foreground transition-colors",
+            "border-input bg-background",
             !value && "text-muted-foreground",
             className
           )}
         >
-          <span className="truncate">{value || placeholder}</span>
+          <span className="truncate text-sm">{value || placeholder}</span>
           <Icon
             name="ChevronsUpDown"
             size={16}
@@ -60,23 +62,30 @@ export function Combobox({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command shouldFilter={false} className="rounded-lg border shadow-md">
+      <PopoverContent className="w-full min-w-[300px] p-0" align="start" side="bottom">
+        <Command shouldFilter={false} className="rounded-lg border-0 shadow-lg">
           <CommandInput 
             placeholder={searchPlaceholder}
             value={inputValue}
             onValueChange={setInputValue}
             className="border-b"
           />
-          <CommandList className="max-h-[300px]">
+          <CommandList className="max-h-[280px] overflow-y-auto">
             <CommandEmpty>
-              <div className="flex flex-col items-center gap-3 py-6 px-4">
-                <Icon name="Search" size={32} className="text-muted-foreground opacity-50" />
-                <p className="text-sm text-muted-foreground text-center">{emptyText}</p>
+              <div className="flex flex-col items-center gap-3 py-8 px-4">
+                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                  <Icon name="Search" size={24} className="text-muted-foreground" />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-sm font-medium text-foreground">{emptyText}</p>
+                  {inputValue && (
+                    <p className="text-xs text-muted-foreground">Нажмите кнопку ниже, чтобы добавить</p>
+                  )}
+                </div>
                 {inputValue && (
                   <Button
                     size="sm"
-                    className="gap-2"
+                    className="gap-2 mt-2"
                     onClick={() => {
                       onValueChange?.(inputValue)
                       setOpen(false)
@@ -89,7 +98,7 @@ export function Combobox({
                 )}
               </div>
             </CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className="p-2">
               {options
                 .filter(option => 
                   option.label.toLowerCase().includes(inputValue.toLowerCase())
@@ -103,15 +112,17 @@ export function Combobox({
                     setOpen(false)
                     setInputValue("")
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer rounded-md px-2 py-2 text-sm hover:bg-accent"
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4 text-primary",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <span className="flex-1">{option.label}</span>
+                  <div className="flex items-center w-full gap-2">
+                    <Check
+                      className={cn(
+                        "h-4 w-4 text-primary shrink-0",
+                        value === option.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <span className="flex-1 truncate">{option.label}</span>
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
