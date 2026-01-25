@@ -51,7 +51,20 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Мои заявки</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-foreground">Мои заявки</h2>
+        {userRequests.length > 0 && (
+          <Button 
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/create-request");
+            }}
+          >
+            <Icon name="Plus" size={16} className="mr-2" />
+            Создать ещё одну заявку
+          </Button>
+        )}
+      </div>
       {userRequests.length === 0 ? (
         <div className="bg-white border border-border rounded-xl p-8 text-center">
           <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
@@ -171,17 +184,6 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
               </div>
             </motion.div>
           ))}
-          <Button 
-            className="w-full mt-4" 
-            variant="outline"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/create-request");
-            }}
-          >
-            <Icon name="Plus" size={16} className="mr-2" />
-            Создать ещё одну заявку
-          </Button>
         </div>
       )}
     </div>
