@@ -278,13 +278,19 @@ export const Step2HousingParameters = ({
                 Или введите сумму вручную
               </label>
               <input
-                type="number"
-                value={formData.reward}
+                type="text"
+                value={formData.reward === 0 ? '' : formData.reward}
                 onChange={(e) => {
-                  const value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                  if (!isNaN(value)) {
-                    updateFormData("reward", value);
-                    validateReward(value);
+                  const inputValue = e.target.value;
+                  if (inputValue === '') {
+                    updateFormData("reward", 0);
+                    setRewardError("Минимальная сумма вознаграждения — 3 000 ₽");
+                  } else {
+                    const value = parseInt(inputValue);
+                    if (!isNaN(value)) {
+                      updateFormData("reward", value);
+                      validateReward(value);
+                    }
                   }
                 }}
                 placeholder="Введите сумму"
