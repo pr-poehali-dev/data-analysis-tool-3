@@ -238,6 +238,15 @@ export const SuggestProperty = () => {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="address">Адрес объекта *</Label>
+                <Input
+                  id="address"
+                  type="text"
+                  placeholder="Например: Москва, ул. Тверская, д. 10"
+                  value={propertyData.address}
+                  onChange={(e) => setPropertyData({ ...propertyData, address: e.target.value })}
+                  required
+                />
+                <p className="text-xs text-gray-500">Или выберите адрес на карте ниже</p>
                 <YandexMap
                   initialAddress={propertyData.address}
                   onAddressSelect={(address, coordinates) => {
