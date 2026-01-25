@@ -193,10 +193,13 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   };
 
   const handleSuggestClick = (request?: Request) => {
+    if (!isAuthenticated && onRegisterClick) {
+      onRegisterClick();
+      return;
+    }
+    
     if (onSuggestProperty) {
       onSuggestProperty(request?.id, request?.name);
-    } else if (!isAuthenticated && onRegisterClick) {
-      onRegisterClick();
     } else {
       navigate("/suggest-property", {
         state: {
