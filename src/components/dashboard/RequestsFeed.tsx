@@ -337,22 +337,6 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Срок аренды</label>
-            <Select value={selectedRentalPeriod} onValueChange={(value) => setSelectedRentalPeriod(value === "all" ? undefined : value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Любой срок" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Любой срок</SelectItem>
-                <SelectItem value="3">3 месяца</SelectItem>
-                <SelectItem value="6">6 месяцев</SelectItem>
-                <SelectItem value="12">12 месяцев</SelectItem>
-                <SelectItem value="12+">Более года</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Количество комнат</label>
             <Select value={selectedRoomsCount} onValueChange={(value) => setSelectedRoomsCount(value === "all" ? undefined : value)}>
               <SelectTrigger>
@@ -365,6 +349,22 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
                 <SelectItem value="3">3</SelectItem>
                 <SelectItem value="4">4</SelectItem>
                 <SelectItem value="4+">Более</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">Срок аренды</label>
+            <Select value={selectedRentalPeriod} onValueChange={(value) => setSelectedRentalPeriod(value === "all" ? undefined : value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Любой срок" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Любой срок</SelectItem>
+                <SelectItem value="3">3 месяца</SelectItem>
+                <SelectItem value="6">6 месяцев</SelectItem>
+                <SelectItem value="12">12 месяцев</SelectItem>
+                <SelectItem value="12+">Более года</SelectItem>
               </SelectContent>
             </Select>
           </div>
