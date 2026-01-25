@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
+import { useState } from "react";
 
 interface Step2Props {
   formData: {
@@ -48,11 +49,26 @@ export const Step2HousingParameters = ({
   roomsCounts,
   rentalPeriods,
 }: Step2Props) => {
+  const [rewardError, setRewardError] = useState<string>("");
+
   const getCityOptions = () => {
     return getSortedCities().map(city => ({
       value: city,
       label: city
     }));
+  };
+
+  const validateReward = (value: number) => {
+    if (value < 3000) {
+      setRewardError("Минимальная сумма вознаграждения — 3 000 ₽");
+      return false;
+    } else if (value > 50000) {
+      setRewardError("Максимальная сумма вознаграждения — 50 000 ₽");
+      return false;
+    } else {
+      setRewardError("");
+      return true;
+    }
   };
 
   const currentDistricts = formData.city ? citiesWithDistricts[formData.city] || [] : [];
@@ -244,7 +260,10 @@ export const Step2HousingParameters = ({
             </div>
             <Slider
               value={[formData.reward]}
-              onValueChange={(value) => updateFormData("reward", value[0])}
+              onValueChange={(value) => {
+                updateFormData("reward", value[0]);
+                setRewardError("");
+              }}
               min={3000}
               max={50000}
               step={1000}
@@ -262,24 +281,25 @@ export const Step2HousingParameters = ({
                 type="number"
                 value={formData.reward}
                 onChange={(e) => {
-                  const value = e.target.value === '' ? 3000 : parseInt(e.target.value);
+                  const value = e.target.value === '' ? 0 : parseInt(e.target.value);
                   if (!isNaN(value)) {
-                    updateFormData("reward", Math.min(Math.max(value, 3000), 50000));
+                    updateFormData("reward", value);
+                    validateReward(value);
                   }
                 }}
-                onBlur={(e) => {
-                  const value = parseInt(e.target.value);
-                  if (isNaN(value) || value < 3000) {
-                    updateFormData("reward", 3000);
-                  } else if (value > 50000) {
-                    updateFormData("reward", 50000);
-                  }
-                }}
-                min={3000}
-                max={50000}
                 placeholder="Введите сумму"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                  rewardError 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-border focus:ring-primary'
+                }`}
               />
+              {rewardError && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <Icon name="AlertCircle" size={12} />
+                  {rewardError}
+                </p>
+              )}
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
