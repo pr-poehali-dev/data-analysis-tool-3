@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 interface RequestsFeedProps {
   onRegisterClick?: () => void;
@@ -180,6 +181,13 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     return [...priorityCities, ...otherCities];
   };
 
+  const getCityOptions = () => {
+    return getSortedCities().map(city => ({
+      value: city,
+      label: city
+    }));
+  };
+
   const handleSuggestClick = (request?: Request) => {
     if (onSuggestProperty) {
       onSuggestProperty();
@@ -232,20 +240,17 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Город</label>
-            <Select value={selectedCity} onValueChange={(value) => {
-              setSelectedCity(value === "all" ? undefined : value);
-              setSelectedDistrict(undefined);
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Все города" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все города</SelectItem>
-                {getSortedCities().map(city => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Combobox
+              value={selectedCity}
+              onValueChange={(value) => {
+                setSelectedCity(value || undefined);
+                setSelectedDistrict(undefined);
+              }}
+              options={getCityOptions()}
+              placeholder="Все города"
+              searchPlaceholder="Поиск города..."
+              emptyText="Город не найден"
+            />
           </div>
 
           <div>
