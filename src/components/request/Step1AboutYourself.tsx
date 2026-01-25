@@ -37,8 +37,8 @@ export const Step1AboutYourself = ({
           <label className="text-sm font-medium text-foreground mb-3 block">
             Кто будет жить? <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {["Я один", "Пара", "Семья с детьми"].map((option) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {["Я один", "Пара", "Семья с детьми", "Другое"].map((option) => (
               <button
                 key={option}
                 onClick={() => updateFormData("whoWillLive", option)}
@@ -75,8 +75,8 @@ export const Step1AboutYourself = ({
           <label className="text-sm font-medium text-foreground mb-3 block">
             Есть ли животные? <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {["Нет", "Кошка", "Собака"].map((option) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {["Нет", "Кошка", "Собака", "Другое"].map((option) => (
               <button
                 key={option}
                 onClick={() => updateFormData("hasPets", option)}
