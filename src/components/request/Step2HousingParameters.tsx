@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 interface Step2Props {
   formData: {
@@ -27,8 +28,8 @@ interface Step2Props {
   onBack: () => void;
   onSubmit: () => void;
   canProceed: boolean;
-  cities: string[];
-  moscowDistricts: string[];
+  citiesWithDistricts: Record<string, string[]>;
+  getSortedCities: () => string[];
   housingTypes: string[];
   roomsCounts: string[];
   rentalPeriods: string[];
@@ -41,12 +42,20 @@ export const Step2HousingParameters = ({
   onBack,
   onSubmit,
   canProceed,
-  cities,
-  moscowDistricts,
+  citiesWithDistricts,
+  getSortedCities,
   housingTypes,
   roomsCounts,
   rentalPeriods,
 }: Step2Props) => {
+  const getCityOptions = () => {
+    return getSortedCities().map(city => ({
+      value: city,
+      label: city
+    }));
+  };
+
+  const currentDistricts = formData.city ? citiesWithDistricts[formData.city] || [] : [];
   return (
     <motion.div
       key="step2"
@@ -65,21 +74,17 @@ export const Step2HousingParameters = ({
           <label className="text-sm font-medium text-foreground mb-2 block">
             Город <span className="text-red-500">*</span>
           </label>
-          <Select
+          <Combobox
             value={formData.city}
-            onValueChange={(value) => updateFormData("city", value)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Выберите город" />
-            </SelectTrigger>
-            <SelectContent>
-              {cities.map((city) => (
-                <SelectItem key={city} value={city}>
-                  {city}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(value) => {
+              updateFormData("city", value);
+              updateFormData("districts", []);
+            }}
+            options={getCityOptions()}
+            placeholder="Выберите город"
+            searchPlaceholder="Поиск города..."
+            emptyText="Город не найден"
+          />
         </div>
 
         <div>
@@ -89,21 +94,27 @@ export const Step2HousingParameters = ({
           <p className="text-sm text-muted-foreground mb-3">
             Выберите один или несколько районов
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-2 border border-border rounded-lg">
-            {moscowDistricts.map((district) => (
-              <button
-                key={district}
-                onClick={() => toggleDistrict(district)}
-                className={`px-3 py-2 border rounded-lg text-sm font-medium transition-all ${
-                  formData.districts.includes(district)
-                    ? "border-primary bg-primary text-white"
-                    : "border-border hover:border-primary"
-                }`}
-              >
-                {district}
-              </button>
-            ))}
-          </div>
+          {currentDistricts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto p-2 border border-border rounded-lg">
+              {currentDistricts.map((district) => (
+                <button
+                  key={district}
+                  onClick={() => toggleDistrict(district)}
+                  className={`px-3 py-2 border rounded-lg text-sm font-medium transition-all ${
+                    formData.districts.includes(district)
+                      ? "border-primary bg-primary text-white"
+                      : "border-border hover:border-primary"
+                  }`}
+                >
+                  {district}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground p-4 border border-border rounded-lg bg-gray-50">
+              {formData.city ? "Для этого города районы не указаны" : "Сначала выберите город"}
+            </p>
+          )}
           {formData.districts.length > 0 && (
             <p className="text-sm text-muted-foreground mt-2">
               Выбрано: {formData.districts.length}
@@ -184,7 +195,7 @@ export const Step2HousingParameters = ({
               <SelectContent>
                 {roomsCounts.map((count) => (
                   <SelectItem key={count} value={count}>
-                    {count}
+                    {count === "4+" ? "Более" : count}
                   </SelectItem>
                 ))}
               </SelectContent>
