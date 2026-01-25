@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { requestsStore, Request } from "@/store/requestsStore";
 import {
   Select,
@@ -369,31 +368,19 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             </Select>
           </div>
 
-          <div className="md:col-span-2">
+          <div>
             <label className="text-sm font-medium text-foreground mb-2 block">
-              Бюджет: до {budget[0].toLocaleString('ru-RU')} ₽/мес
+              Бюджет до, ₽/мес
             </label>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <Slider
-                  value={budget}
-                  onValueChange={setBudget}
-                  max={100000}
-                  step={5000}
-                  className="mt-2"
-                />
-              </div>
-              <Input
-                type="number"
-                value={budget[0]}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value) || 0;
-                  setBudget([Math.min(Math.max(0, value), 100000)]);
-                }}
-                className="w-32"
-                placeholder="Бюджет"
-              />
-            </div>
+            <Input
+              type="number"
+              value={budget[0]}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 0;
+                setBudget([Math.max(0, value)]);
+              }}
+              placeholder="Введите сумму"
+            />
           </div>
         </div>
 
