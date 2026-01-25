@@ -65,16 +65,26 @@ const AppContent = () => {
 
   return (
     <Routes>
-            <Route
-              path="/"
-              element={
-                user ? (
-                  <Dashboard user={user} onLogout={handleLogout} />
-                ) : (
-                  <Index onRegistrationSuccess={handleRegistrationSuccess} />
-                )
-              }
-            />
+      <Route
+        path="/"
+        element={
+          user ? (
+            <Dashboard user={user} onLogout={handleLogout} />
+          ) : (
+            <Index onRegistrationSuccess={handleRegistrationSuccess} />
+          )
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          user ? (
+            <Dashboard user={user} onLogout={handleLogout} />
+          ) : (
+            <Index onRegistrationSuccess={handleRegistrationSuccess} />
+          )
+        }
+      />
       <Route path="/feed" element={<Feed />} />
       <Route path="/create-request" element={<CreateRequest />} />
       <Route path="/edit-request/:requestId" element={<EditRequest />} />
