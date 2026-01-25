@@ -82,11 +82,31 @@ const oldMockRequests = [
   },
 ];
 
+const citiesWithDistricts: Record<string, string[]> = {
+  "Москва": ["Центральный", "Северный", "Северо-Восточный", "Восточный", "Юго-Восточный", "Южный", "Юго-Западный", "Западный", "Северо-Западный", "Зеленоградский", "Новомосковский", "Троицкий"],
+  "Санкт-Петербург": ["Адмиралтейский", "Василеостровский", "Выборгский", "Калининский", "Кировский", "Колпинский", "Красногвардейский", "Красносельский", "Кронштадтский", "Курортный", "Московский", "Невский", "Петроградский", "Петродворцовый", "Приморский", "Пушкинский", "Фрунзенский", "Центральный"],
+  "Новосибирск": ["Дзержинский", "Железнодорожный", "Заельцовский", "Калининский", "Кировский", "Ленинский", "Октябрьский", "Первомайский", "Советский", "Центральный"],
+  "Екатеринбург": ["Верх-Исетский", "Железнодорожный", "Кировский", "Ленинский", "Октябрьский", "Орджоникидзевский", "Чкаловский"],
+  "Казань": ["Авиастроительный", "Вахитовский", "Кировский", "Московский", "Ново-Савиновский", "Приволжский", "Советский"],
+  "Нижний Новгород": ["Автозаводский", "Канавинский", "Ленинский", "Московский", "Нижегородский", "Приокский", "Советский", "Сормовский"],
+  "Красноярск": ["Железнодорожный", "Кировский", "Ленинский", "Октябрьский", "Советский", "Свердловский", "Центральный"],
+  "Челябинск": ["Калининский", "Курчатовский", "Ленинский", "Металлургический", "Советский", "Тракторозаводский", "Центральный"],
+  "Самара": ["Железнодорожный", "Кировский", "Красноглинский", "Куйбышевский", "Ленинский", "Октябрьский", "Промышленный", "Самарский", "Советский"],
+  "Уфа": ["Дёмский", "Калининский", "Кировский", "Ленинский", "Октябрьский", "Орджоникидзевский", "Советский"],
+  "Ростов-на-Дону": ["Ворошиловский", "Железнодорожный", "Кировский", "Ленинский", "Октябрьский", "Первомайский", "Пролетарский", "Советский"],
+  "Омск": ["Кировский", "Ленинский", "Октябрьский", "Советский", "Центральный"],
+  "Краснодар": ["Западный", "Карасунский", "Прикубанный", "Центральный"],
+  "Воронеж": ["Железнодорожный", "Коминтерновский", "Левобережный", "Ленинский", "Советский", "Центральный"],
+  "Пермь": ["Дзержинский", "Индустриальный", "Кировский", "Ленинский", "Мотовилихинский", "Орджоникидзевский", "Свердловский"]
+};
+
 export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false }: RequestsFeedProps = {}) => {
   const navigate = useNavigate();
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
   const itemsPerPage = 6;
 
   const handleSuggestClick = (request?: Request) => {
@@ -118,10 +138,20 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     return unsubscribe;
   }, []);
 
-  const totalPages = Math.ceil(requests.length / itemsPerPage);
+  const filteredRequests = requests.filter(request => {
+    if (selectedCity && request.city !== selectedCity) return false;
+    if (selectedDistrict && request.district !== selectedDistrict) return false;
+    return true;
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCity, selectedDistrict]);
+
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentRequests = requests.slice(startIndex, endIndex);
+  const currentRequests = filteredRequests.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-6">
@@ -131,29 +161,37 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Город</label>
-            <Select>
+            <Select value={selectedCity} onValueChange={(value) => {
+              setSelectedCity(value === "all" ? undefined : value);
+              setSelectedDistrict(undefined);
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Все города" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="moscow">Москва</SelectItem>
-                <SelectItem value="spb">Санкт-Петербург</SelectItem>
-                <SelectItem value="nsk">Новосибирск</SelectItem>
-                <SelectItem value="ekb">Екатеринбург</SelectItem>
+                <SelectItem value="all">Все города</SelectItem>
+                {Object.keys(citiesWithDistricts).map(city => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Район/метро</label>
-            <Select>
+            <label className="text-sm font-medium text-foreground mb-2 block">Район</label>
+            <Select 
+              value={selectedDistrict} 
+              onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
+              disabled={!selectedCity}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Все районы" />
+                <SelectValue placeholder={selectedCity ? "Все районы" : "Сначала выберите город"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="center">Центральный</SelectItem>
-                <SelectItem value="north">Северный</SelectItem>
-                <SelectItem value="south">Южный</SelectItem>
+                <SelectItem value="all">Все районы</SelectItem>
+                {selectedCity && citiesWithDistricts[selectedCity]?.map(district => (
+                  <SelectItem key={district} value={district}>{district}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
