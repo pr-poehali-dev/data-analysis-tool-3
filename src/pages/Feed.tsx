@@ -27,9 +27,15 @@ export const Feed = () => {
     setIsRegistrationOpen(true);
   };
 
-  const handleSuggestProperty = () => {
+  const handleSuggestProperty = (requestId?: string, requestName?: string) => {
     if (authStore.isAuthenticated()) {
-      navigate("/suggest-property");
+      navigate("/suggest-property", {
+        state: {
+          requestId,
+          requestName,
+          fromDashboard: false
+        }
+      });
     } else {
       setIsRegistrationOpen(true);
     }
