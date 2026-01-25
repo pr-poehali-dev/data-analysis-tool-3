@@ -226,20 +226,6 @@ export const Step2HousingParameters = ({
           </Select>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">
-            Дата заезда <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            value={formData.moveInDate}
-            onChange={(e) =>
-              updateFormData("moveInDate", e.target.value)
-            }
-            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
         <div className="border-t border-border pt-6">
           <label className="text-sm font-medium text-foreground mb-3 block">
             Вознаграждение рекомендателю <span className="text-red-500">*</span>
@@ -264,9 +250,26 @@ export const Step2HousingParameters = ({
               step={1000}
               className="mb-4"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground mb-4">
               <span>3 000 ₽</span>
               <span>50 000 ₽</span>
+            </div>
+            <div className="mt-4">
+              <label className="text-xs text-muted-foreground mb-1 block">
+                Или введите сумму вручную
+              </label>
+              <input
+                type="number"
+                value={formData.reward}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 3000;
+                  updateFormData("reward", Math.min(Math.max(value, 3000), 50000));
+                }}
+                min={3000}
+                max={50000}
+                placeholder="Введите сумму"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">

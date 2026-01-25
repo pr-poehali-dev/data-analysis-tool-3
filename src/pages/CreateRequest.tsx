@@ -175,7 +175,6 @@ export const CreateRequest = () => {
       formData.housingType &&
       formData.roomsCount &&
       formData.rentalPeriod &&
-      formData.moveInDate &&
       formData.reward >= 3000
     );
   };
