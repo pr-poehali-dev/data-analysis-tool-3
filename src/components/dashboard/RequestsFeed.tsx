@@ -170,6 +170,9 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
   const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
+  const [selectedHousingType, setSelectedHousingType] = useState<string | undefined>(undefined);
+  const [selectedRentalPeriod, setSelectedRentalPeriod] = useState<string | undefined>(undefined);
+  const [filtersApplied, setFiltersApplied] = useState(false);
   const itemsPerPage = 6;
 
   const getSortedCities = () => {
@@ -219,14 +222,46 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   }, []);
 
   const filteredRequests = requests.filter(request => {
+    if (!filtersApplied) return true;
+    
     if (selectedCity && request.city !== selectedCity) return false;
     if (selectedDistrict && request.district !== selectedDistrict) return false;
+    
+    if (selectedHousingType && request.housingType !== selectedHousingType) return false;
+    
+    if (selectedRentalPeriod) {
+      if (selectedRentalPeriod === "12+") {
+        const months = parseInt(request.rentalPeriod);
+        if (isNaN(months) || months <= 12) return false;
+      } else {
+        const requestMonths = parseInt(request.rentalPeriod);
+        const filterMonths = parseInt(selectedRentalPeriod);
+        if (requestMonths !== filterMonths) return false;
+      }
+    }
+    
+    const requestBudget = parseInt(request.budgetMax?.replace(/\D/g, '') || request.budget?.replace(/\D/g, '') || '0');
+    if (requestBudget > budget[0]) return false;
+    
     return true;
   });
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCity, selectedDistrict]);
+  }, [filtersApplied]);
+
+  const handleApplyFilters = () => {
+    setFiltersApplied(true);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCity(undefined);
+    setSelectedDistrict(undefined);
+    setSelectedHousingType(undefined);
+    setSelectedRentalPeriod(undefined);
+    setBudget([50000]);
+    setFiltersApplied(false);
+  };
 
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -275,26 +310,28 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
 
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Тип жилья</label>
-            <Select>
+            <Select value={selectedHousingType} onValueChange={(value) => setSelectedHousingType(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Все типы" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="apartment">Квартира</SelectItem>
-                <SelectItem value="studio">Студия</SelectItem>
-                <SelectItem value="room">Комната</SelectItem>
-                <SelectItem value="house">Дом</SelectItem>
+                <SelectItem value="all">Все типы</SelectItem>
+                <SelectItem value="Квартира">Квартира</SelectItem>
+                <SelectItem value="Студия">Студия</SelectItem>
+                <SelectItem value="Комната">Комната</SelectItem>
+                <SelectItem value="Дом">Дом</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">Срок аренды</label>
-            <Select>
+            <Select value={selectedRentalPeriod} onValueChange={(value) => setSelectedRentalPeriod(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Любой срок" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">Любой срок</SelectItem>
                 <SelectItem value="3">3 месяца</SelectItem>
                 <SelectItem value="6">6 месяцев</SelectItem>
                 <SelectItem value="12">12 месяцев</SelectItem>
@@ -332,11 +369,11 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
         </div>
 
         <div className="flex gap-3 mt-6">
-          <Button>
+          <Button onClick={handleApplyFilters}>
             <Icon name="Search" size={16} className="mr-2" />
             Применить фильтры
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleResetFilters}>
             <Icon name="RotateCcw" size={16} className="mr-2" />
             Сбросить
           </Button>
