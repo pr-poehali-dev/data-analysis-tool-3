@@ -8,9 +8,10 @@ interface RequestCardProps {
   request: Request;
   index: number;
   handleSuggestClick: (request?: Request) => void;
+  alreadySuggested?: boolean;
 }
 
-export const RequestCard = ({ request, index, handleSuggestClick }: RequestCardProps) => {
+export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggested = false }: RequestCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -96,12 +97,16 @@ export const RequestCard = ({ request, index, handleSuggestClick }: RequestCardP
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            handleSuggestClick(request);
+            if (!alreadySuggested) {
+              handleSuggestClick(request);
+            }
           }}
+          disabled={alreadySuggested}
           type="button"
+          variant={alreadySuggested ? "outline" : "default"}
         >
-          <Icon name="Send" size={16} className="mr-2" />
-          Предложить вариант
+          <Icon name={alreadySuggested ? "Check" : "Send"} size={16} className="mr-2" />
+          {alreadySuggested ? "Уже предложено" : "Предложить вариант"}
         </Button>
       </div>
     </motion.div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { requestsStore, Request } from "@/store/requestsStore";
+import { recommendationsStore } from "@/store/recommendationsStore";
 import { RequestsFeedFilters } from "./feed/RequestsFeedFilters";
 import { RequestCard } from "./feed/RequestCard";
 import { RequestsPagination } from "./feed/RequestsPagination";
@@ -9,6 +10,7 @@ interface RequestsFeedProps {
   onRegisterClick?: () => void;
   onSuggestProperty?: (requestId?: string, requestName?: string) => void;
   isAuthenticated?: boolean;
+  currentUserEmail?: string;
 }
 
 const citiesWithDistricts: Record<string, string[]> = {
@@ -90,7 +92,7 @@ const citiesWithDistricts: Record<string, string[]> = {
   "Таганрог": []
 };
 
-export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false }: RequestsFeedProps = {}) => {
+export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false, currentUserEmail }: RequestsFeedProps = {}) => {
   const navigate = useNavigate();
   const [budget, setBudget] = useState([50000]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,6 +104,14 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [selectedRoomsCount, setSelectedRoomsCount] = useState<string | undefined>(undefined);
   const [filtersApplied, setFiltersApplied] = useState(false);
   const itemsPerPage = 6;
+
+  const hasAlreadySuggested = (requestId: string) => {
+    if (!currentUserEmail || !requestId) return false;
+    const recommendations = recommendationsStore.getRecommendations();
+    return recommendations.some(
+      rec => rec.requestId === requestId && rec.userId === currentUserEmail
+    );
+  };
 
   const getSortedCities = () => {
     const priorityCities = ["Москва", "Московская область", "Санкт-Петербург", "Ленинградская область"];
@@ -241,6 +251,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             request={request}
             index={index}
             handleSuggestClick={handleSuggestClick}
+            alreadySuggested={hasAlreadySuggested(request.id)}
           />
         ))}
       </div>
