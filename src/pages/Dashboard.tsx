@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { DashboardRequestsSection } from "@/components/dashboard/DashboardRequestsSection";
@@ -39,6 +39,7 @@ const menuItems: MenuItem[] = [
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>("feed");
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [userRecommendations, setUserRecommendations] = useState<Recommendation[]>([]);
