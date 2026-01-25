@@ -13,6 +13,7 @@ interface PortfolioNavbarProps {
   onRegisterClick?: () => void;
   onLoginClick?: () => void;
   onLogout?: () => void;
+  showNavigation?: boolean;
 }
 
 const navigationLinks: NavigationLink[] = [
@@ -21,7 +22,7 @@ const navigationLinks: NavigationLink[] = [
   { name: "Лента заявок", href: "/feed" },
 ];
 
-export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: PortfolioNavbarProps = {}) => {
+export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showNavigation = true }: PortfolioNavbarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -117,20 +118,22 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
             </button>
           </div>
 
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-8">
-              {navigationLinks.map((link) => (
-                <button
-                  key={link.name}
-                  onClick={() => handleLinkClick(link.href)}
-                  className="text-foreground hover:text-primary px-3 py-2 text-base font-medium transition-colors duration-200 relative group"
-                >
-                  <span>{link.name}</span>
-                  <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-                </button>
-              ))}
+          {showNavigation && (
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-center space-x-8">
+                {navigationLinks.map((link) => (
+                  <button
+                    key={link.name}
+                    onClick={() => handleLinkClick(link.href)}
+                    className="text-foreground hover:text-primary px-3 py-2 text-base font-medium transition-colors duration-200 relative group"
+                  >
+                    <span>{link.name}</span>
+                    <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="hidden md:flex items-center gap-4">
             {user ? (
@@ -187,7 +190,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
             className="md:hidden bg-background/95 backdrop-blur-md border-t border-border"
           >
             <div className="px-6 py-6 space-y-4">
-              {navigationLinks.map((link) => (
+              {showNavigation && navigationLinks.map((link) => (
                 <button
                   key={link.name}
                   onClick={() => handleLinkClick(link.href)}
@@ -196,7 +199,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout }: Por
                   <span>{link.name}</span>
                 </button>
               ))}
-              <div className="pt-4 border-t border-border">
+              <div className={showNavigation ? "pt-4 border-t border-border" : ""}>
                 {user ? (
                   <>
                     <div className="flex items-center gap-2 text-foreground mb-4 px-3">

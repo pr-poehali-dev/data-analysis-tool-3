@@ -35,7 +35,7 @@ export const RequestDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PortfolioNavbar onLogout={() => navigate("/")} />
+      <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
 
       <main className="max-w-4xl mx-auto px-6 py-8 mt-20 mb-20">
         <Button

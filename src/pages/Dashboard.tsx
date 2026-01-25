@@ -96,7 +96,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed top-0 left-0 right-0 z-50 bg-background">
-        <PortfolioNavbar onLogout={onLogout} />
+        <PortfolioNavbar onLogout={onLogout} showNavigation={false} />
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">

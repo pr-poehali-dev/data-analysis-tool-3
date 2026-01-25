@@ -48,7 +48,7 @@ export const RequestOffers = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PortfolioNavbar onLogout={() => navigate("/")} />
+      <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
 
       <main className="max-w-6xl mx-auto px-6 py-8 mt-20 mb-20">
         <div className="mb-8">
