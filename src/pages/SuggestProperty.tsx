@@ -117,11 +117,7 @@ export const SuggestProperty = () => {
       description: "Арендатор получит уведомление о вашей рекомендации",
     });
     
-    if (requestData?.fromDashboard) {
-      navigate("/dashboard", { state: { activeSection: "feed" } });
-    } else {
-      navigate("/feed");
-    }
+    navigate("/dashboard", { state: { activeSection: "feed" } });
   };
 
   return (
@@ -133,7 +129,8 @@ export const SuggestProperty = () => {
               if (step === "property") {
                 setStep("invite");
               } else {
-                if (requestData?.fromDashboard) {
+                const user = authStore.getUser();
+                if (user) {
                   navigate("/dashboard", { state: { activeSection: "feed" } });
                 } else {
                   navigate("/feed");
