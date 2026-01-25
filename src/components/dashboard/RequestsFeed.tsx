@@ -280,13 +280,25 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const currentRequests = filteredRequests.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white border border-border rounded-lg p-4">
-        <h3 className="text-base font-semibold text-foreground mb-3">Фильтры</h3>
+    <div className="space-y-3">
+      <div className="bg-white border border-border rounded-lg p-3">
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <h3 className="text-sm font-semibold text-foreground">Фильтры</h3>
+          <div className="flex gap-2">
+            <Button onClick={handleApplyFilters} size="sm" className="h-7 px-3 text-xs">
+              <Icon name="Search" size={12} className="mr-1" />
+              Применить
+            </Button>
+            <Button variant="outline" onClick={handleResetFilters} size="sm" className="h-7 px-3 text-xs">
+              <Icon name="RotateCcw" size={12} className="mr-1" />
+              Сбросить
+            </Button>
+          </div>
+        </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-2">
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">Город</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Город</label>
             <Combobox
               value={selectedCity}
               onValueChange={(value) => {
@@ -301,7 +313,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">Район / Округ</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Район</label>
             <Select 
               value={selectedDistrict} 
               onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
@@ -320,7 +332,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">Тип жилья</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Тип</label>
             <Select value={selectedHousingType} onValueChange={(value) => setSelectedHousingType(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Все типы" />
@@ -336,7 +348,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">Количество комнат</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Комнат</label>
             <Select value={selectedRoomsCount} onValueChange={(value) => setSelectedRoomsCount(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Любое количество" />
@@ -353,7 +365,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">Срок аренды</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Срок</label>
             <Select value={selectedRentalPeriod} onValueChange={(value) => setSelectedRentalPeriod(value === "all" ? undefined : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Любой срок" />
@@ -369,8 +381,8 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground mb-1.5 block">
-              Бюджет до, ₽
+            <label className="text-xs text-muted-foreground mb-1 block">
+              Бюджет, ₽
             </label>
             <Input
               type="number"
@@ -382,17 +394,6 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
               placeholder="Введите сумму"
             />
           </div>
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <Button onClick={handleApplyFilters} size="sm">
-            <Icon name="Search" size={14} className="mr-1.5" />
-            Применить
-          </Button>
-          <Button variant="outline" onClick={handleResetFilters} size="sm">
-            <Icon name="RotateCcw" size={14} className="mr-1.5" />
-            Сбросить
-          </Button>
         </div>
       </div>
 
