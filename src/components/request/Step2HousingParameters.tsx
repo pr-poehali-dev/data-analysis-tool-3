@@ -262,8 +262,18 @@ export const Step2HousingParameters = ({
                 type="number"
                 value={formData.reward}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value) || 3000;
-                  updateFormData("reward", Math.min(Math.max(value, 3000), 50000));
+                  const value = e.target.value === '' ? 3000 : parseInt(e.target.value);
+                  if (!isNaN(value)) {
+                    updateFormData("reward", Math.min(Math.max(value, 3000), 50000));
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (isNaN(value) || value < 3000) {
+                    updateFormData("reward", 3000);
+                  } else if (value > 50000) {
+                    updateFormData("reward", 50000);
+                  }
                 }}
                 min={3000}
                 max={50000}
