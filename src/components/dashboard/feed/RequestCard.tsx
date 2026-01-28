@@ -8,11 +8,11 @@ interface RequestCardProps {
   request: Request;
   index: number;
   handleSuggestClick: (request?: Request) => void;
-  alreadySuggested?: boolean;
+  suggestionsCount?: number;
   fromDashboard?: boolean;
 }
 
-export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggested = false, fromDashboard = false }: RequestCardProps) => {
+export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCount = 0, fromDashboard = false }: RequestCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -92,22 +92,24 @@ export const RequestCard = ({ request, index, handleSuggestClick, alreadySuggest
         </div>
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 space-y-2">
+        {suggestionsCount > 0 && (
+          <div className="flex items-center justify-center gap-1.5 text-sm text-green-600 bg-green-50 py-1.5 px-3 rounded-lg border border-green-200">
+            <Icon name="Check" size={14} />
+            <span className="font-medium">Уже предложено: {suggestionsCount}</span>
+          </div>
+        )}
         <Button 
           className="w-full" 
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            if (!alreadySuggested) {
-              handleSuggestClick(request);
-            }
+            handleSuggestClick(request);
           }}
-          disabled={alreadySuggested}
           type="button"
-          variant={alreadySuggested ? "outline" : "default"}
         >
-          <Icon name={alreadySuggested ? "Check" : "Send"} size={16} className="mr-2" />
-          {alreadySuggested ? "Уже предложено" : "Предложить вариант"}
+          <Icon name="Send" size={16} className="mr-2" />
+          {suggestionsCount > 0 ? "Предложить ещё вариант" : "Предложить вариант"}
         </Button>
       </div>
     </motion.div>

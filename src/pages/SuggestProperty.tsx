@@ -110,12 +110,31 @@ export const SuggestProperty = () => {
       photos: photoUrls,
     });
 
+    setInviteEmail("");
+    setInviteMessage("Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект.");
+    setPropertyData({
+      address: "",
+      coordinates: [55.751574, 37.573856] as [number, number],
+      area: "",
+      floor: "",
+      totalFloors: "",
+      rooms: "",
+      hasFurniture: false,
+      hasAppliances: false,
+      rent: "",
+      comments: "",
+    });
+    setPhotos([]);
+    setStep("invite");
+
     toast({
       title: "Предложение отправлено!",
-      description: "Арендатор получит уведомление о вашей рекомендации",
+      description: "Можете предложить ещё варианты по этой заявке",
     });
     
-    navigate("/dashboard", { state: { activeSection: "feed" } });
+    if (!requestData?.requestId) {
+      navigate("/dashboard", { state: { activeSection: "feed" } });
+    }
   };
 
   return (

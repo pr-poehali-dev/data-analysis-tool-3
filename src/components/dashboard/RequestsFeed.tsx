@@ -105,12 +105,12 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   const [filtersApplied, setFiltersApplied] = useState(false);
   const itemsPerPage = 6;
 
-  const hasAlreadySuggested = (requestId: string) => {
-    if (!currentUserEmail || !requestId) return false;
+  const getSuggestionsCount = (requestId: string): number => {
+    if (!currentUserEmail || !requestId) return 0;
     const recommendations = recommendationsStore.getRecommendations();
-    return recommendations.some(
+    return recommendations.filter(
       rec => rec.requestId === requestId && rec.userId === currentUserEmail
-    );
+    ).length;
   };
 
   const getSortedCities = () => {
@@ -251,7 +251,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             request={request}
             index={index}
             handleSuggestClick={handleSuggestClick}
-            alreadySuggested={hasAlreadySuggested(request.id)}
+            suggestionsCount={getSuggestionsCount(request.id)}
             fromDashboard={isAuthenticated}
           />
         ))}
