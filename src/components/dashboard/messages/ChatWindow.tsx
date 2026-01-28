@@ -22,6 +22,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
   const [viewerImages, setViewerImages] = useState<string[]>([]);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [showViewer, setShowViewer] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
@@ -89,6 +90,16 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
     }
   };
 
+  const copyToClipboard = async (text: string, messageId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="bg-white border-b border-border p-4">
@@ -137,41 +148,58 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
-                    <div
-                      className={`rounded-2xl px-4 py-2 ${
-                        isOwn
-                          ? "bg-primary text-white rounded-br-sm"
-                          : "bg-white border border-border rounded-bl-sm"
-                      }`}
-                    >
-                      {message.photos && message.photos.length > 0 && (
-                        <div className={`grid gap-2 mb-2 ${
-                          message.photos.length === 1 ? 'grid-cols-1' :
-                          message.photos.length === 2 ? 'grid-cols-2' :
-                          'grid-cols-2'
-                        }`}>
-                          {message.photos.map((photo, photoIndex) => (
-                            <img
-                              key={photoIndex}
-                              src={photo}
-                              alt={`Фото ${photoIndex + 1}`}
-                              className="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => {
-                                setViewerImages(message.photos || []);
-                                setViewerIndex(photoIndex);
-                                setShowViewer(true);
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                  <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col group`}>
+                    <div className={`relative ${isOwn ? "flex flex-col items-end" : "flex flex-col items-start"}`}>
+                      <div
+                        className={`rounded-2xl px-4 py-2 ${
+                          isOwn
+                            ? "bg-primary text-white rounded-br-sm"
+                            : "bg-white border border-border rounded-bl-sm"
+                        }`}
+                      >
+                        {message.photos && message.photos.length > 0 && (
+                          <div className={`grid gap-2 mb-2 ${
+                            message.photos.length === 1 ? 'grid-cols-1' :
+                            message.photos.length === 2 ? 'grid-cols-2' :
+                            'grid-cols-2'
+                          }`}>
+                            {message.photos.map((photo, photoIndex) => (
+                              <img
+                                key={photoIndex}
+                                src={photo}
+                                alt={`Фото ${photoIndex + 1}`}
+                                className="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => {
+                                  setViewerImages(message.photos || []);
+                                  setViewerIndex(photoIndex);
+                                  setShowViewer(true);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        {message.text && (
+                          <p className="text-sm whitespace-pre-wrap break-words">
+                            {message.text}
+                          </p>
+                        )}
+                      </div>
+                      
                       {message.text && (
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {message.text}
-                        </p>
+                        <button
+                          onClick={() => copyToClipboard(message.text, message.id)}
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity mt-1 px-2 py-1 rounded text-xs flex items-center gap-1 ${
+                            isOwn 
+                              ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          <Icon name={copiedMessageId === message.id ? "Check" : "Copy"} size={12} />
+                          <span>{copiedMessageId === message.id ? "Скопировано" : "Копировать"}</span>
+                        </button>
                       )}
                     </div>
+                    
                     <span className="text-xs text-muted-foreground mt-1 px-2">
                       {format(message.createdAt, "HH:mm", { locale: ru })}
                     </span>
