@@ -23,8 +23,10 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
   const [viewerIndex, setViewerIndex] = useState(0);
   const [showViewer, setShowViewer] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
 
@@ -32,13 +34,24 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
     const loadMessages = () => {
       const chatMessages = messagesStore.getMessages(chat.id);
       setMessages(chatMessages);
+      
+      const typing = messagesStore.getTypingUsers(chat.id, currentUserEmail);
+      setTypingUsers(typing);
     };
 
     loadMessages();
     messagesStore.markChatAsRead(chat.id, currentUserEmail);
 
+    const cleanupInterval = setInterval(() => {
+      messagesStore.cleanupOldTypingStatuses();
+      loadMessages();
+    }, 2000);
+
     const unsubscribe = messagesStore.subscribe(loadMessages);
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      clearInterval(cleanupInterval);
+    };
   }, [chat.id, currentUserEmail]);
 
   useEffect(() => {
@@ -77,6 +90,12 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
       photos: photoUrls.length > 0 ? photoUrls : undefined,
     });
 
+    messagesStore.clearTyping(chat.id, currentUserEmail);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+
     setNewMessage("");
     setAttachedPhotos([]);
     previewUrls.forEach(url => URL.revokeObjectURL(url));
@@ -88,6 +107,18 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleTyping = () => {
+    messagesStore.setTyping(chat.id, currentUserEmail, currentUserName);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      messagesStore.clearTyping(chat.id, currentUserEmail);
+    }, 3000);
   };
 
   const copyToClipboard = async (text: string, messageId: string) => {
@@ -209,6 +240,39 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
             );
           })
         )}
+        
+        {typingUsers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="flex justify-start"
+          >
+            <div className="bg-white border border-border rounded-2xl rounded-bl-sm px-4 py-2 flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {typingUsers.join(', ')} печатает
+              </span>
+              <div className="flex gap-1">
+                <motion.span
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                  className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                />
+                <motion.span
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                  className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                />
+                <motion.span
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                  className="w-1.5 h-1.5 bg-muted-foreground rounded-full"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -255,7 +319,10 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
           
           <Textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
             onKeyDown={handleKeyPress}
             placeholder="Напишите сообщение..."
             className="resize-none"

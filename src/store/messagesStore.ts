@@ -26,6 +26,14 @@ export interface Chat {
 
 const MESSAGES_STORAGE_KEY = 'sovietpay_messages';
 const CHATS_STORAGE_KEY = 'sovietpay_chats';
+const TYPING_STORAGE_KEY = 'sovietpay_typing';
+
+interface TypingStatus {
+  chatId: string;
+  userEmail: string;
+  userName: string;
+  timestamp: number;
+}
 
 class MessagesStore {
   private listeners: Set<() => void> = new Set();
@@ -166,6 +174,73 @@ class MessagesStore {
 
   private notifyListeners() {
     this.listeners.forEach(listener => listener());
+  }
+
+  setTyping(chatId: string, userEmail: string, userName: string): void {
+    if (typeof window === 'undefined') return;
+    
+    const typingStatuses = this.getTypingStatuses();
+    const existingIndex = typingStatuses.findIndex(
+      t => t.chatId === chatId && t.userEmail === userEmail
+    );
+
+    const newStatus: TypingStatus = {
+      chatId,
+      userEmail,
+      userName,
+      timestamp: Date.now(),
+    };
+
+    if (existingIndex !== -1) {
+      typingStatuses[existingIndex] = newStatus;
+    } else {
+      typingStatuses.push(newStatus);
+    }
+
+    localStorage.setItem(TYPING_STORAGE_KEY, JSON.stringify(typingStatuses));
+    this.notifyListeners();
+  }
+
+  clearTyping(chatId: string, userEmail: string): void {
+    if (typeof window === 'undefined') return;
+    
+    const typingStatuses = this.getTypingStatuses();
+    const filtered = typingStatuses.filter(
+      t => !(t.chatId === chatId && t.userEmail === userEmail)
+    );
+    
+    localStorage.setItem(TYPING_STORAGE_KEY, JSON.stringify(filtered));
+    this.notifyListeners();
+  }
+
+  getTypingUsers(chatId: string, excludeUserEmail: string): string[] {
+    const now = Date.now();
+    const typingStatuses = this.getTypingStatuses();
+    
+    return typingStatuses
+      .filter(
+        t => t.chatId === chatId && 
+        t.userEmail !== excludeUserEmail && 
+        (now - t.timestamp) < 5000
+      )
+      .map(t => t.userName);
+  }
+
+  private getTypingStatuses(): TypingStatus[] {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem(TYPING_STORAGE_KEY);
+    if (!stored) return [];
+    return JSON.parse(stored);
+  }
+
+  cleanupOldTypingStatuses(): void {
+    if (typeof window === 'undefined') return;
+    
+    const now = Date.now();
+    const typingStatuses = this.getTypingStatuses();
+    const filtered = typingStatuses.filter(t => (now - t.timestamp) < 10000);
+    
+    localStorage.setItem(TYPING_STORAGE_KEY, JSON.stringify(filtered));
   }
 }
 
