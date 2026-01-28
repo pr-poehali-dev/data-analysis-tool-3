@@ -4,10 +4,12 @@ import Icon from "@/components/ui/icon";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { DashboardRequestsSection } from "@/components/dashboard/DashboardRequestsSection";
 import { DashboardRecommendationsSection } from "@/components/dashboard/DashboardRecommendationsSection";
+import { DashboardMessagesSection } from "@/components/dashboard/DashboardMessagesSection";
 import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSections";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
+import { messagesStore } from "@/store/messagesStore";
 
 interface DashboardProps {
   user: {
@@ -43,6 +45,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [activeSection, setActiveSection] = useState<string>("feed");
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [userRecommendations, setUserRecommendations] = useState<Recommendation[]>([]);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   useEffect(() => {
     if (location.state?.activeSection) {
@@ -69,6 +72,17 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
     updateUserRecommendations();
     const unsubscribe = recommendationsStore.subscribe(updateUserRecommendations);
+    return unsubscribe;
+  }, [user.email]);
+
+  useEffect(() => {
+    const updateUnreadCount = () => {
+      const count = messagesStore.getTotalUnreadCount(user.email);
+      setUnreadMessagesCount(count);
+    };
+
+    updateUnreadCount();
+    const unsubscribe = messagesStore.subscribe(updateUnreadCount);
     return unsubscribe;
   }, [user.email]);
 
@@ -101,6 +115,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return <DashboardRequestsSection userRequests={userRequests} />;
       case "recommendations":
         return <DashboardRecommendationsSection userRecommendations={userRecommendations} />;
+      case "messages":
+        return <DashboardMessagesSection user={user} />;
       default:
         return <DashboardOtherSections activeSection={activeSection} user={user} />;
     }
@@ -120,7 +136,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 key={item.id}
                 onClick={() => handleMenuClick(item.id)}
                 type="button"
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap relative ${
                   activeSection === item.id
                     ? "bg-primary text-white"
                     : "text-foreground hover:bg-gray-100"
@@ -128,6 +144,11 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
               >
                 <Icon name={item.icon} size={18} />
                 <span className="text-sm font-medium">{item.label}</span>
+                {item.id === "messages" && unreadMessagesCount > 0 && (
+                  <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                    {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                  </span>
+                )}
               </button>
             ))}
           </nav>

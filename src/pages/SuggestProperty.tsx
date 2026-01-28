@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { YandexMap } from "@/components/map/YandexMap";
 import { authStore } from "@/store/authStore";
 import { recommendationsStore } from "@/store/recommendationsStore";
+import { messagesStore } from "@/store/messagesStore";
+import { requestsStore } from "@/store/requestsStore";
 
 type Step = "invite" | "property";
 
@@ -93,7 +95,7 @@ export const SuggestProperty = () => {
 
     const photoUrls = photos.map(photo => URL.createObjectURL(photo));
 
-    recommendationsStore.addRecommendation({
+    const recommendation = recommendationsStore.addRecommendation({
       userId: user.email,
       requestId: requestData?.requestId,
       requestName: requestData?.requestName,
@@ -109,6 +111,24 @@ export const SuggestProperty = () => {
       },
       photos: photoUrls,
     });
+
+    if (requestData?.requestId) {
+      const request = requestsStore.getRequests().find(r => r.id === requestData.requestId);
+      if (request) {
+        const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
+        if (!existingChat) {
+          messagesStore.createChat({
+            recommendationId: recommendation.id,
+            requestId: requestData.requestId,
+            requestName: requestData.requestName || request.name,
+            recommenderEmail: user.email,
+            recommenderName: `${user.firstName} ${user.lastName}`,
+            tenantEmail: request.email,
+            tenantName: request.name,
+          });
+        }
+      }
+    }
 
     setInviteEmail("");
     setInviteMessage("Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект.");

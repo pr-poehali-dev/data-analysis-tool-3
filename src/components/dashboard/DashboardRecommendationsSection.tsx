@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Recommendation, recommendationsStore } from "@/store/recommendationsStore";
+import { messagesStore } from "@/store/messagesStore";
 import {
   Select,
   SelectContent,
@@ -105,6 +106,21 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
               )}
 
               <div className="flex gap-2 pt-2 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const chat = messagesStore.getChatByRecommendation(recommendation.id);
+                    if (chat) {
+                      navigate('/dashboard', { state: { activeSection: 'messages' } });
+                    }
+                  }}
+                  className="h-8 text-xs flex-1"
+                  disabled={!messagesStore.getChatByRecommendation(recommendation.id)}
+                >
+                  <Icon name="MessageSquare" size={14} className="mr-1" />
+                  Написать
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
