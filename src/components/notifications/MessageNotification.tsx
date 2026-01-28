@@ -1,14 +1,18 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { messagesStore, Message } from "@/store/messagesStore";
 import { useNavigate } from "react-router-dom";
+import { getSoundSettings } from "@/components/dashboard/DashboardSettingsSection";
 
 interface NotificationItem extends Message {
   chatName: string;
 }
 
 const createNotificationSound = () => {
+  const settings = getSoundSettings();
+  if (!settings.messageNotifications) return;
+  
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();

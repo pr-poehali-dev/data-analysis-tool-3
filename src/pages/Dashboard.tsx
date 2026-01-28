@@ -5,6 +5,7 @@ import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { DashboardRequestsSection } from "@/components/dashboard/DashboardRequestsSection";
 import { DashboardRecommendationsSection } from "@/components/dashboard/DashboardRecommendationsSection";
 import { DashboardMessagesSection } from "@/components/dashboard/DashboardMessagesSection";
+import { DashboardSettingsSection } from "@/components/dashboard/DashboardSettingsSection";
 import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSections";
 import { MessageNotification } from "@/components/notifications/MessageNotification";
 import { PortfolioNavbar, Footer } from "@/components/landing";
@@ -118,6 +119,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return <DashboardRecommendationsSection userRecommendations={userRecommendations} />;
       case "messages":
         return <DashboardMessagesSection user={user} />;
+      case "settings":
+        return <DashboardSettingsSection user={user} />;
       default:
         return <DashboardOtherSections activeSection={activeSection} user={user} />;
     }
