@@ -117,14 +117,19 @@ export const SuggestProperty = () => {
       if (request) {
         const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
         if (!existingChat) {
+          const tenantUser = authStore.getUser();
+          const tenantPhoto = tenantUser?.email === request.email ? tenantUser.photo : undefined;
+          
           messagesStore.createChat({
             recommendationId: recommendation.id,
             requestId: requestData.requestId,
             requestName: requestData.requestName || request.name,
             recommenderEmail: user.email,
             recommenderName: `${user.firstName} ${user.lastName}`,
+            recommenderPhoto: user.photo,
             tenantEmail: request.email,
             tenantName: request.name,
+            tenantPhoto: tenantPhoto,
           });
         }
       }

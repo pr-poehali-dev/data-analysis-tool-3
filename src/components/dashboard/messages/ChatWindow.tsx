@@ -12,9 +12,10 @@ interface ChatWindowProps {
   chat: Chat;
   currentUserEmail: string;
   currentUserName: string;
+  currentUserPhoto?: string;
 }
 
-export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWindowProps) => {
+export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUserPhoto }: ChatWindowProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [attachedPhotos, setAttachedPhotos] = useState<File[]>([]);
@@ -29,6 +30,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
+  const otherUserPhoto = isRecommender ? chat.tenantPhoto : chat.recommenderPhoto;
 
   useEffect(() => {
     const loadMessages = () => {
@@ -86,6 +88,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
       chatId: chat.id,
       senderId: currentUserEmail,
       senderName: currentUserName,
+      senderPhoto: currentUserPhoto,
       text: newMessage.trim() || '',
       photos: photoUrls.length > 0 ? photoUrls : undefined,
     });
@@ -135,9 +138,17 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
     <div className="flex flex-col h-full">
       <div className="bg-white border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-            <Icon name="User" size={18} className="text-primary" />
-          </div>
+          {otherUserPhoto ? (
+            <img
+              src={otherUserPhoto}
+              alt={otherUserName}
+              className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+              <Icon name="User" size={18} className="text-primary" />
+            </div>
+          )}
           <div>
             <h3 className="font-semibold text-foreground">{otherUserName}</h3>
             <p className="text-xs text-muted-foreground">{chat.requestName}</p>
@@ -177,8 +188,22 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                  className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}
                 >
+                  {!isOwn && (
+                    message.senderPhoto ? (
+                      <img
+                        src={message.senderPhoto}
+                        alt={message.senderName}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-border"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Icon name="User" size={14} className="text-primary" />
+                      </div>
+                    )
+                  )}
+                  
                   <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col group`}>
                     <div className={`relative ${isOwn ? "flex flex-col items-end" : "flex flex-col items-start"}`}>
                       <div

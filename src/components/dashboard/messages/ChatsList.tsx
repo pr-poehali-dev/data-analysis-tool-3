@@ -31,6 +31,7 @@ export const ChatsList = ({ chats, selectedChatId, onChatSelect, currentUserEmai
       {chats.map((chat, index) => {
         const isRecommender = chat.recommenderEmail === currentUserEmail;
         const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
+        const otherUserPhoto = isRecommender ? chat.tenantPhoto : chat.recommenderPhoto;
         const unreadCount = chat.unreadCount || 0;
 
         return (
@@ -47,9 +48,17 @@ export const ChatsList = ({ chats, selectedChatId, onChatSelect, currentUserEmai
             }`}
           >
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <Icon name="User" size={20} className="text-primary" />
-              </div>
+              {otherUserPhoto ? (
+                <img
+                  src={otherUserPhoto}
+                  alt={otherUserName}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/20"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Icon name="User" size={20} className="text-primary" />
+                </div>
+              )}
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">

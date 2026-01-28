@@ -138,9 +138,19 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <User size={18} />
-                  <span>{user.firstName} {user.lastName}</span>
+                <div className="flex items-center gap-3 text-sm text-foreground">
+                  {user.photo ? (
+                    <img
+                      src={user.photo}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-primary"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary">
+                      <User size={20} className="text-primary" />
+                    </div>
+                  )}
+                  <span className="font-medium">{user.firstName} {user.lastName}</span>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -202,8 +212,18 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
               <div className={showNavigation ? "pt-4 border-t border-border" : ""}>
                 {user ? (
                   <>
-                    <div className="flex items-center gap-2 text-foreground mb-4 px-3">
-                      <User size={20} />
+                    <div className="flex items-center gap-3 text-foreground mb-4 px-3">
+                      {user.photo ? (
+                        <img
+                          src={user.photo}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-primary"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary">
+                          <User size={24} className="text-primary" />
+                        </div>
+                      )}
                       <span className="font-medium">{user.firstName} {user.lastName}</span>
                     </div>
                     <button

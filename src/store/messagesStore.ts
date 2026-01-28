@@ -3,6 +3,7 @@ export interface Message {
   chatId: string;
   senderId: string;
   senderName: string;
+  senderPhoto?: string;
   text: string;
   photos?: string[];
   createdAt: Date;
@@ -16,8 +17,10 @@ export interface Chat {
   requestName: string;
   recommenderEmail: string;
   recommenderName: string;
+  recommenderPhoto?: string;
   tenantEmail: string;
   tenantName: string;
+  tenantPhoto?: string;
   lastMessage?: string;
   lastMessageTime?: Date;
   unreadCount: number;

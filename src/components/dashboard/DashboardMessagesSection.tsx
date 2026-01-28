@@ -9,6 +9,7 @@ interface DashboardMessagesSectionProps {
     firstName: string;
     lastName: string;
     email: string;
+    photo?: string;
   };
 }
 
@@ -57,6 +58,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
               chat={selectedChat}
               currentUserEmail={user.email}
               currentUserName={`${user.firstName} ${user.lastName}`}
+              currentUserPhoto={user.photo}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
