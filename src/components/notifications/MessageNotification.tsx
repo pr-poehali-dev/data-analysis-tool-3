@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { messagesStore, Message } from "@/store/messagesStore";
@@ -7,6 +7,24 @@ import { useNavigate } from "react-router-dom";
 interface NotificationItem extends Message {
   chatName: string;
 }
+
+const createNotificationSound = () => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  oscillator.frequency.value = 800;
+  oscillator.type = 'sine';
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.3);
+};
 
 export const MessageNotification = ({ userEmail }: { userEmail: string }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -38,6 +56,12 @@ export const MessageNotification = ({ userEmail }: { userEmail: string }) => {
         });
 
         if (newMessages.length > 0) {
+          try {
+            createNotificationSound();
+          } catch (err) {
+            console.log('Audio play failed:', err);
+          }
+          
           setNotifications(prev => [...prev, ...newMessages]);
           
           newMessages.forEach(msg => {
