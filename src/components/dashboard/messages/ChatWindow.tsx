@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageViewer } from "@/components/ui/image-viewer";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -16,7 +17,13 @@ interface ChatWindowProps {
 export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWindowProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [attachedPhotos, setAttachedPhotos] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [showViewer, setShowViewer] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
 
@@ -37,17 +44,42 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handlePhotoAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (attachedPhotos.length + files.length > 5) {
+      alert('Максимум 5 фотографий за раз');
+      return;
+    }
+    
+    setAttachedPhotos([...attachedPhotos, ...files]);
+    
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls([...previewUrls, ...urls]);
+  };
+
+  const removePhoto = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setAttachedPhotos(attachedPhotos.filter((_, i) => i !== index));
+    setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+  };
+
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && attachedPhotos.length === 0) return;
+
+    const photoUrls = attachedPhotos.map(photo => URL.createObjectURL(photo));
 
     messagesStore.sendMessage({
       chatId: chat.id,
       senderId: currentUserEmail,
       senderName: currentUserName,
-      text: newMessage.trim(),
+      text: newMessage.trim() || '',
+      photos: photoUrls.length > 0 ? photoUrls : undefined,
     });
 
     setNewMessage("");
+    setAttachedPhotos([]);
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -113,9 +145,32 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
                           : "bg-white border border-border rounded-bl-sm"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {message.text}
-                      </p>
+                      {message.photos && message.photos.length > 0 && (
+                        <div className={`grid gap-2 mb-2 ${
+                          message.photos.length === 1 ? 'grid-cols-1' :
+                          message.photos.length === 2 ? 'grid-cols-2' :
+                          'grid-cols-2'
+                        }`}>
+                          {message.photos.map((photo, photoIndex) => (
+                            <img
+                              key={photoIndex}
+                              src={photo}
+                              alt={`Фото ${photoIndex + 1}`}
+                              className="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => {
+                                setViewerImages(message.photos || []);
+                                setViewerIndex(photoIndex);
+                                setShowViewer(true);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {message.text && (
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {message.text}
+                        </p>
+                      )}
                     </div>
                     <span className="text-xs text-muted-foreground mt-1 px-2">
                       {format(message.createdAt, "HH:mm", { locale: ru })}
@@ -130,7 +185,46 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
       </div>
 
       <div className="bg-white border-t border-border p-4">
+        {previewUrls.length > 0 && (
+          <div className="flex gap-2 mb-3 flex-wrap">
+            {previewUrls.map((url, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={url}
+                  alt={`Превью ${index + 1}`}
+                  className="w-20 h-20 object-cover rounded-lg border border-border"
+                />
+                <button
+                  onClick={() => removePhoto(index)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  <Icon name="X" size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        
         <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePhotoAttach}
+            className="hidden"
+          />
+          
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="self-end"
+          >
+            <Icon name="Image" size={18} />
+          </Button>
+          
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -139,18 +233,29 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName }: ChatWind
             className="resize-none"
             rows={2}
           />
+          
           <Button
             onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() && attachedPhotos.length === 0}
             className="self-end"
           >
             <Icon name="Send" size={18} />
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Нажмите Enter для отправки, Shift+Enter для новой строки
+          Нажмите Enter для отправки, Shift+Enter для новой строки. Можно прикрепить до 5 фото
         </p>
       </div>
+
+      {showViewer && (
+        <ImageViewer
+          images={viewerImages}
+          currentIndex={viewerIndex}
+          onClose={() => setShowViewer(false)}
+          onNext={() => setViewerIndex((viewerIndex + 1) % viewerImages.length)}
+          onPrev={() => setViewerIndex((viewerIndex - 1 + viewerImages.length) % viewerImages.length)}
+        />
+      )}
     </div>
   );
 };

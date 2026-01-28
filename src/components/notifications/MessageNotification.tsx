@@ -96,9 +96,17 @@ export const MessageNotification = ({ userEmail }: { userEmail: string }) => {
                     <Icon name="X" size={16} />
                   </button>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {notification.text}
-                </p>
+                {notification.photos && notification.photos.length > 0 ? (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Icon name="Image" size={14} />
+                    <span>Фото ({notification.photos.length})</span>
+                    {notification.text && <span className="ml-1">· {notification.text}</span>}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {notification.text}
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>

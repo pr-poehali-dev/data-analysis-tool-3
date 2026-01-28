@@ -4,6 +4,7 @@ export interface Message {
   senderId: string;
   senderName: string;
   text: string;
+  photos?: string[];
   createdAt: Date;
   read: boolean;
 }
