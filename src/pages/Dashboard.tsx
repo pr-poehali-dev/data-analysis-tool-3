@@ -21,6 +21,8 @@ interface DashboardProps {
     email: string;
     phone: string;
     city?: string;
+    photo?: string;
+    vkLink?: string;
   };
   onLogout: () => void;
 }

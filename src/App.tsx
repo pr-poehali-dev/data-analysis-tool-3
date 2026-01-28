@@ -28,6 +28,8 @@ const AppContent = () => {
     email: string;
     phone: string;
     city?: string;
+    photo?: string;
+    vkLink?: string;
   } | null>(null);
 
   useEffect(() => {

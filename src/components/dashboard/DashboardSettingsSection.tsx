@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { authStore } from "@/store/authStore";
 
 interface DashboardSettingsSectionProps {
   user: {
@@ -9,6 +11,9 @@ interface DashboardSettingsSectionProps {
     email: string;
     phone: string;
     role: "tenant" | "recommender" | "landlord";
+    city?: string;
+    photo?: string;
+    vkLink?: string;
   };
 }
 
@@ -32,14 +37,50 @@ const saveSettings = (settings: SoundSettings) => {
 
 export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    city: user.city || '',
+    photo: user.photo || '',
+    vkLink: user.vkLink || '',
+  });
 
   useEffect(() => {
     const settings = getSettings();
     setSoundEnabled(settings.messageNotifications);
   }, []);
 
-  const handleSave = () => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, photo: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    authStore.updateUser({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      city: formData.city,
+      photo: formData.photo,
+      vkLink: formData.vkLink,
+    });
+    setIsEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleSoundSettings = () => {
     const settings: SoundSettings = {
       messageNotifications: soundEnabled,
     };
@@ -48,46 +89,205 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const handleCancel = () => {
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      city: user.city || '',
+      photo: user.photo || '',
+      vkLink: user.vkLink || '',
+    });
+    setIsEditing(false);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-foreground mb-6">Настройки профиля</h2>
       
       <div className="space-y-6">
         <div className="bg-white rounded-lg border border-border p-6">
-          <h3 className="text-xl font-semibold text-foreground mb-4">Информация о пользователе</h3>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Icon name="User" size={18} className="text-muted-foreground" />
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold text-foreground">Информация о пользователе</h3>
+            {!isEditing && (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                <Icon name="Edit" size={16} />
+                Редактировать
+              </Button>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="relative">
+                {formData.photo ? (
+                  <img
+                    src={formData.photo}
+                    alt="Фото профиля"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
+                    <Icon name="User" size={40} className="text-primary" />
+                  </div>
+                )}
+                {isEditing && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors"
+                  >
+                    <Icon name="Camera" size={16} />
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+              </div>
+              
+              {isEditing && (
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Нажмите на иконку камеры, чтобы загрузить фото профиля
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Имя</p>
-                <p className="font-medium">{user.firstName} {user.lastName}</p>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Icon name="User" size={16} className="inline mr-2" />
+                  Имя
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    placeholder="Введите имя"
+                  />
+                ) : (
+                  <p className="font-medium text-foreground">{user.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Icon name="User" size={16} className="inline mr-2" />
+                  Фамилия
+                </label>
+                {isEditing ? (
+                  <Input
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    placeholder="Введите фамилию"
+                  />
+                ) : (
+                  <p className="font-medium text-foreground">{user.lastName}</p>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Icon name="Mail" size={18} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                <Icon name="Mail" size={16} className="inline mr-2" />
+                Email
+              </label>
+              {isEditing ? (
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Введите email"
+                />
+              ) : (
+                <p className="font-medium text-foreground">{user.email}</p>
+              )}
             </div>
-            <div className="flex items-center gap-3">
-              <Icon name="Phone" size={18} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Телефон</p>
-                <p className="font-medium">{user.phone}</p>
-              </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                <Icon name="Phone" size={16} className="inline mr-2" />
+                Телефон
+              </label>
+              <p className="font-medium text-muted-foreground">{user.phone} (нельзя изменить)</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Icon name="Briefcase" size={18} className="text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Роль</p>
-                <p className="font-medium">
-                  {user.role === 'tenant' && 'Арендатор'}
-                  {user.role === 'recommender' && 'Рекомендатель'}
-                  {user.role === 'landlord' && 'Арендодатель'}
-                </p>
-              </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                <Icon name="MapPin" size={16} className="inline mr-2" />
+                Город
+              </label>
+              {isEditing ? (
+                <Input
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="Введите город"
+                />
+              ) : (
+                <p className="font-medium text-foreground">{user.city || 'Не указан'}</p>
+              )}
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                <svg className="inline w-4 h-4 mr-2" viewBox="0 0 48 48" fill="currentColor">
+                  <path d="M0 23.04C0 12.1788 0 6.74826 3.37413 3.37413C6.74826 0 12.1788 0 23.04 0H24.96C35.8212 0 41.2517 0 44.6259 3.37413C48 6.74826 48 12.1788 48 23.04V24.96C48 35.8212 48 41.2517 44.6259 44.6259C41.2517 48 35.8212 48 24.96 48H23.04C12.1788 48 6.74826 48 3.37413 44.6259C0 41.2517 0 35.8212 0 24.96V23.04Z" fill="#0077FF"/>
+                  <path d="M25.54 34.5801C14.6 34.5801 8.3601 27.0801 8.1001 14.6001H13.5801C13.7601 23.7601 17.8 27.6401 21.2 28.4401V14.6001H26.1801V22.5001C29.5401 22.1601 32.9601 18.5601 34.1001 14.6001H39.0801C38.2601 19.4801 34.4601 23.0801 31.8 24.5601C34.4601 25.7401 38.7801 28.9201 40.5001 34.5801H35.0601C33.7001 30.6801 30.5601 27.6601 26.1801 27.2401V34.5801H25.54Z" fill="white"/>
+                </svg>
+                ВКонтакте
+              </label>
+              {isEditing ? (
+                <Input
+                  value={formData.vkLink}
+                  onChange={(e) => setFormData({ ...formData, vkLink: e.target.value })}
+                  placeholder="https://vk.com/username"
+                />
+              ) : (
+                <div>
+                  {user.vkLink ? (
+                    <a
+                      href={user.vkLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {user.vkLink}
+                    </a>
+                  ) : (
+                    <p className="font-medium text-muted-foreground">Не указана</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                <Icon name="Briefcase" size={16} className="inline mr-2" />
+                Роль
+              </label>
+              <p className="font-medium text-foreground">
+                {user.role === 'tenant' && 'Арендатор'}
+                {user.role === 'recommender' && 'Рекомендатель'}
+                {user.role === 'landlord' && 'Арендодатель'}
+              </p>
+            </div>
+
+            {isEditing && (
+              <div className="flex gap-3 pt-4">
+                <Button onClick={handleSaveProfile} className="flex-1">
+                  <Icon name="Check" size={18} />
+                  Сохранить изменения
+                </Button>
+                <Button variant="outline" onClick={handleCancel} className="flex-1">
+                  <Icon name="X" size={18} />
+                  Отмена
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -118,7 +318,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
               </button>
             </div>
 
-            <Button onClick={handleSave} className="w-full">
+            <Button onClick={handleSoundSettings} className="w-full">
               <Icon name={saved ? "Check" : "Save"} size={18} />
               {saved ? "Сохранено!" : "Сохранить настройки"}
             </Button>

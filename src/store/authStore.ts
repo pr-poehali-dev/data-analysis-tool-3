@@ -5,6 +5,8 @@ type User = {
   email: string;
   phone: string;
   city?: string;
+  photo?: string;
+  vkLink?: string;
 } | null;
 
 let currentUser: User = null;
@@ -42,6 +44,14 @@ export const authStore = {
   isRecommender: (): boolean => {
     const user = authStore.getUser();
     return user?.role === "recommender";
+  },
+
+  updateUser: (updates: Partial<NonNullable<User>>) => {
+    const current = authStore.getUser();
+    if (current) {
+      const updated = { ...current, ...updates };
+      authStore.setUser(updated);
+    }
   },
 
   logout: () => {
