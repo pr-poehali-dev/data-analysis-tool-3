@@ -6,6 +6,7 @@ import { DashboardRequestsSection } from "@/components/dashboard/DashboardReques
 import { DashboardRecommendationsSection } from "@/components/dashboard/DashboardRecommendationsSection";
 import { DashboardMessagesSection } from "@/components/dashboard/DashboardMessagesSection";
 import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSections";
+import { MessageNotification } from "@/components/notifications/MessageNotification";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
@@ -124,6 +125,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   return (
     <div className="min-h-screen bg-background">
+      <MessageNotification userEmail={user.email} />
+      
       <div className="fixed top-0 left-0 right-0 z-50 bg-background">
         <PortfolioNavbar onLogout={onLogout} showNavigation={false} />
       </div>
