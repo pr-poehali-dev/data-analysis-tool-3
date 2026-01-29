@@ -119,6 +119,7 @@ export const SuggestProperty = () => {
         if (!existingChat) {
           const tenantUser = authStore.getUser();
           const tenantPhoto = tenantUser?.email === request.email ? tenantUser.photo : undefined;
+          const tenantVkLink = tenantUser?.email === request.email ? tenantUser.vkLink : undefined;
           
           messagesStore.createChat({
             recommendationId: recommendation.id,
@@ -127,9 +128,11 @@ export const SuggestProperty = () => {
             recommenderEmail: user.email,
             recommenderName: `${user.firstName} ${user.lastName}`,
             recommenderPhoto: user.photo,
+            recommenderVkLink: user.vkLink,
             tenantEmail: request.email,
             tenantName: request.name,
             tenantPhoto: tenantPhoto,
+            tenantVkLink: tenantVkLink,
           });
         }
       }

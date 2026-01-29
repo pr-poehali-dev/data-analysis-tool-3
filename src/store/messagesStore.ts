@@ -18,9 +18,11 @@ export interface Chat {
   recommenderEmail: string;
   recommenderName: string;
   recommenderPhoto?: string;
+  recommenderVkLink?: string;
   tenantEmail: string;
   tenantName: string;
   tenantPhoto?: string;
+  tenantVkLink?: string;
   lastMessage?: string;
   lastMessageTime?: Date;
   unreadCount: number;

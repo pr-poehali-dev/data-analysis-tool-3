@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageViewer } from "@/components/ui/image-viewer";
+import { UserProfileModal } from "./UserProfileModal";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -25,12 +26,15 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const [showViewer, setShowViewer] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
   const otherUserPhoto = isRecommender ? chat.tenantPhoto : chat.recommenderPhoto;
+  const otherUserEmail = isRecommender ? chat.tenantEmail : chat.recommenderEmail;
+  const otherUserVkLink = isRecommender ? chat.tenantVkLink : chat.recommenderVkLink;
 
   useEffect(() => {
     const loadMessages = () => {
@@ -138,21 +142,29 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
     <div className="flex flex-col h-full">
       <div className="bg-white border-b border-border p-4">
         <div className="flex items-center gap-3">
-          {otherUserPhoto ? (
-            <img
-              src={otherUserPhoto}
-              alt={otherUserName}
-              className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
-            />
-          ) : (
-            <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-              <Icon name="User" size={18} className="text-primary" />
-            </div>
-          )}
-          <div>
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+          >
+            {otherUserPhoto ? (
+              <img
+                src={otherUserPhoto}
+                alt={otherUserName}
+                className="w-10 h-10 rounded-full object-cover border-2 border-primary/20 cursor-pointer"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center cursor-pointer">
+                <Icon name="User" size={18} className="text-primary" />
+              </div>
+            )}
+          </button>
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className="flex-1 text-left hover:opacity-80 transition-opacity"
+          >
             <h3 className="font-semibold text-foreground">{otherUserName}</h3>
             <p className="text-xs text-muted-foreground">{chat.requestName}</p>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -376,6 +388,17 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           onPrev={() => setViewerIndex((viewerIndex - 1 + viewerImages.length) % viewerImages.length)}
         />
       )}
+
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={{
+          name: otherUserName,
+          email: otherUserEmail,
+          photo: otherUserPhoto,
+          vkLink: otherUserVkLink,
+        }}
+      />
     </div>
   );
 };
