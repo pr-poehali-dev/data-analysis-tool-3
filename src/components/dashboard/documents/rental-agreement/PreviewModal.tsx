@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
+import { generateDOCX } from "./DOCXGenerator";
 
 interface PreviewModalProps {
   formData: RentalAgreementData;
@@ -17,7 +18,6 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
   const handleDownload = async () => {
     try {
       setIsDownloading(true);
-      const { generateDOCX } = await import("./DOCXGenerator");
       const docId = await generateDOCX(formData, documentId);
       if (onDocumentSaved) {
         onDocumentSaved(docId);
