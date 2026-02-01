@@ -131,27 +131,27 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDownload(doc)}
-                  className="whitespace-nowrap"
+                  className="whitespace-nowrap flex items-center justify-start"
                 >
-                  <Icon name="Download" size={14} className="mr-2" />
+                  <Icon name="Download" size={16} className="mr-2" />
                   Скачать
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onEdit(doc)}
-                  className="whitespace-nowrap"
+                  className="whitespace-nowrap flex items-center justify-start"
                 >
-                  <Icon name="Edit" size={14} className="mr-2" />
+                  <Icon name="Edit" size={16} className="mr-2" />
                   Изменить
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(doc.id)}
-                  className="whitespace-nowrap text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="whitespace-nowrap flex items-center justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
-                  <Icon name="Trash2" size={14} className="mr-2" />
+                  <Icon name="Trash2" size={16} className="mr-2" />
                   Удалить
                 </Button>
               </div>
