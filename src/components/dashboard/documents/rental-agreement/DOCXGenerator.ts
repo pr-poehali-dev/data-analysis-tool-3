@@ -1,3 +1,5 @@
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
+import { saveAs } from "file-saver";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
@@ -5,15 +7,6 @@ export const generateDOCX = async (formData: RentalAgreementData, existingDocId?
   console.log('Начало генерации DOCX...');
   
   try {
-    console.log('Импорт библиотеки docx...');
-    const docx = await import("docx");
-    const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = docx;
-    console.log('Библиотека docx импортирована успешно');
-    
-    console.log('Импорт библиотеки file-saver...');
-    const fileSaver = await import("file-saver");
-    const { saveAs } = fileSaver;
-    console.log('Библиотека file-saver импортирована успешно');
   const petsText = formData.petsAllowed === "allowed" 
     ? "Содержание домашних животных разрешено."
     : formData.petsAllowed === "with-agreement"
