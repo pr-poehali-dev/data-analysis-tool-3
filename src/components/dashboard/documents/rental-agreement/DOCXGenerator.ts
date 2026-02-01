@@ -4,10 +4,11 @@ import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
 export const generateDOCX = async (formData: RentalAgreementData, existingDocId?: string) => {
-  console.log('Начало генерации DOCX...');
+  console.log('🚀 Начало генерации DOCX...', { formData, existingDocId });
   
   try {
-  const petsText = formData.petsAllowed === "allowed" 
+    console.log('✅ Библиотеки docx и file-saver импортированы');
+    const petsText = formData.petsAllowed === "allowed" 
     ? "Содержание домашних животных разрешено."
     : formData.petsAllowed === "with-agreement"
     ? "Содержание домашних животных возможно по согласованию с Арендодателем."
