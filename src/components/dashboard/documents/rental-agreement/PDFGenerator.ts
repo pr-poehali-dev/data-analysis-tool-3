@@ -145,20 +145,27 @@ export const generatePDF = (formData: RentalAgreementData) => {
     y += 7;
   }
 
-  if (formData.finalProvisions) {
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  
+  const finalProvisionsText = `8.1. Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу, по одному для каждой из сторон.
+
+8.2. Все изменения и дополнения к настоящему Договору действительны при условии, если они совершены в письменной форме и подписаны обеими сторонами.
+
+8.3. Споры и разногласия, возникающие в процессе исполнения настоящего Договора, разрешаются путем переговоров между сторонами. В случае недостижения согласия спор передается на рассмотрение в суд в соответствии с действующим законодательством Российской Федерации.
+
+8.4. Настоящий Договор вступает в силу с момента его подписания сторонами и действует до полного исполнения сторонами своих обязательств.`;
+
+  const finalLines = doc.splitTextToSize(finalProvisionsText, 170);
+  finalLines.forEach((line: string) => {
     y = checkPageBreak(y);
-    doc.setFont("helvetica", "bold");
-    y = addText("8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", 20, y);
-    y += 7;
-    doc.setFont("helvetica", "normal");
-    const finalLines = doc.splitTextToSize(formData.finalProvisions, 170);
-    finalLines.forEach((line: string) => {
-      y = checkPageBreak(y);
-      y = addText(line, 20, y);
-      y += 5;
-    });
-    y += 7;
-  }
+    y = addText(line, 20, y);
+    y += 5;
+  });
+  y += 7;
 
   y = checkPageBreak(y, 30);
   y += 10;

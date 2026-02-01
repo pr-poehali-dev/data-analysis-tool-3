@@ -290,19 +290,12 @@ export const FormSteps = ({ step, formData, updateField }: FormStepsProps) => {
               value={formData.additionalConditions}
               onChange={(e) => updateField("additionalConditions", e.target.value)}
               placeholder="Укажите дополнительные условия договора..."
-              rows={4}
+              rows={6}
             />
           </div>
-          <div>
-            <Label htmlFor="finalProvisions">Заключительные положения</Label>
-            <Textarea
-              id="finalProvisions"
-              value={formData.finalProvisions}
-              onChange={(e) => updateField("finalProvisions", e.target.value)}
-              placeholder="Например: Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу..."
-              rows={4}
-            />
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Заключительные положения будут добавлены автоматически при генерации договора
+          </p>
         </div>
       );
 

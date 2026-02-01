@@ -23,7 +23,6 @@ export interface RentalAgreementData {
   contractEndDate: string;
   utilitiesIncluded: boolean;
   additionalConditions: string;
-  finalProvisions: string;
 }
 
 export const initialData: RentalAgreementData = {
@@ -51,7 +50,6 @@ export const initialData: RentalAgreementData = {
   contractEndDate: "",
   utilitiesIncluded: false,
   additionalConditions: "",
-  finalProvisions: "",
 };
 
 export const getPropertyTypeName = (type: string) => {
