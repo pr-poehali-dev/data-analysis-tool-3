@@ -13,6 +13,7 @@ interface DocumentsListProps {
 export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   const [documents, setDocuments] = useState<SavedDocument[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadDocuments = () => {
@@ -35,7 +36,15 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   };
 
   const handleDownload = async (doc: SavedDocument) => {
-    await generateDOCX(doc.data, doc.id);
+    try {
+      setDownloadingId(doc.id);
+      await generateDOCX(doc.data, doc.id);
+    } catch (error) {
+      console.error('Ошибка при скачивании:', error);
+      alert('Не удалось скачать документ. Попробуйте еще раз.');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   if (documents.length === 0) {
@@ -131,10 +140,11 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDownload(doc)}
+                  disabled={downloadingId === doc.id}
                   className="whitespace-nowrap flex items-center justify-start"
                 >
-                  <Icon name="Download" size={16} className="mr-2" />
-                  Скачать
+                  <Icon name={downloadingId === doc.id ? "Loader2" : "Download"} size={16} className={`mr-2 ${downloadingId === doc.id ? 'animate-spin' : ''}`} />
+                  {downloadingId === doc.id ? 'Загрузка...' : 'Скачать'}
                 </Button>
                 <Button
                   variant="outline"

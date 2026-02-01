@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
@@ -12,10 +13,20 @@ interface PreviewModalProps {
 }
 
 export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocumentSaved }: PreviewModalProps) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const handleDownload = async () => {
-    const docId = await generateDOCX(formData, documentId);
-    if (onDocumentSaved) {
-      onDocumentSaved(docId);
+    try {
+      setIsDownloading(true);
+      const docId = await generateDOCX(formData, documentId);
+      if (onDocumentSaved) {
+        onDocumentSaved(docId);
+      }
+    } catch (error) {
+      console.error('Ошибка при скачивании:', error);
+      alert('Не удалось скачать документ. Попробуйте еще раз.');
+    } finally {
+      setIsDownloading(false);
     }
   };
   return (
@@ -123,9 +134,9 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
       </div>
 
       <div className="flex gap-4">
-        <Button onClick={handleDownload} className="flex-1">
-          <Icon name="Download" size={16} className="mr-2" />
-          Скачать DOCX
+        <Button onClick={handleDownload} disabled={isDownloading} className="flex-1">
+          <Icon name={isDownloading ? "Loader2" : "Download"} size={16} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
+          {isDownloading ? 'Скачивание...' : 'Скачать DOCX'}
         </Button>
         <Button variant="outline" onClick={onReset}>
           <Icon name="RotateCcw" size={16} className="mr-2" />
