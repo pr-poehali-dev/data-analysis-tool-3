@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
-import { generateDOCX } from "./rental-agreement/DOCXGenerator";
+import { generateDOCXLazy } from "./rental-agreement/DOCXGeneratorLazy";
 
 interface DocumentsListProps {
   onEdit: (doc: SavedDocument) => void;
@@ -38,7 +38,7 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   const handleDownload = async (doc: SavedDocument) => {
     try {
       setDownloadingId(doc.id);
-      await generateDOCX(doc.data, doc.id);
+      await generateDOCXLazy(doc.data, doc.id);
     } catch (error) {
       console.error('Ошибка при скачивании:', error);
       alert('Не удалось скачать документ. Попробуйте еще раз.');
