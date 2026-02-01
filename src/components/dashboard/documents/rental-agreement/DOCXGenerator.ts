@@ -2,8 +2,18 @@ import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
 export const generateDOCX = async (formData: RentalAgreementData, existingDocId?: string) => {
-  const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = await import("docx");
-  const { saveAs } = await import("file-saver");
+  console.log('Начало генерации DOCX...');
+  
+  try {
+    console.log('Импорт библиотеки docx...');
+    const docx = await import("docx");
+    const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = docx;
+    console.log('Библиотека docx импортирована успешно');
+    
+    console.log('Импорт библиотеки file-saver...');
+    const fileSaver = await import("file-saver");
+    const { saveAs } = fileSaver;
+    console.log('Библиотека file-saver импортирована успешно');
   const petsText = formData.petsAllowed === "allowed" 
     ? "Содержание домашних животных разрешено."
     : formData.petsAllowed === "with-agreement"
@@ -246,18 +256,31 @@ export const generateDOCX = async (formData: RentalAgreementData, existingDocId?
     })
   );
 
-  const doc = new Document({
-    sections: [{
-      properties: {},
-      children: sections
-    }]
-  });
+    console.log('Создание документа Word...');
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: sections
+      }]
+    });
+    console.log('Документ Word создан');
 
-  const savedDoc = documentsStore.saveDocument(formData, existingDocId);
-  const fileName = savedDoc.fileName.replace('.pdf', '.docx');
-  
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, fileName);
-  
-  return savedDoc.id;
+    console.log('Сохранение документа в store...');
+    const savedDoc = documentsStore.saveDocument(formData, existingDocId);
+    const fileName = savedDoc.fileName.replace('.pdf', '.docx');
+    console.log('Документ сохранён, имя файла:', fileName);
+    
+    console.log('Создание blob из документа...');
+    const blob = await Packer.toBlob(doc);
+    console.log('Blob создан, размер:', blob.size);
+    
+    console.log('Вызов saveAs для скачивания...');
+    saveAs(blob, fileName);
+    console.log('Скачивание инициировано');
+    
+    return savedDoc.id;
+  } catch (error) {
+    console.error('ОШИБКА при генерации DOCX:', error);
+    throw error;
+  }
 };
