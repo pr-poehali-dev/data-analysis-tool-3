@@ -30,6 +30,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevMessagesLengthRef = useRef(0);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
   const otherUserPhoto = isRecommender ? chat.tenantPhoto : chat.recommenderPhoto;
@@ -61,7 +62,10 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   }, [chat.id, currentUserEmail]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevMessagesLengthRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   const handlePhotoAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
