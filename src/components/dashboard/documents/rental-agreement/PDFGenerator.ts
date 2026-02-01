@@ -1,181 +1,147 @@
-import { jsPDF } from "jspdf";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 export const generatePDF = (formData: RentalAgreementData, existingDocId?: string) => {
-  const doc = new jsPDF();
-  let y = 20;
-
-  const addText = (text: string, x: number, yPos: number, options?: any) => {
-    if (yPos > 270) {
-      doc.addPage();
-      return 20;
-    }
-    doc.text(text, x, yPos, options);
-    return yPos;
-  };
-
-  const checkPageBreak = (currentY: number, neededSpace: number = 15) => {
-    if (currentY + neededSpace > 270) {
-      doc.addPage();
-      return 20;
-    }
-    return currentY;
-  };
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  y = addText("ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", 105, y, { align: "center" });
-  y += 15;
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  y = addText(`${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`, 105, y, { align: "center" });
-  y += 15;
-
-  doc.setFontSize(11);
-  y = addText(`Арендодатель: ${formData.landlordFullName}`, 20, y);
-  y += 7;
-  y = addText(`Паспорт: ${formData.landlordPassport}`, 20, y);
-  y += 7;
-  y = addText(`Адрес: ${formData.landlordAddress}`, 20, y);
-  y += 7;
-  y = addText(`Телефон: ${formData.landlordPhone}`, 20, y);
-  y += 12;
-
-  y = addText(`Арендатор: ${formData.tenantFullName}`, 20, y);
-  y += 7;
-  y = addText(`Паспорт: ${formData.tenantPassport}`, 20, y);
-  y += 7;
-  y = addText(`Адрес: ${formData.tenantAddress}`, 20, y);
-  y += 7;
-  y = addText(`Телефон: ${formData.tenantPhone}`, 20, y);
-  y += 15;
-
-  y = checkPageBreak(y);
-  doc.setFont("helvetica", "bold");
-  y = addText("1. ПРЕДМЕТ ДОГОВОРА", 20, y);
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  y = addText(`Арендодатель передает, а Арендатор принимает во временное владение`, 20, y);
-  y += 5;
-  y = addText(`и пользование ${getPropertyTypeName(formData.propertyType)}, расположенную по адресу:`, 20, y);
-  y += 7;
-  y = addText(`${formData.propertyAddress}`, 20, y);
-  y += 7;
-  y = addText(`Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}`, 20, y);
-  y += 12;
-
-  y = checkPageBreak(y);
-  doc.setFont("helvetica", "bold");
-  y = addText("2. УСЛОВИЯ ПРОЖИВАНИЯ", 20, y);
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  y = addText(`Количество проживающих: ${formData.residentsCount} чел.`, 20, y);
-  y += 5;
-  if (formData.residentsInfo) {
-    const residentLines = doc.splitTextToSize(formData.residentsInfo, 170);
-    residentLines.forEach((line: string) => {
-      y = checkPageBreak(y);
-      y = addText(line, 20, y);
-      y += 5;
-    });
-  }
-  y += 7;
-
   const petsText = formData.petsAllowed === "allowed" 
     ? "Содержание домашних животных разрешено."
     : formData.petsAllowed === "with-agreement"
     ? "Содержание домашних животных возможно по согласованию с Арендодателем."
     : "Содержание домашних животных запрещено.";
-  y = addText(petsText, 20, y);
-  y += 7;
+
+  const content: any[] = [
+    { text: "ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", style: "header", alignment: "center", margin: [0, 0, 0, 10] },
+    { text: `${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`, alignment: "center", margin: [0, 0, 0, 20] },
+    
+    { text: `Арендодатель: ${formData.landlordFullName}`, margin: [0, 0, 0, 5] },
+    { text: `Паспорт: ${formData.landlordPassport}`, fontSize: 10, margin: [0, 0, 0, 3] },
+    { text: `Адрес: ${formData.landlordAddress}`, fontSize: 10, margin: [0, 0, 0, 3] },
+    { text: `Телефон: ${formData.landlordPhone}`, fontSize: 10, margin: [0, 0, 0, 15] },
+    
+    { text: `Арендатор: ${formData.tenantFullName}`, margin: [0, 0, 0, 5] },
+    { text: `Паспорт: ${formData.tenantPassport}`, fontSize: 10, margin: [0, 0, 0, 3] },
+    { text: `Адрес: ${formData.tenantAddress}`, fontSize: 10, margin: [0, 0, 0, 3] },
+    { text: `Телефон: ${formData.tenantPhone}`, fontSize: 10, margin: [0, 0, 0, 20] },
+    
+    { text: "1. ПРЕДМЕТ ДОГОВОРА", style: "sectionHeader", margin: [0, 0, 0, 10] },
+    { 
+      text: `Арендодатель передает, а Арендатор принимает во временное владение и пользование ${getPropertyTypeName(formData.propertyType)}, расположенную по адресу: ${formData.propertyAddress}. Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}.`,
+      alignment: "justify",
+      margin: [0, 0, 0, 15]
+    },
+    
+    { text: "2. УСЛОВИЯ ПРОЖИВАНИЯ", style: "sectionHeader", margin: [0, 0, 0, 10] },
+    { text: `Количество проживающих: ${formData.residentsCount} чел.`, margin: [0, 0, 0, 5] },
+  ];
+
+  if (formData.residentsInfo) {
+    content.push({ text: formData.residentsInfo, margin: [0, 0, 0, 5] });
+  }
+
+  content.push(
+    { text: petsText, margin: [0, 0, 0, 5] }
+  );
 
   if (formData.propertyInventory) {
-    y = addText("Перечень имущества:", 20, y);
-    y += 5;
-    const inventoryLines = doc.splitTextToSize(formData.propertyInventory, 170);
-    inventoryLines.forEach((line: string) => {
-      y = checkPageBreak(y);
-      y = addText(line, 20, y);
-      y += 5;
-    });
+    content.push(
+      { text: "Перечень имущества:", bold: true, margin: [0, 5, 0, 3] },
+      { text: formData.propertyInventory, margin: [0, 0, 0, 5] }
+    );
   }
-  y += 7;
 
-  y = checkPageBreak(y);
-  doc.setFont("helvetica", "bold");
-  y = addText("3. СРОК ДЕЙСТВИЯ ДОГОВОРА", 20, y);
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  y = addText(`Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}`, 20, y);
-  y += 12;
+  content.push(
+    { text: "3. СРОК ДЕЙСТВИЯ ДОГОВОРА", style: "sectionHeader", margin: [0, 15, 0, 10] },
+    { text: `Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}.`, margin: [0, 0, 0, 15] },
+    
+    { text: "4. АРЕНДНАЯ ПЛАТА", style: "sectionHeader", margin: [0, 0, 0, 10] },
+    { text: `Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, margin: [0, 0, 0, 5] },
+    { text: `Обеспечительный платеж: ${formData.securityDeposit} рублей.`, margin: [0, 0, 0, 5] },
+    { text: `Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}.`, margin: [0, 0, 0, 15] },
+    
+    { text: "5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", style: "sectionHeader", margin: [0, 0, 0, 10] },
+    { 
+      text: "5.1. Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу, по одному для каждой из сторон.",
+      alignment: "justify",
+      margin: [0, 0, 0, 8]
+    },
+    {
+      text: "5.2. Все изменения и дополнения к настоящему Договору действительны при условии, если они совершены в письменной форме и подписаны обеими сторонами.",
+      alignment: "justify",
+      margin: [0, 0, 0, 8]
+    },
+    { text: "5.3. Расторжение договора:", bold: true, margin: [0, 0, 0, 5] },
+    {
+      ul: [
+        "Договор может быть расторгнут досрочно по соглашению сторон.",
+        "Арендодатель имеет право расторгнуть договор в одностороннем порядке при систематической неуплате арендной платы (более двух месяцев подряд), нарушении правил пользования жилым помещением, либо при использовании помещения не по назначению.",
+        "Арендатор имеет право расторгнуть договор в одностороннем порядке, уведомив Арендодателя не менее чем за 30 дней до предполагаемой даты расторжения."
+      ],
+      margin: [0, 0, 0, 8]
+    },
+    { text: "5.4. Ответственность сторон:", bold: true, margin: [0, 0, 0, 5] },
+    {
+      ul: [
+        "За невыполнение или ненадлежащее выполнение обязательств по настоящему Договору стороны несут ответственность в соответствии с действующим законодательством Российской Федерации.",
+        "Арендатор несет ответственность за сохранность имущества и обязан возместить ущерб, причиненный жилому помещению и имуществу Арендодателя, за исключением естественного износа.",
+        "При несвоевременной оплате арендной платы Арендатор уплачивает пени в размере 0,1% от суммы задолженности за каждый день просрочки.",
+        "Арендодатель несет ответственность за недостатки сданного в аренду помещения, препятствующие его использованию, и обязуется устранить их за свой счет в разумный срок."
+      ],
+      margin: [0, 0, 0, 8]
+    },
+    {
+      text: "5.5. Споры и разногласия, возникающие в процессе исполнения настоящего Договора, разрешаются путем переговоров между сторонами. В случае недостижения согласия спор передается на рассмотрение в суд в соответствии с действующим законодательством Российской Федерации.",
+      alignment: "justify",
+      margin: [0, 0, 0, 8]
+    },
+    {
+      text: "5.6. Настоящий Договор вступает в силу с момента его подписания сторонами и действует до полного исполнения сторонами своих обязательств.",
+      alignment: "justify",
+      margin: [0, 0, 0, 8]
+    }
+  );
 
-  y = checkPageBreak(y);
-  doc.setFont("helvetica", "bold");
-  y = addText("4. АРЕНДНАЯ ПЛАТА", 20, y);
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  y = addText(`Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, 20, y);
-  y += 7;
-  y = addText(`Обеспечительный платеж: ${formData.securityDeposit} рублей.`, 20, y);
-  y += 7;
-  y = addText(`Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}`, 20, y);
-  y += 12;
-
-  y = checkPageBreak(y);
-  doc.setFont("helvetica", "bold");
-  y = addText("5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", 20, y);
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  
-  let finalProvisionsText = `5.1. Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу, по одному для каждой из сторон.
-
-5.2. Все изменения и дополнения к настоящему Договору действительны при условии, если они совершены в письменной форме и подписаны обеими сторонами.
-
-5.3. Расторжение договора:
-- Договор может быть расторгнут досрочно по соглашению сторон.
-- Арендодатель имеет право расторгнуть договор в одностороннем порядке при систематической неуплате арендной платы (более двух месяцев подряд), нарушении правил пользования жилым помещением, либо при использовании помещения не по назначению.
-- Арендатор имеет право расторгнуть договор в одностороннем порядке, уведомив Арендодателя не менее чем за 30 дней до предполагаемой даты расторжения.
-
-5.4. Ответственность сторон:
-- За невыполнение или ненадлежащее выполнение обязательств по настоящему Договору стороны несут ответственность в соответствии с действующим законодательством Российской Федерации.
-- Арендатор несет ответственность за сохранность имущества и обязан возместить ущерб, причиненный жилому помещению и имуществу Арендодателя, за исключением естественного износа.
-- При несвоевременной оплате арендной платы Арендатор уплачивает пени в размере 0,1% от суммы задолженности за каждый день просрочки.
-- Арендодатель несет ответственность за недостатки сданного в аренду помещения, препятствующие его использованию, и обязуется устранить их за свой счет в разумный срок.
-
-5.5. Споры и разногласия, возникающие в процессе исполнения настоящего Договора, разрешаются путем переговоров между сторонами. В случае недостижения согласия спор передается на рассмотрение в суд в соответствии с действующим законодательством Российской Федерации.
-
-5.6. Настоящий Договор вступает в силу с момента его подписания сторонами и действует до полного исполнения сторонами своих обязательств.`;
-  
   if (formData.additionalConditions) {
-    finalProvisionsText += `
-
-5.7. Дополнительные условия:
-${formData.additionalConditions}`;
+    content.push(
+      { text: "5.7. Дополнительные условия:", bold: true, margin: [0, 0, 0, 5] },
+      { text: formData.additionalConditions, alignment: "justify", margin: [0, 0, 0, 8] }
+    );
   }
 
-  const finalLines = doc.splitTextToSize(finalProvisionsText, 170);
-  finalLines.forEach((line: string) => {
-    y = checkPageBreak(y);
-    y = addText(line, 20, y);
-    y += 5;
-  });
-  y += 7;
+  content.push(
+    { text: "", pageBreak: "auto" },
+    { text: "ПОДПИСИ СТОРОН:", bold: true, margin: [0, 20, 0, 20] },
+    {
+      columns: [
+        { text: "Арендодатель: _______________", width: "50%" },
+        { text: "Арендатор: _______________", width: "50%" }
+      ]
+    }
+  );
 
-  y = checkPageBreak(y, 30);
-  y += 10;
-
-  doc.setFont("helvetica", "bold");
-  y = addText("ПОДПИСИ СТОРОН:", 20, y);
-  y += 15;
-
-  doc.setFont("helvetica", "normal");
-  addText("Арендодатель: _______________", 20, y);
-  addText("Арендатор: _______________", 120, y);
+  const docDefinition = {
+    content: content,
+    styles: {
+      header: {
+        fontSize: 16,
+        bold: true
+      },
+      sectionHeader: {
+        fontSize: 12,
+        bold: true
+      }
+    },
+    defaultStyle: {
+      fontSize: 11,
+      lineHeight: 1.3
+    },
+    pageMargins: [40, 40, 40, 40]
+  };
 
   const savedDoc = documentsStore.saveDocument(formData, existingDocId);
-  doc.save(savedDoc.fileName);
+  pdfMake.createPdf(docDefinition).download(savedDoc.fileName);
   
   return savedDoc.id;
 };
