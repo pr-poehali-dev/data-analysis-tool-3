@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { RentalAgreementConstructor } from "./documents/RentalAgreementConstructor";
 
 interface User {
   firstName: string;
@@ -30,14 +31,7 @@ export const DashboardOtherSections = ({ activeSection, user }: DashboardOtherSe
       return (
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-6">Документы</h2>
-          <div className="bg-white border border-border rounded-xl p-8 text-center">
-            <Icon name="FolderOpen" size={48} className="mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg text-muted-foreground">У вас пока нет документов</p>
-            <Button className="mt-6">
-              <Icon name="Upload" size={16} className="mr-2" />
-              Загрузить документ
-            </Button>
-          </div>
+          <RentalAgreementConstructor />
         </div>
       );
     case "balance":
