@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { jsPDF } from "jspdf";
 
 interface RentalAgreementData {
+  contractCity: string;
   landlordFullName: string;
   landlordPassport: string;
   landlordAddress: string;
@@ -16,19 +24,26 @@ interface RentalAgreementData {
   tenantPassport: string;
   tenantAddress: string;
   tenantPhone: string;
+  propertyType: string;
   propertyAddress: string;
   propertyArea: string;
   propertyRooms: string;
   propertyFloor: string;
+  residentsCount: string;
+  residentsInfo: string;
+  petsAllowed: string;
+  propertyInventory: string;
   rentalPrice: string;
   securityDeposit: string;
   contractStartDate: string;
   contractEndDate: string;
   utilitiesIncluded: boolean;
   additionalConditions: string;
+  finalProvisions: string;
 }
 
 const initialData: RentalAgreementData = {
+  contractCity: "",
   landlordFullName: "",
   landlordPassport: "",
   landlordAddress: "",
@@ -37,16 +52,22 @@ const initialData: RentalAgreementData = {
   tenantPassport: "",
   tenantAddress: "",
   tenantPhone: "",
+  propertyType: "apartment",
   propertyAddress: "",
   propertyArea: "",
   propertyRooms: "",
   propertyFloor: "",
+  residentsCount: "1",
+  residentsInfo: "",
+  petsAllowed: "not-allowed",
+  propertyInventory: "",
   rentalPrice: "",
   securityDeposit: "",
   contractStartDate: "",
   contractEndDate: "",
   utilitiesIncluded: false,
   additionalConditions: "",
+  finalProvisions: "",
 };
 
 export const RentalAgreementConstructor = () => {
@@ -54,106 +75,190 @@ export const RentalAgreementConstructor = () => {
   const [formData, setFormData] = useState<RentalAgreementData>(initialData);
   const [isPreview, setIsPreview] = useState(false);
 
-  const totalSteps = 4;
+  const totalSteps = 6;
 
   const updateField = (field: keyof RentalAgreementData, value: string | boolean) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const getPropertyTypeName = (type: string) => {
+    switch (type) {
+      case "apartment": return "квартиру";
+      case "room": return "комнату";
+      case "house": return "дом";
+      default: return "жилое помещение";
+    }
   };
 
   const generatePDF = () => {
     const doc = new jsPDF();
     let y = 20;
 
+    const addText = (text: string, x: number, yPos: number, options?: any) => {
+      if (yPos > 270) {
+        doc.addPage();
+        return 20;
+      }
+      doc.text(text, x, yPos, options);
+      return yPos;
+    };
+
+    const checkPageBreak = (currentY: number, neededSpace: number = 15) => {
+      if (currentY + neededSpace > 270) {
+        doc.addPage();
+        return 20;
+      }
+      return currentY;
+    };
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", 105, y, { align: "center" });
+    y = addText("ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", 105, y, { align: "center" });
     y += 15;
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text(`г. ${new Date().toLocaleDateString("ru-RU")}`, 105, y, { align: "center" });
+    y = addText(`${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`, 105, y, { align: "center" });
     y += 15;
 
     doc.setFontSize(11);
-    doc.text(`Арендодатель: ${formData.landlordFullName}`, 20, y);
+    y = addText(`Арендодатель: ${formData.landlordFullName}`, 20, y);
     y += 7;
-    doc.text(`Паспорт: ${formData.landlordPassport}`, 20, y);
+    y = addText(`Паспорт: ${formData.landlordPassport}`, 20, y);
     y += 7;
-    doc.text(`Адрес: ${formData.landlordAddress}`, 20, y);
+    y = addText(`Адрес: ${formData.landlordAddress}`, 20, y);
     y += 7;
-    doc.text(`Телефон: ${formData.landlordPhone}`, 20, y);
+    y = addText(`Телефон: ${formData.landlordPhone}`, 20, y);
     y += 12;
 
-    doc.text(`Арендатор: ${formData.tenantFullName}`, 20, y);
+    y = addText(`Арендатор: ${formData.tenantFullName}`, 20, y);
     y += 7;
-    doc.text(`Паспорт: ${formData.tenantPassport}`, 20, y);
+    y = addText(`Паспорт: ${formData.tenantPassport}`, 20, y);
     y += 7;
-    doc.text(`Адрес: ${formData.tenantAddress}`, 20, y);
+    y = addText(`Адрес: ${formData.tenantAddress}`, 20, y);
     y += 7;
-    doc.text(`Телефон: ${formData.tenantPhone}`, 20, y);
+    y = addText(`Телефон: ${formData.tenantPhone}`, 20, y);
     y += 15;
 
+    y = checkPageBreak(y);
     doc.setFont("helvetica", "bold");
-    doc.text("1. ПРЕДМЕТ ДОГОВОРА", 20, y);
+    y = addText("1. ПРЕДМЕТ ДОГОВОРА", 20, y);
     y += 7;
     doc.setFont("helvetica", "normal");
-    doc.text(`Арендодатель передает, а Арендатор принимает во временное владение`, 20, y);
+    y = addText(`Арендодатель передает, а Арендатор принимает во временное владение`, 20, y);
     y += 5;
-    doc.text(`и пользование жилое помещение, расположенное по адресу:`, 20, y);
+    y = addText(`и пользование ${getPropertyTypeName(formData.propertyType)}, расположенную по адресу:`, 20, y);
     y += 7;
-    doc.text(`${formData.propertyAddress}`, 20, y);
+    y = addText(`${formData.propertyAddress}`, 20, y);
     y += 7;
-    doc.text(`Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}`, 20, y);
+    y = addText(`Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}`, 20, y);
     y += 12;
 
+    y = checkPageBreak(y);
     doc.setFont("helvetica", "bold");
-    doc.text("2. СРОК ДЕЙСТВИЯ ДОГОВОРА", 20, y);
+    y = addText("2. ПРОЖИВАЮЩИЕ ЛИЦА", 20, y);
     y += 7;
     doc.setFont("helvetica", "normal");
-    doc.text(`Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}`, 20, y);
+    y = addText(`Количество проживающих: ${formData.residentsCount} чел.`, 20, y);
+    y += 5;
+    if (formData.residentsInfo) {
+      const residentLines = doc.splitTextToSize(formData.residentsInfo, 170);
+      residentLines.forEach((line: string) => {
+        y = checkPageBreak(y);
+        y = addText(line, 20, y);
+        y += 5;
+      });
+    }
+    y += 7;
+
+    y = checkPageBreak(y);
+    doc.setFont("helvetica", "bold");
+    y = addText("3. ДОМАШНИЕ ЖИВОТНЫЕ", 20, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    const petsText = formData.petsAllowed === "allowed" 
+      ? "Содержание домашних животных разрешено."
+      : formData.petsAllowed === "with-agreement"
+      ? "Содержание домашних животных возможно по согласованию с Арендодателем."
+      : "Содержание домашних животных запрещено.";
+    y = addText(petsText, 20, y);
     y += 12;
 
+    if (formData.propertyInventory) {
+      y = checkPageBreak(y);
+      doc.setFont("helvetica", "bold");
+      y = addText("4. ПЕРЕЧЕНЬ ИМУЩЕСТВА", 20, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      const inventoryLines = doc.splitTextToSize(formData.propertyInventory, 170);
+      inventoryLines.forEach((line: string) => {
+        y = checkPageBreak(y);
+        y = addText(line, 20, y);
+        y += 5;
+      });
+      y += 7;
+    }
+
+    y = checkPageBreak(y);
     doc.setFont("helvetica", "bold");
-    doc.text("3. АРЕНДНАЯ ПЛАТА", 20, y);
+    y = addText("5. СРОК ДЕЙСТВИЯ ДОГОВОРА", 20, y);
     y += 7;
     doc.setFont("helvetica", "normal");
-    doc.text(`Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, 20, y);
+    y = addText(`Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}`, 20, y);
+    y += 12;
+
+    y = checkPageBreak(y);
+    doc.setFont("helvetica", "bold");
+    y = addText("6. АРЕНДНАЯ ПЛАТА", 20, y);
     y += 7;
-    doc.text(`Обеспечительный платеж: ${formData.securityDeposit} рублей.`, 20, y);
+    doc.setFont("helvetica", "normal");
+    y = addText(`Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, 20, y);
     y += 7;
-    doc.text(`Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}`, 20, y);
+    y = addText(`Обеспечительный платеж: ${formData.securityDeposit} рублей.`, 20, y);
+    y += 7;
+    y = addText(`Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}`, 20, y);
     y += 12;
 
     if (formData.additionalConditions) {
+      y = checkPageBreak(y);
       doc.setFont("helvetica", "bold");
-      doc.text("4. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ", 20, y);
+      y = addText("7. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ", 20, y);
       y += 7;
       doc.setFont("helvetica", "normal");
       const lines = doc.splitTextToSize(formData.additionalConditions, 170);
       lines.forEach((line: string) => {
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(line, 20, y);
+        y = checkPageBreak(y);
+        y = addText(line, 20, y);
         y += 5;
       });
+      y += 7;
     }
 
-    if (y > 250) {
-      doc.addPage();
-      y = 20;
-    } else {
-      y += 15;
+    if (formData.finalProvisions) {
+      y = checkPageBreak(y);
+      doc.setFont("helvetica", "bold");
+      y = addText("8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", 20, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      const finalLines = doc.splitTextToSize(formData.finalProvisions, 170);
+      finalLines.forEach((line: string) => {
+        y = checkPageBreak(y);
+        y = addText(line, 20, y);
+        y += 5;
+      });
+      y += 7;
     }
+
+    y = checkPageBreak(y, 30);
+    y += 10;
 
     doc.setFont("helvetica", "bold");
-    doc.text("ПОДПИСИ СТОРОН:", 20, y);
+    y = addText("ПОДПИСИ СТОРОН:", 20, y);
     y += 15;
 
     doc.setFont("helvetica", "normal");
-    doc.text("Арендодатель: _______________", 20, y);
-    doc.text("Арендатор: _______________", 120, y);
+    addText("Арендодатель: _______________", 20, y);
+    addText("Арендатор: _______________", 120, y);
 
     doc.save("Договор_аренды.pdf");
   };
@@ -163,7 +268,16 @@ export const RentalAgreementConstructor = () => {
       case 1:
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Данные арендодателя</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-4">Общие данные</h3>
+            <div>
+              <Label htmlFor="contractCity">Место заключения договора (город)</Label>
+              <Input
+                id="contractCity"
+                value={formData.contractCity}
+                onChange={(e) => updateField("contractCity", e.target.value)}
+                placeholder="Москва"
+              />
+            </div>
             <div>
               <Label htmlFor="landlordFullName">ФИО арендодателя</Label>
               <Input
@@ -251,6 +365,19 @@ export const RentalAgreementConstructor = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-foreground mb-4">Объект аренды</h3>
             <div>
+              <Label htmlFor="propertyType">Тип жилья</Label>
+              <Select value={formData.propertyType} onValueChange={(value) => updateField("propertyType", value)}>
+                <SelectTrigger id="propertyType">
+                  <SelectValue placeholder="Выберите тип жилья" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="apartment">Квартира</SelectItem>
+                  <SelectItem value="room">Комната</SelectItem>
+                  <SelectItem value="house">Дом</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="propertyAddress">Адрес объекта</Label>
               <Input
                 id="propertyAddress"
@@ -292,6 +419,57 @@ export const RentalAgreementConstructor = () => {
         );
 
       case 4:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Условия проживания</h3>
+            <div>
+              <Label htmlFor="residentsCount">Количество проживающих (чел.)</Label>
+              <Input
+                id="residentsCount"
+                type="number"
+                min="1"
+                value={formData.residentsCount}
+                onChange={(e) => updateField("residentsCount", e.target.value)}
+                placeholder="1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="residentsInfo">Информация о проживающих (опционально)</Label>
+              <Textarea
+                id="residentsInfo"
+                value={formData.residentsInfo}
+                onChange={(e) => updateField("residentsInfo", e.target.value)}
+                placeholder="Укажите ФИО и паспортные данные проживающих..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="petsAllowed">Содержание домашних животных</Label>
+              <Select value={formData.petsAllowed} onValueChange={(value) => updateField("petsAllowed", value)}>
+                <SelectTrigger id="petsAllowed">
+                  <SelectValue placeholder="Выберите вариант" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not-allowed">Запрещено</SelectItem>
+                  <SelectItem value="allowed">Разрешено</SelectItem>
+                  <SelectItem value="with-agreement">По согласованию с арендодателем</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="propertyInventory">Перечень имущества в квартире</Label>
+              <Textarea
+                id="propertyInventory"
+                value={formData.propertyInventory}
+                onChange={(e) => updateField("propertyInventory", e.target.value)}
+                placeholder="Например: холодильник, стиральная машина, диван, кровать, телевизор..."
+                rows={4}
+              />
+            </div>
+          </div>
+        );
+
+      case 5:
         return (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-foreground mb-4">Условия аренды</h3>
@@ -345,6 +523,13 @@ export const RentalAgreementConstructor = () => {
                 Коммунальные услуги включены в стоимость
               </Label>
             </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Дополнительные условия</h3>
             <div>
               <Label htmlFor="additionalConditions">Дополнительные условия (опционально)</Label>
               <Textarea
@@ -352,6 +537,16 @@ export const RentalAgreementConstructor = () => {
                 value={formData.additionalConditions}
                 onChange={(e) => updateField("additionalConditions", e.target.value)}
                 placeholder="Укажите дополнительные условия договора..."
+                rows={4}
+              />
+            </div>
+            <div>
+              <Label htmlFor="finalProvisions">Заключительные положения</Label>
+              <Textarea
+                id="finalProvisions"
+                value={formData.finalProvisions}
+                onChange={(e) => updateField("finalProvisions", e.target.value)}
+                placeholder="Например: Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу..."
                 rows={4}
               />
             </div>
@@ -374,9 +569,9 @@ export const RentalAgreementConstructor = () => {
           </Button>
         </div>
 
-        <div className="prose max-w-none mb-8 p-6 bg-gray-50 rounded-lg">
+        <div className="prose max-w-none mb-8 p-6 bg-gray-50 rounded-lg max-h-[600px] overflow-y-auto">
           <h2 className="text-center font-bold mb-4">ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ</h2>
-          <p className="text-center text-sm mb-6">г. {new Date().toLocaleDateString("ru-RU")}</p>
+          <p className="text-center text-sm mb-6">{formData.contractCity}, {new Date().toLocaleDateString("ru-RU")}</p>
 
           <div className="mb-4">
             <p><strong>Арендодатель:</strong> {formData.landlordFullName}</p>
@@ -394,17 +589,39 @@ export const RentalAgreementConstructor = () => {
 
           <h3 className="font-bold mt-6 mb-2">1. ПРЕДМЕТ ДОГОВОРА</h3>
           <p className="text-sm">
-            Арендодатель передает, а Арендатор принимает во временное владение и пользование жилое помещение, 
-            расположенное по адресу: {formData.propertyAddress}. 
+            Арендодатель передает, а Арендатор принимает во временное владение и пользование {getPropertyTypeName(formData.propertyType)}, 
+            расположенную по адресу: {formData.propertyAddress}. 
             Площадь: {formData.propertyArea} кв.м, количество комнат: {formData.propertyRooms}, этаж: {formData.propertyFloor}.
           </p>
 
-          <h3 className="font-bold mt-6 mb-2">2. СРОК ДЕЙСТВИЯ ДОГОВОРА</h3>
+          <h3 className="font-bold mt-6 mb-2">2. ПРОЖИВАЮЩИЕ ЛИЦА</h3>
+          <p className="text-sm">
+            Количество проживающих: {formData.residentsCount} чел.
+            {formData.residentsInfo && <><br />{formData.residentsInfo}</>}
+          </p>
+
+          <h3 className="font-bold mt-6 mb-2">3. ДОМАШНИЕ ЖИВОТНЫЕ</h3>
+          <p className="text-sm">
+            {formData.petsAllowed === "allowed" 
+              ? "Содержание домашних животных разрешено."
+              : formData.petsAllowed === "with-agreement"
+              ? "Содержание домашних животных возможно по согласованию с Арендодателем."
+              : "Содержание домашних животных запрещено."}
+          </p>
+
+          {formData.propertyInventory && (
+            <>
+              <h3 className="font-bold mt-6 mb-2">4. ПЕРЕЧЕНЬ ИМУЩЕСТВА</h3>
+              <p className="text-sm whitespace-pre-wrap">{formData.propertyInventory}</p>
+            </>
+          )}
+
+          <h3 className="font-bold mt-6 mb-2">5. СРОК ДЕЙСТВИЯ ДОГОВОРА</h3>
           <p className="text-sm">
             Договор действует с {formData.contractStartDate} по {formData.contractEndDate}.
           </p>
 
-          <h3 className="font-bold mt-6 mb-2">3. АРЕНДНАЯ ПЛАТА</h3>
+          <h3 className="font-bold mt-6 mb-2">6. АРЕНДНАЯ ПЛАТА</h3>
           <p className="text-sm">
             Размер арендной платы составляет {formData.rentalPrice} рублей в месяц.<br />
             Обеспечительный платеж: {formData.securityDeposit} рублей.<br />
@@ -413,8 +630,15 @@ export const RentalAgreementConstructor = () => {
 
           {formData.additionalConditions && (
             <>
-              <h3 className="font-bold mt-6 mb-2">4. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ</h3>
+              <h3 className="font-bold mt-6 mb-2">7. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ</h3>
               <p className="text-sm whitespace-pre-wrap">{formData.additionalConditions}</p>
+            </>
+          )}
+
+          {formData.finalProvisions && (
+            <>
+              <h3 className="font-bold mt-6 mb-2">8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ</h3>
+              <p className="text-sm whitespace-pre-wrap">{formData.finalProvisions}</p>
             </>
           )}
 
@@ -489,7 +713,7 @@ export const RentalAgreementConstructor = () => {
         {step < totalSteps ? (
           <Button onClick={() => setStep(step + 1)} className="ml-auto">
             Далее
-            <Icon name="ChevronRight" size={16} className="ml-2" />
+            <Icon name="ChevronRight" size={16} className="mr-2" />
           </Button>
         ) : (
           <Button onClick={() => setIsPreview(true)} className="ml-auto">
