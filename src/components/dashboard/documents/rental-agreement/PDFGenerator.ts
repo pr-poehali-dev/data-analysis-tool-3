@@ -1,0 +1,175 @@
+import { jsPDF } from "jspdf";
+import { RentalAgreementData, getPropertyTypeName } from "./types";
+
+export const generatePDF = (formData: RentalAgreementData) => {
+  const doc = new jsPDF();
+  let y = 20;
+
+  const addText = (text: string, x: number, yPos: number, options?: any) => {
+    if (yPos > 270) {
+      doc.addPage();
+      return 20;
+    }
+    doc.text(text, x, yPos, options);
+    return yPos;
+  };
+
+  const checkPageBreak = (currentY: number, neededSpace: number = 15) => {
+    if (currentY + neededSpace > 270) {
+      doc.addPage();
+      return 20;
+    }
+    return currentY;
+  };
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  y = addText("ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", 105, y, { align: "center" });
+  y += 15;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  y = addText(`${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`, 105, y, { align: "center" });
+  y += 15;
+
+  doc.setFontSize(11);
+  y = addText(`Арендодатель: ${formData.landlordFullName}`, 20, y);
+  y += 7;
+  y = addText(`Паспорт: ${formData.landlordPassport}`, 20, y);
+  y += 7;
+  y = addText(`Адрес: ${formData.landlordAddress}`, 20, y);
+  y += 7;
+  y = addText(`Телефон: ${formData.landlordPhone}`, 20, y);
+  y += 12;
+
+  y = addText(`Арендатор: ${formData.tenantFullName}`, 20, y);
+  y += 7;
+  y = addText(`Паспорт: ${formData.tenantPassport}`, 20, y);
+  y += 7;
+  y = addText(`Адрес: ${formData.tenantAddress}`, 20, y);
+  y += 7;
+  y = addText(`Телефон: ${formData.tenantPhone}`, 20, y);
+  y += 15;
+
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("1. ПРЕДМЕТ ДОГОВОРА", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  y = addText(`Арендодатель передает, а Арендатор принимает во временное владение`, 20, y);
+  y += 5;
+  y = addText(`и пользование ${getPropertyTypeName(formData.propertyType)}, расположенную по адресу:`, 20, y);
+  y += 7;
+  y = addText(`${formData.propertyAddress}`, 20, y);
+  y += 7;
+  y = addText(`Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}`, 20, y);
+  y += 12;
+
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("2. ПРОЖИВАЮЩИЕ ЛИЦА", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  y = addText(`Количество проживающих: ${formData.residentsCount} чел.`, 20, y);
+  y += 5;
+  if (formData.residentsInfo) {
+    const residentLines = doc.splitTextToSize(formData.residentsInfo, 170);
+    residentLines.forEach((line: string) => {
+      y = checkPageBreak(y);
+      y = addText(line, 20, y);
+      y += 5;
+    });
+  }
+  y += 7;
+
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("3. ДОМАШНИЕ ЖИВОТНЫЕ", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  const petsText = formData.petsAllowed === "allowed" 
+    ? "Содержание домашних животных разрешено."
+    : formData.petsAllowed === "with-agreement"
+    ? "Содержание домашних животных возможно по согласованию с Арендодателем."
+    : "Содержание домашних животных запрещено.";
+  y = addText(petsText, 20, y);
+  y += 12;
+
+  if (formData.propertyInventory) {
+    y = checkPageBreak(y);
+    doc.setFont("helvetica", "bold");
+    y = addText("4. ПЕРЕЧЕНЬ ИМУЩЕСТВА", 20, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    const inventoryLines = doc.splitTextToSize(formData.propertyInventory, 170);
+    inventoryLines.forEach((line: string) => {
+      y = checkPageBreak(y);
+      y = addText(line, 20, y);
+      y += 5;
+    });
+    y += 7;
+  }
+
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("5. СРОК ДЕЙСТВИЯ ДОГОВОРА", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  y = addText(`Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}`, 20, y);
+  y += 12;
+
+  y = checkPageBreak(y);
+  doc.setFont("helvetica", "bold");
+  y = addText("6. АРЕНДНАЯ ПЛАТА", 20, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  y = addText(`Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, 20, y);
+  y += 7;
+  y = addText(`Обеспечительный платеж: ${formData.securityDeposit} рублей.`, 20, y);
+  y += 7;
+  y = addText(`Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}`, 20, y);
+  y += 12;
+
+  if (formData.additionalConditions) {
+    y = checkPageBreak(y);
+    doc.setFont("helvetica", "bold");
+    y = addText("7. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ", 20, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(formData.additionalConditions, 170);
+    lines.forEach((line: string) => {
+      y = checkPageBreak(y);
+      y = addText(line, 20, y);
+      y += 5;
+    });
+    y += 7;
+  }
+
+  if (formData.finalProvisions) {
+    y = checkPageBreak(y);
+    doc.setFont("helvetica", "bold");
+    y = addText("8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", 20, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    const finalLines = doc.splitTextToSize(formData.finalProvisions, 170);
+    finalLines.forEach((line: string) => {
+      y = checkPageBreak(y);
+      y = addText(line, 20, y);
+      y += 5;
+    });
+    y += 7;
+  }
+
+  y = checkPageBreak(y, 30);
+  y += 10;
+
+  doc.setFont("helvetica", "bold");
+  y = addText("ПОДПИСИ СТОРОН:", 20, y);
+  y += 15;
+
+  doc.setFont("helvetica", "normal");
+  addText("Арендодатель: _______________", 20, y);
+  addText("Арендатор: _______________", 120, y);
+
+  doc.save("Договор_аренды.pdf");
+};
