@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Проверка отправки email с договором",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "test@example.com",
+        "fileContent": "UEsDBBQAAAAIAA==",
+        "fileName": "test_contract.docx"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

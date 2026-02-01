@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
 import { generateDOCXLazy } from "./rental-agreement/DOCXGeneratorLazy";
+import { generateDOCXBase64Lazy } from "./rental-agreement/DOCXGeneratorBase64Lazy";
+import func2url from "@/../../backend/func2url.json";
 
 interface DocumentsListProps {
   onEdit: (doc: SavedDocument) => void;
@@ -14,6 +18,9 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   const [documents, setDocuments] = useState<SavedDocument[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+  const [emailInputId, setEmailInputId] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     const loadDocuments = () => {
@@ -44,6 +51,49 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
       alert('Не удалось скачать документ. Попробуйте еще раз.');
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleSendEmail = async (doc: SavedDocument) => {
+    if (!email || !email.includes('@')) {
+      alert('Пожалуйста, введите корректный email адрес');
+      return;
+    }
+
+    try {
+      setSendingEmailId(doc.id);
+      console.log('Генерация DOCX для отправки на email...');
+      
+      const base64Content = await generateDOCXBase64Lazy(doc.data);
+      const fileName = `Договор_аренды_${doc.data.propertyAddress.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.docx`;
+      
+      console.log('Отправка на email:', email);
+      const response = await fetch(func2url['send-contract-email'], {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          fileContent: base64Content,
+          fileName: fileName
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        alert(`Договор успешно отправлен на ${email}`);
+        setEmailInputId(null);
+        setEmail('');
+      } else {
+        throw new Error(result.error || 'Неизвестная ошибка');
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке на email:', error);
+      alert('Не удалось отправить договор на email. Попробуйте еще раз.');
+    } finally {
+      setSendingEmailId(null);
     }
   };
 
@@ -136,6 +186,40 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
               </div>
 
               <div className="flex flex-col gap-2">
+                {emailInputId === doc.id && (
+                  <div className="p-3 bg-gray-50 rounded-lg border border-border mb-2">
+                    <Label htmlFor={`email-${doc.id}`} className="text-xs font-medium mb-1 block">
+                      Email адрес
+                    </Label>
+                    <div className="flex gap-1">
+                      <Input
+                        id={`email-${doc.id}`}
+                        type="email"
+                        placeholder="example@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendEmail(doc)}
+                        className="text-sm h-8"
+                      />
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleSendEmail(doc)}
+                        disabled={sendingEmailId === doc.id}
+                        className="h-8 px-2"
+                      >
+                        <Icon name={sendingEmailId === doc.id ? "Loader2" : "Send"} size={14} className={sendingEmailId === doc.id ? 'animate-spin' : ''} />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => { setEmailInputId(null); setEmail(''); }}
+                        className="h-8 px-2"
+                      >
+                        <Icon name="X" size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -145,6 +229,15 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
                 >
                   <Icon name={downloadingId === doc.id ? "Loader2" : "Download"} size={16} className={`mr-2 ${downloadingId === doc.id ? 'animate-spin' : ''}`} />
                   {downloadingId === doc.id ? 'Загрузка...' : 'Скачать'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setEmailInputId(doc.id); setEmail(''); }}
+                  className="whitespace-nowrap flex items-center justify-start"
+                >
+                  <Icon name="Mail" size={16} className="mr-2" />
+                  На Email
                 </Button>
                 <Button
                   variant="outline"

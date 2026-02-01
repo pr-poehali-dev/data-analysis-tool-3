@@ -1,8 +1,12 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { generateDOCXLazy } from "./DOCXGeneratorLazy";
+import { generateDOCXBase64Lazy } from "./DOCXGeneratorBase64Lazy";
+import func2url from "@/../../backend/func2url.json";
 
 interface PreviewModalProps {
   formData: RentalAgreementData;
@@ -14,6 +18,9 @@ interface PreviewModalProps {
 
 export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocumentSaved }: PreviewModalProps) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState("");
 
   const handleDownload = async () => {
     try {
@@ -27,6 +34,49 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
       alert('Не удалось скачать документ. Попробуйте еще раз.');
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!email || !email.includes('@')) {
+      alert('Пожалуйста, введите корректный email адрес');
+      return;
+    }
+
+    try {
+      setIsSendingEmail(true);
+      console.log('Генерация DOCX для отправки на email...');
+      
+      const base64Content = await generateDOCXBase64Lazy(formData);
+      const fileName = `Договор_аренды_${formData.propertyAddress.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.docx`;
+      
+      console.log('Отправка на email:', email);
+      const response = await fetch(func2url['send-contract-email'], {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          fileContent: base64Content,
+          fileName: fileName
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        alert(`Договор успешно отправлен на ${email}`);
+        setShowEmailInput(false);
+        setEmail('');
+      } else {
+        throw new Error(result.error || 'Неизвестная ошибка');
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке на email:', error);
+      alert('Не удалось отправить договор на email. Попробуйте еще раз.');
+    } finally {
+      setIsSendingEmail(false);
     }
   };
   return (
@@ -133,15 +183,47 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <Button onClick={handleDownload} disabled={isDownloading} className="flex-1">
-          <Icon name={isDownloading ? "Loader2" : "Download"} size={16} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
-          {isDownloading ? 'Скачивание...' : 'Скачать DOCX'}
-        </Button>
-        <Button variant="outline" onClick={onReset}>
-          <Icon name="RotateCcw" size={16} className="mr-2" />
-          Начать заново
-        </Button>
+      <div className="space-y-4">
+        {showEmailInput && (
+          <div className="p-4 bg-gray-50 rounded-lg border border-border">
+            <Label htmlFor="email" className="text-sm font-medium mb-2 block">
+              Email для отправки договора
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendEmail()}
+                className="flex-1"
+              />
+              <Button onClick={handleSendEmail} disabled={isSendingEmail}>
+                <Icon name={isSendingEmail ? "Loader2" : "Send"} size={16} className={`mr-2 ${isSendingEmail ? 'animate-spin' : ''}`} />
+                {isSendingEmail ? 'Отправка...' : 'Отправить'}
+              </Button>
+              <Button variant="outline" onClick={() => setShowEmailInput(false)}>
+                <Icon name="X" size={16} />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-4">
+          <Button onClick={handleDownload} disabled={isDownloading} className="flex-1">
+            <Icon name={isDownloading ? "Loader2" : "Download"} size={16} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
+            {isDownloading ? 'Скачивание...' : 'Скачать DOCX'}
+          </Button>
+          <Button variant="outline" onClick={() => setShowEmailInput(!showEmailInput)} className="flex-1">
+            <Icon name="Mail" size={16} className="mr-2" />
+            Отправить на Email
+          </Button>
+          <Button variant="outline" onClick={onReset}>
+            <Icon name="RotateCcw" size={16} className="mr-2" />
+            Начать заново
+          </Button>
+        </div>
       </div>
     </div>
   );
