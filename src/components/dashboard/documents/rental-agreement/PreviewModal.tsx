@@ -1,7 +1,7 @@
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
-import { generatePDF } from "./PDFGenerator";
+import { generateDOCX } from "./DOCXGenerator";
 
 interface PreviewModalProps {
   formData: RentalAgreementData;
@@ -12,8 +12,8 @@ interface PreviewModalProps {
 }
 
 export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocumentSaved }: PreviewModalProps) => {
-  const handleDownload = () => {
-    const docId = generatePDF(formData, documentId);
+  const handleDownload = async () => {
+    const docId = await generateDOCX(formData, documentId);
     if (onDocumentSaved) {
       onDocumentSaved(docId);
     }
@@ -125,7 +125,7 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
       <div className="flex gap-4">
         <Button onClick={handleDownload} className="flex-1">
           <Icon name="Download" size={16} className="mr-2" />
-          Скачать PDF
+          Скачать DOCX
         </Button>
         <Button variant="outline" onClick={onReset}>
           <Icon name="RotateCcw" size={16} className="mr-2" />

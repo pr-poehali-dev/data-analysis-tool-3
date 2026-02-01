@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
-import { generatePDF } from "./rental-agreement/PDFGenerator";
+import { generateDOCX } from "./rental-agreement/DOCXGenerator";
 
 interface DocumentsListProps {
   onEdit: (doc: SavedDocument) => void;
@@ -34,8 +34,8 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
     }
   };
 
-  const handleDownload = (doc: SavedDocument) => {
-    generatePDF(doc.data, doc.id);
+  const handleDownload = async (doc: SavedDocument) => {
+    await generateDOCX(doc.data, doc.id);
   };
 
   if (documents.length === 0) {

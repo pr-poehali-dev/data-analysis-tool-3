@@ -59,7 +59,7 @@ class DocumentsStore {
       data,
       createdAt: now,
       updatedAt: now,
-      fileName: `Договор_аренды_${now.toLocaleDateString("ru-RU").replace(/\./g, "_")}.pdf`,
+      fileName: `Договор_аренды_${now.toLocaleDateString("ru-RU").replace(/\./g, "_")}.docx`,
     };
 
     this.documents.unshift(newDocument);
