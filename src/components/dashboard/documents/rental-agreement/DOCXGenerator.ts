@@ -1,9 +1,9 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
-import { saveAs } from "file-saver";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
 export const generateDOCX = async (formData: RentalAgreementData, existingDocId?: string) => {
+  const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } = await import("docx");
+  const { saveAs } = await import("file-saver");
   const petsText = formData.petsAllowed === "allowed" 
     ? "Содержание домашних животных разрешено."
     : formData.petsAllowed === "with-agreement"
