@@ -6,9 +6,15 @@ import { RentalAgreementData, initialData } from "./rental-agreement/types";
 import { FormSteps } from "./rental-agreement/FormSteps";
 import { PreviewModal } from "./rental-agreement/PreviewModal";
 
-export const RentalAgreementConstructor = () => {
+interface RentalAgreementConstructorProps {
+  documentId?: string;
+  initialFormData?: RentalAgreementData;
+  onDocumentSaved?: (id: string) => void;
+}
+
+export const RentalAgreementConstructor = ({ documentId, initialFormData, onDocumentSaved }: RentalAgreementConstructorProps) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<RentalAgreementData>(initialData);
+  const [formData, setFormData] = useState<RentalAgreementData>(initialFormData || initialData);
   const [isPreview, setIsPreview] = useState(false);
 
   const totalSteps = 6;
@@ -29,6 +35,8 @@ export const RentalAgreementConstructor = () => {
         formData={formData}
         onEdit={() => setIsPreview(false)}
         onReset={handleReset}
+        documentId={documentId}
+        onDocumentSaved={onDocumentSaved}
       />
     );
   }

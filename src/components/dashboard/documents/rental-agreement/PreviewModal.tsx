@@ -7,9 +7,17 @@ interface PreviewModalProps {
   formData: RentalAgreementData;
   onEdit: () => void;
   onReset: () => void;
+  documentId?: string;
+  onDocumentSaved?: (id: string) => void;
 }
 
-export const PreviewModal = ({ formData, onEdit, onReset }: PreviewModalProps) => {
+export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocumentSaved }: PreviewModalProps) => {
+  const handleDownload = () => {
+    const docId = generatePDF(formData, documentId);
+    if (onDocumentSaved) {
+      onDocumentSaved(docId);
+    }
+  };
   return (
     <div className="bg-white border border-border rounded-xl p-8">
       <div className="flex items-center justify-between mb-6">
@@ -115,7 +123,7 @@ export const PreviewModal = ({ formData, onEdit, onReset }: PreviewModalProps) =
       </div>
 
       <div className="flex gap-4">
-        <Button onClick={() => generatePDF(formData)} className="flex-1">
+        <Button onClick={handleDownload} className="flex-1">
           <Icon name="Download" size={16} className="mr-2" />
           Скачать PDF
         </Button>

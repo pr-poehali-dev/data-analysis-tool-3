@@ -1,6 +1,9 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { RentalAgreementConstructor } from "./documents/RentalAgreementConstructor";
+import { DocumentsList } from "./documents/DocumentsList";
+import { SavedDocument } from "@/store/documentsStore";
 
 interface User {
   firstName: string;
@@ -16,6 +19,29 @@ interface DashboardOtherSectionsProps {
 }
 
 export const DashboardOtherSections = ({ activeSection, user }: DashboardOtherSectionsProps) => {
+  const [editingDocument, setEditingDocument] = useState<SavedDocument | null>(null);
+  const [showConstructor, setShowConstructor] = useState(false);
+
+  const handleEditDocument = (doc: SavedDocument) => {
+    setEditingDocument(doc);
+    setShowConstructor(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditingDocument(null);
+    setShowConstructor(true);
+  };
+
+  const handleDocumentSaved = () => {
+    setShowConstructor(false);
+    setEditingDocument(null);
+  };
+
+  const handleBackToList = () => {
+    setShowConstructor(false);
+    setEditingDocument(null);
+  };
+
   switch (activeSection) {
     case "messages":
       return (
@@ -30,8 +56,27 @@ export const DashboardOtherSections = ({ activeSection, user }: DashboardOtherSe
     case "documents":
       return (
         <div>
-          <h2 className="text-3xl font-bold text-foreground mb-6">Документы</h2>
-          <RentalAgreementConstructor />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-foreground">Документы</h2>
+            {showConstructor && (
+              <Button variant="outline" onClick={handleBackToList}>
+                <Icon name="ArrowLeft" size={16} className="mr-2" />
+                К списку
+              </Button>
+            )}
+          </div>
+          {showConstructor ? (
+            <RentalAgreementConstructor
+              documentId={editingDocument?.id}
+              initialFormData={editingDocument?.data}
+              onDocumentSaved={handleDocumentSaved}
+            />
+          ) : (
+            <DocumentsList
+              onEdit={handleEditDocument}
+              onCreateNew={handleCreateNew}
+            />
+          )}
         </div>
       );
     case "balance":

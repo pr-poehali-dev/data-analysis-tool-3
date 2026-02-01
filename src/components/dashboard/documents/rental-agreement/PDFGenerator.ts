@@ -1,7 +1,8 @@
 import { jsPDF } from "jspdf";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
+import { documentsStore } from "@/store/documentsStore";
 
-export const generatePDF = (formData: RentalAgreementData) => {
+export const generatePDF = (formData: RentalAgreementData, existingDocId?: string) => {
   const doc = new jsPDF();
   let y = 20;
 
@@ -173,5 +174,8 @@ ${formData.additionalConditions}`;
   addText("Арендодатель: _______________", 20, y);
   addText("Арендатор: _______________", 120, y);
 
-  doc.save("Договор_аренды.pdf");
+  const savedDoc = documentsStore.saveDocument(formData, existingDocId);
+  doc.save(savedDoc.fileName);
+  
+  return savedDoc.id;
 };
