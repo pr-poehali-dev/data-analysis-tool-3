@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
-import { generateDOCXLazy } from "./DOCXGeneratorLazy";
 import { generateDOCXBase64Lazy } from "./DOCXGeneratorBase64Lazy";
+import { documentsStore } from "@/store/documentsStore";
 
 interface PreviewModalProps {
   formData: RentalAgreementData;
@@ -16,23 +16,24 @@ interface PreviewModalProps {
 }
 
 export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocumentSaved }: PreviewModalProps) => {
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState("");
 
-  const handleDownload = async () => {
+  const handleSave = async () => {
     try {
-      setIsDownloading(true);
-      const docId = await generateDOCXLazy(formData, documentId);
+      setIsSaving(true);
+      const savedDoc = documentsStore.saveDocument(formData, documentId);
       if (onDocumentSaved) {
-        onDocumentSaved(docId);
+        onDocumentSaved(savedDoc.id);
       }
+      alert('Договор успешно сохранен! Теперь вы можете скачать его из списка документов.');
     } catch (error) {
-      console.error('Ошибка при скачивании:', error);
-      alert('Не удалось скачать документ. Попробуйте еще раз.');
+      console.error('Ошибка при сохранении:', error);
+      alert('Не удалось сохранить документ. Попробуйте еще раз.');
     } finally {
-      setIsDownloading(false);
+      setIsSaving(false);
     }
   };
 
@@ -210,9 +211,9 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
         )}
 
         <div className="flex gap-4">
-          <Button onClick={handleDownload} disabled={isDownloading} className="flex-1">
-            <Icon name={isDownloading ? "Loader2" : "Download"} size={16} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
-            {isDownloading ? 'Скачивание...' : 'Скачать DOCX'}
+          <Button onClick={handleSave} disabled={isSaving} className="flex-1">
+            <Icon name={isSaving ? "Loader2" : "Save"} size={16} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
+            {isSaving ? 'Сохранение...' : 'Сохранить'}
           </Button>
           <Button variant="outline" onClick={() => setShowEmailInput(!showEmailInput)} className="flex-1">
             <Icon name="Mail" size={16} className="mr-2" />
