@@ -17,12 +17,18 @@ export const RentalAgreementConstructor = () => {
     setFormData({ ...formData, [field]: value });
   };
 
+  const handleReset = () => {
+    setFormData(initialData);
+    setStep(1);
+    setIsPreview(false);
+  };
+
   if (isPreview) {
     return (
       <PreviewModal
         formData={formData}
         onEdit={() => setIsPreview(false)}
-        onReset={() => setFormData(initialData)}
+        onReset={handleReset}
       />
     );
   }
