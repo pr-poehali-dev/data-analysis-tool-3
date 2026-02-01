@@ -1,147 +1,191 @@
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+import { jsPDF } from "jspdf";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
 export const generatePDF = (formData: RentalAgreementData, existingDocId?: string) => {
-  const petsText = formData.petsAllowed === "allowed" 
-    ? "Содержание домашних животных разрешено."
-    : formData.petsAllowed === "with-agreement"
-    ? "Содержание домашних животных возможно по согласованию с Арендодателем."
-    : "Содержание домашних животных запрещено.";
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
 
-  const content: any[] = [
-    { text: "ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ", style: "header", alignment: "center", margin: [0, 0, 0, 10] },
-    { text: `${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`, alignment: "center", margin: [0, 0, 0, 20] },
-    
-    { text: `Арендодатель: ${formData.landlordFullName}`, margin: [0, 0, 0, 5] },
-    { text: `Паспорт: ${formData.landlordPassport}`, fontSize: 10, margin: [0, 0, 0, 3] },
-    { text: `Адрес: ${formData.landlordAddress}`, fontSize: 10, margin: [0, 0, 0, 3] },
-    { text: `Телефон: ${formData.landlordPhone}`, fontSize: 10, margin: [0, 0, 0, 15] },
-    
-    { text: `Арендатор: ${formData.tenantFullName}`, margin: [0, 0, 0, 5] },
-    { text: `Паспорт: ${formData.tenantPassport}`, fontSize: 10, margin: [0, 0, 0, 3] },
-    { text: `Адрес: ${formData.tenantAddress}`, fontSize: 10, margin: [0, 0, 0, 3] },
-    { text: `Телефон: ${formData.tenantPhone}`, fontSize: 10, margin: [0, 0, 0, 20] },
-    
-    { text: "1. ПРЕДМЕТ ДОГОВОРА", style: "sectionHeader", margin: [0, 0, 0, 10] },
-    { 
-      text: `Арендодатель передает, а Арендатор принимает во временное владение и пользование ${getPropertyTypeName(formData.propertyType)}, расположенную по адресу: ${formData.propertyAddress}. Площадь: ${formData.propertyArea} кв.м, количество комнат: ${formData.propertyRooms}, этаж: ${formData.propertyFloor}.`,
-      alignment: "justify",
-      margin: [0, 0, 0, 15]
-    },
-    
-    { text: "2. УСЛОВИЯ ПРОЖИВАНИЯ", style: "sectionHeader", margin: [0, 0, 0, 10] },
-    { text: `Количество проживающих: ${formData.residentsCount} чел.`, margin: [0, 0, 0, 5] },
-  ];
+  let y = 20;
+  const pageHeight = 280;
+  const marginLeft = 20;
+  const maxWidth = 170;
 
-  if (formData.residentsInfo) {
-    content.push({ text: formData.residentsInfo, margin: [0, 0, 0, 5] });
-  }
-
-  content.push(
-    { text: petsText, margin: [0, 0, 0, 5] }
-  );
-
-  if (formData.propertyInventory) {
-    content.push(
-      { text: "Перечень имущества:", bold: true, margin: [0, 5, 0, 3] },
-      { text: formData.propertyInventory, margin: [0, 0, 0, 5] }
-    );
-  }
-
-  content.push(
-    { text: "3. СРОК ДЕЙСТВИЯ ДОГОВОРА", style: "sectionHeader", margin: [0, 15, 0, 10] },
-    { text: `Договор действует с ${formData.contractStartDate} по ${formData.contractEndDate}.`, margin: [0, 0, 0, 15] },
-    
-    { text: "4. АРЕНДНАЯ ПЛАТА", style: "sectionHeader", margin: [0, 0, 0, 10] },
-    { text: `Размер арендной платы составляет ${formData.rentalPrice} рублей в месяц.`, margin: [0, 0, 0, 5] },
-    { text: `Обеспечительный платеж: ${formData.securityDeposit} рублей.`, margin: [0, 0, 0, 5] },
-    { text: `Коммунальные услуги: ${formData.utilitiesIncluded ? "включены в стоимость" : "оплачиваются отдельно"}.`, margin: [0, 0, 0, 15] },
-    
-    { text: "5. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ", style: "sectionHeader", margin: [0, 0, 0, 10] },
-    { 
-      text: "5.1. Договор составлен в двух экземплярах, имеющих одинаковую юридическую силу, по одному для каждой из сторон.",
-      alignment: "justify",
-      margin: [0, 0, 0, 8]
-    },
-    {
-      text: "5.2. Все изменения и дополнения к настоящему Договору действительны при условии, если они совершены в письменной форме и подписаны обеими сторонами.",
-      alignment: "justify",
-      margin: [0, 0, 0, 8]
-    },
-    { text: "5.3. Расторжение договора:", bold: true, margin: [0, 0, 0, 5] },
-    {
-      ul: [
-        "Договор может быть расторгнут досрочно по соглашению сторон.",
-        "Арендодатель имеет право расторгнуть договор в одностороннем порядке при систематической неуплате арендной платы (более двух месяцев подряд), нарушении правил пользования жилым помещением, либо при использовании помещения не по назначению.",
-        "Арендатор имеет право расторгнуть договор в одностороннем порядке, уведомив Арендодателя не менее чем за 30 дней до предполагаемой даты расторжения."
-      ],
-      margin: [0, 0, 0, 8]
-    },
-    { text: "5.4. Ответственность сторон:", bold: true, margin: [0, 0, 0, 5] },
-    {
-      ul: [
-        "За невыполнение или ненадлежащее выполнение обязательств по настоящему Договору стороны несут ответственность в соответствии с действующим законодательством Российской Федерации.",
-        "Арендатор несет ответственность за сохранность имущества и обязан возместить ущерб, причиненный жилому помещению и имуществу Арендодателя, за исключением естественного износа.",
-        "При несвоевременной оплате арендной платы Арендатор уплачивает пени в размере 0,1% от суммы задолженности за каждый день просрочки.",
-        "Арендодатель несет ответственность за недостатки сданного в аренду помещения, препятствующие его использованию, и обязуется устранить их за свой счет в разумный срок."
-      ],
-      margin: [0, 0, 0, 8]
-    },
-    {
-      text: "5.5. Споры и разногласия, возникающие в процессе исполнения настоящего Договора, разрешаются путем переговоров между сторонами. В случае недостижения согласия спор передается на рассмотрение в суд в соответствии с действующим законодательством Российской Федерации.",
-      alignment: "justify",
-      margin: [0, 0, 0, 8]
-    },
-    {
-      text: "5.6. Настоящий Договор вступает в силу с момента его подписания сторонами и действует до полного исполнения сторонами своих обязательств.",
-      alignment: "justify",
-      margin: [0, 0, 0, 8]
+  const checkPageBreak = (neededSpace: number = 10) => {
+    if (y + neededSpace > pageHeight) {
+      doc.addPage();
+      y = 20;
     }
-  );
-
-  if (formData.additionalConditions) {
-    content.push(
-      { text: "5.7. Дополнительные условия:", bold: true, margin: [0, 0, 0, 5] },
-      { text: formData.additionalConditions, alignment: "justify", margin: [0, 0, 0, 8] }
-    );
-  }
-
-  content.push(
-    { text: "", pageBreak: "auto" },
-    { text: "ПОДПИСИ СТОРОН:", bold: true, margin: [0, 20, 0, 20] },
-    {
-      columns: [
-        { text: "Арендодатель: _______________", width: "50%" },
-        { text: "Арендатор: _______________", width: "50%" }
-      ]
-    }
-  );
-
-  const docDefinition = {
-    content: content,
-    styles: {
-      header: {
-        fontSize: 16,
-        bold: true
-      },
-      sectionHeader: {
-        fontSize: 12,
-        bold: true
-      }
-    },
-    defaultStyle: {
-      fontSize: 11,
-      lineHeight: 1.3
-    },
-    pageMargins: [40, 40, 40, 40]
   };
 
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  const title = "DOGOVOR ARENDY ZHILOGO POMESHCHENIYA";
+  const titleWidth = doc.getTextWidth(title);
+  doc.text(title, (210 - titleWidth) / 2, y);
+  y += 15;
+
+  doc.setFontSize(10);
+  doc.setFont("times", "normal");
+  const dateText = `${formData.contractCity}, ${new Date().toLocaleDateString("ru-RU")}`;
+  const dateWidth = doc.getTextWidth(dateText);
+  doc.text(dateText, (210 - dateWidth) / 2, y);
+  y += 15;
+
+  doc.setFontSize(11);
+  doc.text(`Arendodatel': ${formData.landlordFullName}`, marginLeft, y);
+  y += 7;
+  doc.text(`Pasport: ${formData.landlordPassport}`, marginLeft, y);
+  y += 7;
+  doc.text(`Adres: ${formData.landlordAddress}`, marginLeft, y);
+  y += 7;
+  doc.text(`Telefon: ${formData.landlordPhone}`, marginLeft, y);
+  y += 12;
+
+  doc.text(`Arendator: ${formData.tenantFullName}`, marginLeft, y);
+  y += 7;
+  doc.text(`Pasport: ${formData.tenantPassport}`, marginLeft, y);
+  y += 7;
+  doc.text(`Adres: ${formData.tenantAddress}`, marginLeft, y);
+  y += 7;
+  doc.text(`Telefon: ${formData.tenantPhone}`, marginLeft, y);
+  y += 15;
+
+  checkPageBreak(20);
+  doc.setFont("times", "bold");
+  doc.text("1. PREDMET DOGOVORA", marginLeft, y);
+  y += 7;
+  doc.setFont("times", "normal");
+  
+  const section1 = `Arendodatel' peredaet, a Arendator prinimaet vo vremennoe vladenie i pol'zovanie ${getPropertyTypeName(formData.propertyType)}, raspolozhennuyu po adresu: ${formData.propertyAddress}. Ploshchad': ${formData.propertyArea} kv.m, kolichestvo komnat: ${formData.propertyRooms}, etazh: ${formData.propertyFloor}.`;
+  const section1Lines = doc.splitTextToSize(section1, maxWidth);
+  section1Lines.forEach((line: string) => {
+    checkPageBreak();
+    doc.text(line, marginLeft, y);
+    y += 5;
+  });
+  y += 7;
+
+  checkPageBreak(20);
+  doc.setFont("times", "bold");
+  doc.text("2. USLOVIYA PROZHIVANIYA", marginLeft, y);
+  y += 7;
+  doc.setFont("times", "normal");
+  doc.text(`Kolichestvo prozhivayushchikh: ${formData.residentsCount} chel.`, marginLeft, y);
+  y += 7;
+
+  if (formData.residentsInfo) {
+    const residentLines = doc.splitTextToSize(formData.residentsInfo, maxWidth);
+    residentLines.forEach((line: string) => {
+      checkPageBreak();
+      doc.text(line, marginLeft, y);
+      y += 5;
+    });
+    y += 5;
+  }
+
+  const petsText = formData.petsAllowed === "allowed" 
+    ? "Soderzhanie domashnikh zhivotnykh razresheno."
+    : formData.petsAllowed === "with-agreement"
+    ? "Soderzhanie domashnikh zhivotnykh vozmozhno po soglasovaniyu s Arendodatelem."
+    : "Soderzhanie domashnikh zhivotnykh zapreshcheno.";
+  doc.text(petsText, marginLeft, y);
+  y += 7;
+
+  if (formData.propertyInventory) {
+    checkPageBreak(15);
+    doc.setFont("times", "bold");
+    doc.text("Perechen' imushchestva:", marginLeft, y);
+    y += 5;
+    doc.setFont("times", "normal");
+    const inventoryLines = doc.splitTextToSize(formData.propertyInventory, maxWidth);
+    inventoryLines.forEach((line: string) => {
+      checkPageBreak();
+      doc.text(line, marginLeft, y);
+      y += 5;
+    });
+    y += 5;
+  }
+
+  checkPageBreak(20);
+  doc.setFont("times", "bold");
+  doc.text("3. SROK DEJSTVIYA DOGOVORA", marginLeft, y);
+  y += 7;
+  doc.setFont("times", "normal");
+  doc.text(`Dogovor dejstvuet s ${formData.contractStartDate} po ${formData.contractEndDate}.`, marginLeft, y);
+  y += 12;
+
+  checkPageBreak(20);
+  doc.setFont("times", "bold");
+  doc.text("4. ARENDNAYA PLATA", marginLeft, y);
+  y += 7;
+  doc.setFont("times", "normal");
+  doc.text(`Razmer arendnoj platy sostavlyaet ${formData.rentalPrice} rublej v mesyac.`, marginLeft, y);
+  y += 7;
+  doc.text(`Obespechitel'nyj platezh: ${formData.securityDeposit} rublej.`, marginLeft, y);
+  y += 7;
+  doc.text(`Kommunal'nye uslugi: ${formData.utilitiesIncluded ? "vklyucheny v stoimost'" : "oplachivayutsya otdel'no"}.`, marginLeft, y);
+  y += 12;
+
+  checkPageBreak(30);
+  doc.setFont("times", "bold");
+  doc.text("5. ZAKLYUCHITEL'NYE POLOZHENIYA", marginLeft, y);
+  y += 7;
+  doc.setFont("times", "normal");
+
+  const provisions = [
+    "5.1. Dogovor sostavlen v dvukh ekzemplyarakh, imeyushchikh odinakovuyu yuridicheskuyu silu, po odnomu dlya kazhdoj iz storon.",
+    "",
+    "5.2. Vse izmeneniya i dopolneniya k nastoyashchemu Dogovoru dejstvitel'ny pri uslovii, esli oni soversheny v pis'mennoj forme i podpisany obeimi storonami.",
+    "",
+    "5.3. Rastorzhenie dogovora:",
+    "- Dogovor mozhet byt' rastorgnut dosrochno po soglasheniyu storon.",
+    "- Arendodatel' imeet pravo rastorgnut' dogovor v odnostoronnem poryadke pri sistematicheskoj neup late arendnoj platy (bolee dvukh mesyacev podryad), narushenii pravil pol'zovaniya zhilym pomeshcheniem, libo pri ispol'zovanii pomeshcheniya ne po naznacheniyu.",
+    "- Arendator imeet pravo rastorgnut' dogovor v odnostoronnem poryadke, uvedomiv Arendodatelya ne menee chem za 30 dnej do predpolagaemoj daty rastorzheniya.",
+    "",
+    "5.4. Otvetstvennost' storon:",
+    "- Za nevypolnenie ili nenadlezhashchee vypolnenie obyazatel'stv po nastoyashchemu Dogovoru storony nesut otvetstvennost' v sootvetstvii s dejstvuyushchim zakonodatel'stvom Rossijskoj Federacii.",
+    "- Arendator neset otvetstvennost' za sokhrannost' imushchestva i obyazan vozmestit' ushcherb, prichinennyj zhilomu pomeshcheniyu i imushchestvu Arendodatelya, za isklyucheniem estestvennogo iznosa.",
+    "- Pri nesvoevremennoi oplate arendnoi platy Arendator uplachivaet peni v razmere 0,1% ot summy zadolzhennosti za kazhdyi den' prosrochki.",
+    "- Arendodatel' neset otvetstvennost' za nedostatki sdannogo v arendu pomeshcheniya, prepyatstvuyushchie ego ispol'zovaniyu, i obyazuetsya ustranit' ikh za svoj schet v razumnyj srok.",
+    "",
+    "5.5. Spory i raznoglasiya, voznikayushchie v processe ispolneniya nastoyashchego Dogovora, razreshayutsya putem peregovorov mezhdu storonami. V sluchae nedostizheniya soglasiya spor peredaetsya na rassmotrenie v sud v sootvetstvii s dejstvuyushchim zakonodatel'stvom Rossijskoj Federacii.",
+    "",
+    "5.6. Nastoyashchij Dogovor vstupaet v silu s momenta ego podpisaniya storonami i dejstvuet do polnogo ispolneniya storonami svoikh obyazatel'stv."
+  ];
+
+  if (formData.additionalConditions) {
+    provisions.push("");
+    provisions.push("5.7. Dopolnitel'nye usloviya:");
+    const additionalLines = doc.splitTextToSize(formData.additionalConditions, maxWidth);
+    provisions.push(...additionalLines);
+  }
+
+  provisions.forEach((line) => {
+    if (line === "") {
+      y += 4;
+    } else {
+      checkPageBreak();
+      doc.text(line, marginLeft, y);
+      y += 5;
+    }
+  });
+
+  checkPageBreak(30);
+  y += 10;
+  doc.setFont("times", "bold");
+  doc.text("PODPISI STORON:", marginLeft, y);
+  y += 15;
+
+  doc.setFont("times", "normal");
+  doc.text("Arendodatel': _______________", marginLeft, y);
+  doc.text("Arendator: _______________", 120, y);
+
   const savedDoc = documentsStore.saveDocument(formData, existingDocId);
-  pdfMake.createPdf(docDefinition).download(savedDoc.fileName);
+  doc.save(savedDoc.fileName);
   
   return savedDoc.id;
 };
