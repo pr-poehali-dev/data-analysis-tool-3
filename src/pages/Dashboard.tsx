@@ -7,6 +7,7 @@ import { DashboardRecommendationsSection } from "@/components/dashboard/Dashboar
 import { DashboardMessagesSection } from "@/components/dashboard/DashboardMessagesSection";
 import { DashboardSettingsSection } from "@/components/dashboard/DashboardSettingsSection";
 import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSections";
+import { DashboardReviewsSection } from "@/components/dashboard/DashboardReviewsSection";
 import { MessageNotification } from "@/components/notifications/MessageNotification";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
@@ -40,6 +41,7 @@ const menuItems: MenuItem[] = [
   { id: "messages", label: "Сообщения", icon: "MessageSquare" },
   { id: "documents", label: "Документы", icon: "FolderOpen" },
   { id: "balance", label: "Баланс", icon: "Wallet" },
+  { id: "reviews", label: "Отзывы", icon: "Star" },
   { id: "settings", label: "Настройки профиля", icon: "Settings" },
 ];
 
@@ -121,6 +123,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         return <DashboardRecommendationsSection userRecommendations={userRecommendations} />;
       case "messages":
         return <DashboardMessagesSection user={user} />;
+      case "reviews":
+        return <DashboardReviewsSection userEmail={user.email} />;
       case "settings":
         return <DashboardSettingsSection user={user} />;
       default:
