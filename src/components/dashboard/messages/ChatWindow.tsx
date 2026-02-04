@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageViewer } from "@/components/ui/image-viewer";
 import { UserProfileModal } from "./UserProfileModal";
+import { ReviewModal } from "./ReviewModal";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -27,6 +28,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -145,7 +147,8 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   return (
     <div className="flex flex-col h-full">
       <div className="bg-white border-b border-border p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1">
           <button
             onClick={() => setShowProfileModal(true)}
             className="flex-shrink-0 hover:opacity-80 transition-opacity"
@@ -169,6 +172,16 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
             <h3 className="font-semibold text-foreground">{otherUserName}</h3>
             <p className="text-xs text-muted-foreground">{chat.requestName}</p>
           </button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReviewModal(true)}
+            className="flex items-center gap-2 whitespace-nowrap"
+          >
+            <Icon name="Star" size={16} />
+            Оставить отзыв
+          </Button>
         </div>
       </div>
 
@@ -403,6 +416,21 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           vkLink: otherUserVkLink,
         }}
       />
+
+      {showReviewModal && (
+        <ReviewModal
+          chatId={chat.id}
+          recommendationId={chat.recommendationId}
+          reviewerEmail={currentUserEmail}
+          reviewerName={currentUserName}
+          revieweeEmail={otherUserEmail}
+          revieweeName={otherUserName}
+          onClose={() => setShowReviewModal(false)}
+          onSuccess={() => {
+            console.log('Отзыв успешно отправлен');
+          }}
+        />
+      )}
     </div>
   );
 };

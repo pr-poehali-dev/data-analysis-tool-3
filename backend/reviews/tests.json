@@ -1,0 +1,38 @@
+{
+  "tests": [
+    {
+      "name": "Create review",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "chat_id": "test_chat_1",
+        "recommendation_id": "test_rec_1",
+        "reviewer_email": "tenant@test.com",
+        "reviewer_name": "Иван Иванов",
+        "reviewee_email": "recommender@test.com",
+        "reviewee_name": "Петр Петров",
+        "rating": 5,
+        "comment": "Отличный рекомендатель!"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "review": {
+          "rating": 5
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get reviews by email",
+      "method": "GET",
+      "path": "/?reviewee_email=recommender@test.com",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "avg_rating": 5.0,
+        "total": 1
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

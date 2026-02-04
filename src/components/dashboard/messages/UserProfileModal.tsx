@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,35 @@ interface UserProfileModalProps {
 }
 
 export const UserProfileModal = ({ isOpen, onClose, user }: UserProfileModalProps) => {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && user.email) {
+      loadReviews();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user.email]);
+
+  const loadReviews = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f?reviewee_email=${encodeURIComponent(user.email)}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setReviews(data.reviews || []);
+        setAvgRating(data.avg_rating);
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -64,7 +94,67 @@ export const UserProfileModal = ({ isOpen, onClose, user }: UserProfileModalProp
                 <Icon name="Mail" size={16} />
                 {user.email}
               </p>
+              
+              {avgRating !== null && (
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Icon
+                        key={star}
+                        name="Star"
+                        size={18}
+                        className={`${
+                          star <= Math.round(avgRating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">
+                    {avgRating.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({reviews.length} {reviews.length === 1 ? 'отзыв' : 'отзыва/ов'})
+                  </span>
+                </div>
+              )}
             </div>
+
+            {reviews.length > 0 && (
+              <div className="mb-4 max-h-60 overflow-y-auto space-y-3">
+                <h3 className="font-semibold text-sm text-foreground mb-2">Отзывы:</h3>
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {review.reviewer_name}
+                      </span>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Icon
+                            key={star}
+                            name="Star"
+                            size={14}
+                            className={`${
+                              star <= review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.comment && (
+                      <p className="text-xs text-muted-foreground">{review.comment}</p>
+                    )}
+                    <span className="text-xs text-muted-foreground mt-1 block">
+                      {new Date(review.created_at).toLocaleDateString('ru-RU')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="space-y-3">
               {user.vkLink && (

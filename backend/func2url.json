@@ -1,4 +1,5 @@
 {
+  "reviews": "https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f",
   "send-contract-email": "https://functions.poehali.dev/ef87cab5-dd87-4cb9-b8bd-a4fa837976a4",
   "sms-verify": "https://functions.poehali.dev/4f15da38-48d3-4d79-a81e-4cc876c6b4d5",
   "sms-send": "https://functions.poehali.dev/32b5cae5-1b91-4f07-bee6-1063cf4ba9c1"
