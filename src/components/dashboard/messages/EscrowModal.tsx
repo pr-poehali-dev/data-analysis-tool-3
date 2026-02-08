@@ -114,17 +114,9 @@ export const EscrowModal = ({
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <Icon name="Info" size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-900">
-                    <p className="font-medium mb-1">Безопасная сделка через эскроу</p>
-                    <p className="text-blue-700">
-                      Средства будут переведены рекомендателю после подтверждения обеими сторонами
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Безопасная сделка через эскроу. Средства будут переведены рекомендателю после подтверждения обеими сторонами
+              </p>
 
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4">
