@@ -51,7 +51,7 @@ const AppContent = () => {
     navigate("/");
   };
 
-  const handleRegistrationSuccess = (data: any) => {
+  const handleRegistrationSuccess = (data: { firstName: string; lastName: string; email: string; phone: string }) => {
     const userData = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -92,7 +92,7 @@ const AppContent = () => {
       <Route path="/edit-request/:requestId" element={<EditRequest />} />
       <Route path="/suggest-property" element={<SuggestProperty />} />
       <Route path="/edit-recommendation/:recommendationId" element={<EditRecommendation />} />
-      <Route path="/request-offers/:requestId" element={<RequestOffers />} />
+      <Route path="/request-offers/:requestId" element={<RequestOffers currentUser={user || undefined} />} />
       <Route path="/request/:requestId" element={<RequestDetails />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

@@ -6,6 +6,7 @@ import { PortfolioNavbar, Footer } from "@/components/landing";
 import { useNavigate, useParams } from "react-router-dom";
 import { requestsStore } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
+import { messagesStore } from "@/store/messagesStore";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const RequestOffers = () => {
+interface RequestOffersProps {
+  currentUser?: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    photo?: string;
+  };
+}
+
+export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
   const navigate = useNavigate();
   const { requestId } = useParams<{ requestId: string }>();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -204,7 +214,7 @@ export const RequestOffers = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">Статус:</span>
                           <Select
@@ -226,6 +236,34 @@ export const RequestOffers = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                        {currentUser && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const chat = messagesStore.getChatByRecommendation(recommendation.id);
+                              if (chat) {
+                                navigate("/", { state: { activeSection: "messages" } });
+                              } else {
+                                messagesStore.createChat({
+                                  recommendationId: recommendation.id,
+                                  requestId: request?.id || '',
+                                  requestName: request?.name || '',
+                                  recommenderEmail: recommendation.userId,
+                                  recommenderName: recommendation.userId.split('@')[0],
+                                  tenantEmail: currentUser.email,
+                                  tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
+                                  tenantPhoto: currentUser.photo,
+                                });
+                                navigate("/", { state: { activeSection: "messages" } });
+                              }
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <Icon name="MessageSquare" size={16} />
+                            Написать сообщение
+                          </Button>
+                        )}
                         <span className="text-xs text-muted-foreground ml-auto">
                           {new Date(recommendation.createdAt).toLocaleDateString('ru-RU', {
                             day: 'numeric',
