@@ -8,6 +8,7 @@ import { UserProfileModal } from "./UserProfileModal";
 import { ReviewModal } from "./ReviewModal";
 import { EscrowModal } from "./EscrowModal";
 import { recommendationsStore } from "@/store/recommendationsStore";
+import { requestsStore } from "@/store/requestsStore";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -450,6 +451,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         isOpen={showEscrowModal}
         onClose={() => setShowEscrowModal(false)}
         rentAmount={recommendationsStore.getRecommendationById(chat.recommendationId)?.propertyData.rent || '0'}
+        rewardAmount={requestsStore.getRequestById(chat.requestId)?.reward || '0'}
         chatId={chat.id}
         recommendationId={chat.recommendationId}
         requestName={chat.requestName}

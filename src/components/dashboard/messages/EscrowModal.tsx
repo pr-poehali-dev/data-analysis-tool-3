@@ -8,6 +8,7 @@ interface EscrowModalProps {
   isOpen: boolean;
   onClose: () => void;
   rentAmount: string;
+  rewardAmount: string;
   chatId: string;
   recommendationId: string;
   requestName: string;
@@ -21,6 +22,7 @@ export const EscrowModal = ({
   isOpen, 
   onClose, 
   rentAmount,
+  rewardAmount,
   chatId,
   recommendationId,
   requestName,
@@ -32,7 +34,7 @@ export const EscrowModal = ({
   const [isProcessing, setIsProcessing] = useState(false);
   
   const rent = parseFloat(rentAmount.replace(/\s/g, '')) || 0;
-  const commission = Math.round(rent * 0.5);
+  const commission = parseFloat(rewardAmount.replace(/[^\d]/g, '')) || 0;
   
   const handlePayment = async () => {
     setIsProcessing(true);
@@ -135,7 +137,7 @@ export const EscrowModal = ({
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {recommenderName} получит 50% от стоимости месяца аренды
+                    {recommenderName} получит вознаграждение по условиям заявки
                   </p>
                 </div>
 
