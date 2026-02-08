@@ -2,13 +2,18 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { escrowStore } from "@/store/escrowStore";
 
 interface EscrowModalProps {
   isOpen: boolean;
   onClose: () => void;
   rentAmount: string;
   chatId: string;
+  recommendationId: string;
   requestName: string;
+  tenantEmail: string;
+  tenantName: string;
+  recommenderEmail: string;
   recommenderName: string;
 }
 
@@ -16,7 +21,12 @@ export const EscrowModal = ({
   isOpen, 
   onClose, 
   rentAmount,
+  chatId,
+  recommendationId,
   requestName,
+  tenantEmail,
+  tenantName,
+  recommenderEmail,
   recommenderName
 }: EscrowModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,11 +37,28 @@ export const EscrowModal = ({
   const handlePayment = async () => {
     setIsProcessing(true);
     
-    setTimeout(() => {
+    try {
+      escrowStore.createTransaction({
+        chatId,
+        recommendationId,
+        requestName,
+        tenantEmail,
+        tenantName,
+        recommenderEmail,
+        recommenderName,
+        rentAmount: rent,
+        commissionAmount: commission,
+      });
+      
+      setTimeout(() => {
+        setIsProcessing(false);
+        onClose();
+        alert('Сделка создана! Проверьте раздел "Баланс"');
+      }, 1000);
+    } catch (error) {
+      console.error('Error creating escrow transaction:', error);
       setIsProcessing(false);
-      onClose();
-      alert('Функция оплаты будет реализована на следующем этапе');
-    }, 1500);
+    }
   };
 
   return (

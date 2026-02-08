@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { RentalAgreementConstructor } from "./documents/RentalAgreementConstructor";
 import { DocumentsList } from "./documents/DocumentsList";
 import { SavedDocument } from "@/store/documentsStore";
+import { DashboardBalanceSection } from "./DashboardBalanceSection";
 
 interface User {
   firstName: string;
@@ -81,27 +82,10 @@ export const DashboardOtherSections = ({ activeSection, user }: DashboardOtherSe
       );
     case "balance":
       return (
-        <div>
-          <h2 className="text-3xl font-bold text-foreground mb-6">Баланс</h2>
-          <div className="grid md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white border border-border rounded-xl p-6">
-              <p className="text-sm text-muted-foreground mb-2">Доступно к выводу</p>
-              <p className="text-3xl font-bold text-foreground">0 ₽</p>
-            </div>
-            <div className="bg-white border border-border rounded-xl p-6">
-              <p className="text-sm text-muted-foreground mb-2">В обработке</p>
-              <p className="text-3xl font-bold text-foreground">0 ₽</p>
-            </div>
-            <div className="bg-white border border-border rounded-xl p-6">
-              <p className="text-sm text-muted-foreground mb-2">Заработано всего</p>
-              <p className="text-3xl font-bold text-foreground">0 ₽</p>
-            </div>
-          </div>
-          <div className="bg-white border border-border rounded-xl p-8 text-center">
-            <Icon name="Wallet" size={48} className="mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg text-muted-foreground">История транзакций пуста</p>
-          </div>
-        </div>
+        <DashboardBalanceSection 
+          userEmail={user.email} 
+          userName={`${user.firstName} ${user.lastName}`}
+        />
       );
     case "settings":
       return (

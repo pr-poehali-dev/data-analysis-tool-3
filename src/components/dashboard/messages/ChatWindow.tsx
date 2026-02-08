@@ -451,7 +451,11 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         onClose={() => setShowEscrowModal(false)}
         rentAmount={recommendationsStore.getRecommendationById(chat.recommendationId)?.propertyData.rent || '0'}
         chatId={chat.id}
+        recommendationId={chat.recommendationId}
         requestName={chat.requestName}
+        tenantEmail={chat.tenantEmail}
+        tenantName={chat.tenantName}
+        recommenderEmail={chat.recommenderEmail}
         recommenderName={chat.recommenderName}
       />
     </div>
