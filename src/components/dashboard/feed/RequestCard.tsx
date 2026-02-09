@@ -93,12 +93,14 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
       </div>
 
       <div className="relative z-10 space-y-2">
-        {suggestionsCount > 0 && (
-          <div className="flex items-center justify-center gap-1.5 text-sm text-green-600 bg-green-50 py-1.5 px-3 rounded-lg border border-green-200">
-            <Icon name="Check" size={14} />
-            <span className="font-medium">Уже предложено: {suggestionsCount}</span>
-          </div>
-        )}
+        <div className="min-h-[36px] flex items-center justify-center">
+          {suggestionsCount > 0 && (
+            <div className="flex items-center justify-center gap-1.5 text-sm text-green-600 bg-green-50 py-1.5 px-3 rounded-lg border border-green-200">
+              <Icon name="Check" size={14} />
+              <span className="font-medium">Уже предложено: {suggestionsCount}</span>
+            </div>
+          )}
+        </div>
         <Button 
           className="w-full" 
           onClick={(e) => {
