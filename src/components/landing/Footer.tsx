@@ -29,25 +29,25 @@ const defaultSections: FooterSection[] = [
   {
     title: "Арендаторам",
     links: [
-      { label: "Найти жильё", href: "#register" },
-      { label: "Как это работает", href: "#how-it-works" },
-      { label: "Гарантии безопасности", href: "#safety" },
+      { label: "Найти жильё", href: "/how-it-works#find-housing" },
+      { label: "Как это работает", href: "/how-it-works#how-it-works" },
+      { label: "Гарантии безопасности", href: "/how-it-works#safety" },
     ],
   },
   {
     title: "Рекомендателям",
     links: [
-      { label: "Лента заявок", href: "/feed" },
-      { label: "Вознаграждения", href: "#pricing" },
-      { label: "Правила выплат", href: "#payouts" },
+      { label: "Лента заявок", href: "/how-it-works#feed" },
+      { label: "Вознаграждения", href: "/how-it-works#pricing" },
+      { label: "Правила выплат", href: "/how-it-works#payouts" },
     ],
   },
   {
     title: "Владельцам",
     links: [
-      { label: "Сдать жильё", href: "#rent-out" },
-      { label: "Верификация жильцов", href: "#verification" },
-      { label: "Договоры аренды", href: "#contracts" },
+      { label: "Сдать жильё", href: "/how-it-works#rent-out" },
+      { label: "Верификация жильцов", href: "/how-it-works#verification" },
+      { label: "Договоры аренды", href: "/how-it-works#contracts" },
     ],
   },
   {
@@ -80,6 +80,9 @@ export const Footer = ({
     if (href === '#register' && onRegisterClick) {
       e.preventDefault();
       onRegisterClick();
+    } else if (href.includes('#') && href.startsWith('/')) {
+      e.preventDefault();
+      navigate(href);
     } else if (href.startsWith('/')) {
       e.preventDefault();
       navigate(href);
