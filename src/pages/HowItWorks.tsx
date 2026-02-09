@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/landing/Footer";
+import { authStore } from "@/store/authStore";
 
 export const HowItWorks = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = authStore.getUser();
 
   useEffect(() => {
     const hash = location.hash;
@@ -100,6 +102,14 @@ export const HowItWorks = () => {
     }
   ];
 
+  const handleGoBack = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -109,10 +119,10 @@ export const HowItWorks = () => {
               src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bf9825ff-384f-4373-81c0-67ea99aefa6f.png" 
               alt="SovetPay" 
               className="h-12 w-auto cursor-pointer"
-              onClick={() => navigate('/')}
+              onClick={handleGoBack}
             />
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
+          <Button onClick={handleGoBack} variant="outline">
             <Icon name="ArrowLeft" size={16} className="mr-2" />
             На главную
           </Button>
