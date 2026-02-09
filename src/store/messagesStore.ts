@@ -8,6 +8,7 @@ export interface Message {
   photos?: string[];
   createdAt: Date;
   read: boolean;
+  isSystemMessage?: boolean;
 }
 
 export interface Chat {
@@ -109,6 +110,7 @@ class MessagesStore {
       id: Date.now().toString(),
       createdAt: new Date(),
       read: false,
+      isSystemMessage: data.isSystemMessage || false,
     };
 
     const messages = this.getAllMessages();
@@ -246,6 +248,16 @@ class MessagesStore {
     const filtered = typingStatuses.filter(t => (now - t.timestamp) < 10000);
     
     localStorage.setItem(TYPING_STORAGE_KEY, JSON.stringify(filtered));
+  }
+
+  sendSystemMessage(chatId: string, text: string): void {
+    this.sendMessage({
+      chatId,
+      senderId: 'system',
+      senderName: 'Система',
+      text,
+      isSystemMessage: true,
+    });
   }
 }
 

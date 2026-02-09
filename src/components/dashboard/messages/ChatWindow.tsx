@@ -181,7 +181,13 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
             <Button
               variant="default"
               size="sm"
-              onClick={() => setShowEscrowModal(true)}
+              onClick={() => {
+                messagesStore.sendSystemMessage(
+                  chat.id,
+                  '🤝 Стороны договорились о сделке и переходят к оформлению через эскроу'
+                );
+                setShowEscrowModal(true);
+              }}
               className="flex items-center gap-2 whitespace-nowrap bg-primary hover:bg-primary/90"
             >
               <Icon name="Handshake" size={16} />
@@ -229,12 +235,23 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
                   </div>
                 )}
                 
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}
-                >
-                  {!isOwn && (
+                {message.isSystemMessage ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-center my-3"
+                  >
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 max-w-md">
+                      <p className="text-sm text-blue-900 text-center">{message.text}</p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}
+                  >
+                    {!isOwn && (
                     message.senderPhoto ? (
                       <img
                         src={message.senderPhoto}
@@ -304,7 +321,8 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
                       {format(message.createdAt, "HH:mm", { locale: ru })}
                     </span>
                   </div>
-                </motion.div>
+                  </motion.div>
+                )}
               </div>
             );
           })

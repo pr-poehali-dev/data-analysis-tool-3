@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { escrowStore } from "@/store/escrowStore";
+import { messagesStore } from "@/store/messagesStore";
 
 interface EscrowModalProps {
   isOpen: boolean;
@@ -53,6 +54,11 @@ export const EscrowModal = ({
         rentAmount: rent,
         commissionAmount: commission,
       });
+      
+      messagesStore.sendSystemMessage(
+        chatId,
+        `🔒 Средства вознаграждения (${commission.toLocaleString('ru-RU')} ₽) заморожены на счёте эскроу до подтверждения сделки`
+      );
       
       setTimeout(() => {
         setIsProcessing(false);
