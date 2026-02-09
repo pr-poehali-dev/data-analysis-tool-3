@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/landing/Footer";
 
 export const HowItWorks = () => {
   const navigate = useNavigate();
@@ -202,13 +203,7 @@ export const HowItWorks = () => {
         </motion.div>
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600 text-sm">
-            © {new Date().getFullYear()} SovetPay. Все права защищены.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
