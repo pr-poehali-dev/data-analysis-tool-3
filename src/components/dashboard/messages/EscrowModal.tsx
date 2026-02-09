@@ -33,6 +33,7 @@ export const EscrowModal = ({
   recommenderName
 }: EscrowModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   
   const rent = parseFloat(rentAmount.replace(/\s/g, '')) || 0;
   const commission = parseFloat(rewardAmount.replace(/[^\d]/g, '')) || 0;
@@ -146,17 +147,42 @@ export const EscrowModal = ({
                   </p>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <Icon name="AlertCircle" size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-amber-900">
-                    <p className="font-medium mb-1">Как работает эскроу?</p>
-                    <ul className="space-y-1 text-amber-800 text-xs">
-                      <li>• Вы переводите только деньги вознаграждения на защищённый счёт</li>
-                      <li>• Средства замораживаются до подтверждения сделки</li>
-                      <li>• После вашего переезда вы подтверждаете сделку и рекомендатель получит вознаграждение</li>
-                      <li>• В случае отмены — полный возврат ваших средств</li>
-                    </ul>
-                  </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setIsHowItWorksOpen(!isHowItWorksOpen)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-amber-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon name="AlertCircle" size={20} className="text-amber-600 flex-shrink-0" />
+                      <p className="font-medium text-sm text-amber-900">Как работает эскроу?</p>
+                    </div>
+                    <Icon 
+                      name={isHowItWorksOpen ? "ChevronUp" : "ChevronDown"} 
+                      size={20} 
+                      className="text-amber-600 flex-shrink-0" 
+                    />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {isHowItWorksOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 pt-2">
+                          <ul className="space-y-1 text-amber-800 text-xs">
+                            <li>• Вы переводите только деньги вознаграждения на защищённый счёт</li>
+                            <li>• Средства замораживаются до подтверждения сделки</li>
+                            <li>• После вашего переезда вы подтверждаете сделку и рекомендатель получит вознаграждение</li>
+                            <li>• В случае отмены — полный возврат ваших средств</li>
+                          </ul>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
