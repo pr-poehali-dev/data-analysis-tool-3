@@ -120,14 +120,13 @@ export const EscrowModal = ({
               </p>
 
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Стоимость аренды</span>
-                    <span className="text-2xl font-bold text-foreground">
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Стоимость аренды за месяц</span>
+                    <span className="text-lg font-semibold text-foreground">
                       {rentAmount} ₽
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">за месяц</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border-2 border-primary/20">
