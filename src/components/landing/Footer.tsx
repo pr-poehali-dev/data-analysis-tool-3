@@ -65,9 +65,9 @@ export const Footer = ({
   tagline = "Аренда жилья через рекомендации — безопасно и выгодно",
   sections = defaultSections,
   socialLinks = {
-    vk: "https://vk.com",
-    telegram: "https://t.me",
-    instagram: "https://instagram.com",
+    vk: "https://vk.ru/sovetpay",
+    telegram: "https://t.me/SovetPay",
+    instagram: "https://www.instagram.com/sovetpay",
   },
   copyrightText,
   onRegisterClick,
