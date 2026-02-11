@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { Footer } from "@/components/landing/Footer";
@@ -7,6 +8,10 @@ import { authStore } from "@/store/authStore";
 export const PrivacyPolicy = () => {
   const navigate = useNavigate();
   const user = authStore.getUser();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleGoBack = () => {
     if (user) {
