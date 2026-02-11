@@ -55,7 +55,7 @@ const defaultSections: FooterSection[] = [
     links: [
       { label: "Помощь", href: "#help" },
       { label: "Контакты", href: "#contact" },
-      { label: "Политика конфиденциальности", href: "#privacy" },
+      { label: "Политика конфиденциальности", href: "/privacy-policy" },
     ],
   },
 ];

@@ -16,6 +16,7 @@ import { EditRecommendation } from "./pages/EditRecommendation";
 import { RequestOffers } from "./pages/RequestOffers";
 import { RequestDetails } from "./pages/RequestDetails";
 import { HowItWorks } from "./pages/HowItWorks";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,7 @@ const AppContent = () => {
       />
       <Route path="/feed" element={<Feed />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/create-request" element={<CreateRequest />} />
       <Route path="/edit-request/:requestId" element={<EditRequest />} />
       <Route path="/suggest-property" element={<SuggestProperty />} />
