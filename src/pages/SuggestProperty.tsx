@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Search, Mail, Upload, Sofa, Zap } from "lucide-react";
+import { ArrowLeft, Upload, Sofa, Zap } from "lucide-react";
+import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,11 +21,11 @@ export const SuggestProperty = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("invite");
-  const [searchQuery, setSearchQuery] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState(
     "Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект."
   );
+  const [copiedRequestLink, setCopiedRequestLink] = useState(false);
   
   const requestData = location.state as { requestId?: string; requestName?: string; fromDashboard?: boolean } | undefined;
   
@@ -214,65 +215,44 @@ export const SuggestProperty = () => {
         {step === "invite" && (
           <Card>
             <CardHeader>
-              <CardTitle>Шаг 1: Пригласить владельца</CardTitle>
+              <CardTitle>Шаг 1: Оповестить владельца</CardTitle>
               <CardDescription>
-                Найдите владельца в системе или отправьте приглашение
+                Отправьте ссылку на заявку владельцу для предварительного согласования
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900 leading-relaxed">
+                  Перед отправкой предложения, скопируйте ссылку карточки заявки и отправьте ее владельцу на рассмотрение.
+                  Если владелец предварительно одобрит арендатора, то продолжите заполнять заявку с вашим предложением.
+                </p>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="search">Поиск владельца в системе</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Label>Ссылка на заявку арендатора</Label>
+                <div className="flex gap-2">
                   <Input
-                    id="search"
-                    placeholder="Email или телефон"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    value={`${window.location.origin}/request/${requestData?.requestId || ''}`}
+                    readOnly
+                    className="bg-gray-50"
                   />
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(`${window.location.origin}/request/${requestData?.requestId || ''}`);
+                        setCopiedRequestLink(true);
+                        setTimeout(() => setCopiedRequestLink(false), 2000);
+                      } catch (err) {
+                        console.error('Failed to copy:', err);
+                      }
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    <Icon name={copiedRequestLink ? "Check" : "Copy"} size={16} className="mr-2" />
+                    {copiedRequestLink ? "Скопировано" : "Копировать"}
+                  </Button>
                 </div>
-                {searchQuery && (
-                  <p className="text-sm text-gray-500">
-                    Владелец не найден. Отправьте приглашение ниже.
-                  </p>
-                )}
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Или</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="invite-email">Email владельца для приглашения *</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    id="invite-email"
-                    type="email"
-                    placeholder="owner@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="invite-message">Текст приглашения</Label>
-                <Textarea
-                  id="invite-message"
-                  value={inviteMessage}
-                  onChange={(e) => setInviteMessage(e.target.value)}
-                  rows={5}
-                  className="resize-none"
-                />
               </div>
 
               <Button
