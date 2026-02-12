@@ -1,8 +1,15 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Request } from "@/store/requestsStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface RequestCardProps {
   request: Request;
@@ -14,6 +21,32 @@ interface RequestCardProps {
 
 export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCount = 0, fromDashboard = false }: RequestCardProps) => {
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
+  const copyCardToClipboard = async () => {
+    const cardText = `
+📍 ${request.name}
+🏠 Локация: ${request.location}
+💰 Бюджет: ${request.budget}
+🏡 Тип жилья: ${request.housingType}
+🛏️ Комнат: ${request.roomsCount}
+📅 Период аренды: ${request.rentalPeriod}
+💵 Вознаграждение: ${request.reward}
+${request.bonus ? `🎁 ${request.bonus}` : ''}
+
+${request.comment ? `Комментарий: ${request.comment}` : ''}
+
+SovetPay - Аренда жилья через рекомендации
+    `.trim();
+
+    try {
+      await navigator.clipboard.writeText(cardText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   return (
     <motion.div
@@ -24,19 +57,45 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
       transition={{ duration: 0.3, delay: index * 0.1 }}
       className="bg-white border border-border rounded-xl p-6 hover:shadow-2xl hover:border-primary/20 transition-all relative"
     >
-      {(() => {
-        const createdAt = new Date(request.createdAt);
-        const now = new Date();
-        const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-        return daysDiff <= 2 && (
-          <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        {(() => {
+          const createdAt = new Date(request.createdAt);
+          const now = new Date();
+          const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+          return daysDiff <= 2 && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary text-white text-xs font-semibold rounded-full">
               <Icon name="Sparkles" size={12} />
               Новая
             </span>
-          </div>
-        );
-      })()}
+          );
+        })()}
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button 
+              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors z-20"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+            >
+              <Icon name="MoreVertical" size={18} className="text-gray-600" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem 
+              onClick={(e) => {
+                e.stopPropagation();
+                copyCardToClipboard();
+              }}
+              className="cursor-pointer"
+            >
+              <Icon name={copied ? "Check" : "Copy"} size={16} className="mr-2" />
+              {copied ? "Скопировано!" : "Скопировать"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div 
         className="flex items-center gap-3 mb-4 cursor-pointer"
         onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
