@@ -219,12 +219,37 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           <span className="text-sm text-muted-foreground">Статус:</span>
                           <Select
                             value={recommendation.status}
-                            onValueChange={(value) => 
+                            onValueChange={(value) => {
+                              const newStatus = value as 'pending' | 'accepted' | 'rejected';
                               recommendationsStore.updateRecommendationStatus(
                                 recommendation.id, 
-                                value as 'pending' | 'accepted' | 'rejected'
-                              )
-                            }
+                                newStatus
+                              );
+                              
+                              if (newStatus === 'accepted' && currentUser) {
+                                let chat = messagesStore.getChatByRecommendation(recommendation.id);
+                                
+                                if (!chat) {
+                                  chat = messagesStore.createChat({
+                                    recommendationId: recommendation.id,
+                                    requestId: request?.id || '',
+                                    requestName: request?.name || '',
+                                    recommenderEmail: recommendation.userId,
+                                    recommenderName: recommendation.userId.split('@')[0],
+                                    tenantEmail: currentUser.email,
+                                    tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
+                                    tenantPhoto: currentUser.photo,
+                                  });
+                                }
+                                
+                                messagesStore.sendSystemMessage(
+                                  chat.id,
+                                  '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
+                                );
+                                
+                                navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
+                              }
+                            }}
                           >
                             <SelectTrigger className="w-[150px] h-8 text-sm">
                               <SelectValue />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Chat, messagesStore } from "@/store/messagesStore";
 import { ChatsList } from "./messages/ChatsList";
 import { ChatWindow } from "./messages/ChatWindow";
@@ -14,6 +15,7 @@ interface DashboardMessagesSectionProps {
 }
 
 export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps) => {
+  const location = useLocation();
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
 
@@ -32,6 +34,18 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     const unsubscribe = messagesStore.subscribe(loadChats);
     return unsubscribe;
   }, [user.email, selectedChat?.id]);
+
+  useEffect(() => {
+    const state = location.state as { chatId?: string } | null;
+    if (state?.chatId) {
+      const userChats = messagesStore.getUserChats(user.email);
+      const targetChat = userChats.find(c => c.id === state.chatId);
+      if (targetChat) {
+        setSelectedChat(targetChat);
+        messagesStore.markChatAsRead(targetChat.id, user.email);
+      }
+    }
+  }, [location.state, user.email]);
 
   const handleChatSelect = (chat: Chat) => {
     setSelectedChat(chat);
