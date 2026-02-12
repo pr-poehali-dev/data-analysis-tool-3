@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { YandexMap } from "@/components/map/YandexMap";
+
 import { authStore } from "@/store/authStore";
 import { recommendationsStore } from "@/store/recommendationsStore";
 import { messagesStore } from "@/store/messagesStore";
@@ -304,14 +304,7 @@ export const SuggestProperty = () => {
                   onChange={(e) => setPropertyData({ ...propertyData, address: e.target.value })}
                   required
                 />
-                <p className="text-xs text-gray-500">Или выберите адрес на карте ниже</p>
-                <YandexMap
-                  initialAddress={propertyData.address}
-                  onAddressSelect={(address, coordinates) => {
-                    setPropertyData({ ...propertyData, address, coordinates });
-                  }}
-                  height="400px"
-                />
+
               </div>
 
               <div className="space-y-2">

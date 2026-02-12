@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { YandexMap } from "@/components/map/YandexMap";
+
 import { authStore } from "@/store/authStore";
 import { recommendationsStore } from "@/store/recommendationsStore";
 
@@ -174,12 +174,13 @@ export const EditRecommendation = () => {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="address">Адрес объекта *</Label>
-              <YandexMap
-                initialAddress={propertyData.address}
-                onAddressSelect={(address, coordinates) => {
-                  setPropertyData({ ...propertyData, address, coordinates });
-                }}
-                height="400px"
+              <Input
+                id="address"
+                type="text"
+                placeholder="Например: Москва, ул. Тверская, д. 10"
+                value={propertyData.address}
+                onChange={(e) => setPropertyData({ ...propertyData, address: e.target.value })}
+                required
               />
             </div>
 
