@@ -38,6 +38,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevMessagesLengthRef = useRef(0);
   const isRecommender = chat.recommenderEmail === currentUserEmail;
+  const isTenant = chat.tenantEmail === currentUserEmail;
   const otherUserName = isRecommender ? chat.tenantName : chat.recommenderName;
   const otherUserPhoto = isRecommender ? chat.tenantPhoto : chat.recommenderPhoto;
   const otherUserEmail = isRecommender ? chat.tenantEmail : chat.recommenderEmail;
@@ -178,21 +179,23 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           </button>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => {
-                messagesStore.sendSystemMessage(
-                  chat.id,
-                  '🤝 Стороны договорились о сделке и переходят к оформлению через эскроу'
-                );
-                setShowEscrowModal(true);
-              }}
-              className="flex items-center gap-2 whitespace-nowrap bg-primary hover:bg-primary/90"
-            >
-              <Icon name="Handshake" size={16} />
-              Мы договорились
-            </Button>
+            {isTenant && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  messagesStore.sendSystemMessage(
+                    chat.id,
+                    '🤝 Стороны договорились о сделке и переходят к оформлению через эскроу'
+                  );
+                  setShowEscrowModal(true);
+                }}
+                className="flex items-center gap-2 whitespace-nowrap bg-primary hover:bg-primary/90"
+              >
+                <Icon name="Handshake" size={16} />
+                Мы договорились
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
