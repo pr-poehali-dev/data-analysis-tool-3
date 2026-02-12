@@ -229,30 +229,30 @@ export const SuggestProperty = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Ссылка на заявку арендатора</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={`${window.location.origin}/request/${requestData?.requestId || ''}`}
-                    readOnly
-                    className="bg-gray-50"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(`${window.location.origin}/request/${requestData?.requestId || ''}`);
-                        setCopiedRequestLink(true);
-                        setTimeout(() => setCopiedRequestLink(false), 2000);
-                      } catch (err) {
-                        console.error('Failed to copy:', err);
-                      }
-                    }}
-                    className="flex-shrink-0"
-                  >
-                    <Icon name={copiedRequestLink ? "Check" : "Copy"} size={16} className="mr-2" />
-                    {copiedRequestLink ? "Скопировано" : "Копировать"}
-                  </Button>
-                </div>
+                <Label>Сообщение для владельца</Label>
+                <Textarea
+                  value={`Здравствуйте! Я хочу порекомендовать ваше жилье через платформу SovetPay. Это безопасный способ сдать недвижимость по рекомендации. Пожалуйста, рассмотрите карточку арендатора по ссылке:\n\n${window.location.origin}/request/${requestData?.requestId || ''}`}
+                  readOnly
+                  rows={6}
+                  className="bg-gray-50 resize-none"
+                />
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const message = `Здравствуйте! Я хочу порекомендовать ваше жилье через платформу SovetPay. Это безопасный способ сдать недвижимость по рекомендации. Пожалуйста, рассмотрите карточку арендатора по ссылке:\n\n${window.location.origin}/request/${requestData?.requestId || ''}`;
+                      await navigator.clipboard.writeText(message);
+                      setCopiedRequestLink(true);
+                      setTimeout(() => setCopiedRequestLink(false), 2000);
+                    } catch (err) {
+                      console.error('Failed to copy:', err);
+                    }
+                  }}
+                  className="w-full"
+                >
+                  <Icon name={copiedRequestLink ? "Check" : "Copy"} size={16} className="mr-2" />
+                  {copiedRequestLink ? "Скопировано" : "Копировать сообщение"}
+                </Button>
               </div>
 
               <Button
