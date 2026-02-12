@@ -24,23 +24,10 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
   const [copied, setCopied] = useState(false);
 
   const copyCardToClipboard = async () => {
-    const cardText = `
-📍 ${request.name}
-🏠 Локация: ${request.location}
-💰 Бюджет: ${request.budget}
-🏡 Тип жилья: ${request.housingType}
-🛏️ Комнат: ${request.roomsCount}
-📅 Период аренды: ${request.rentalPeriod}
-💵 Вознаграждение: ${request.reward}
-${request.bonus ? `🎁 ${request.bonus}` : ''}
-
-${request.comment ? `Комментарий: ${request.comment}` : ''}
-
-SovetPay - Аренда жилья через рекомендации
-    `.trim();
+    const url = `${window.location.origin}/request/${request.id}`;
 
     try {
-      await navigator.clipboard.writeText(cardText);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
