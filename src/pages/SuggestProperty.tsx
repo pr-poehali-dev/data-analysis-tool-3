@@ -62,14 +62,6 @@ export const SuggestProperty = () => {
   };
 
   const handleInviteNext = () => {
-    if (!inviteEmail) {
-      toast({
-        title: "Ошибка",
-        description: "Укажите email владельца",
-        variant: "destructive",
-      });
-      return;
-    }
     setStep("property");
   };
 
