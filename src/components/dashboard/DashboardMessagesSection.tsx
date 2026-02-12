@@ -42,7 +42,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     <div>
       <h2 className="text-3xl font-bold text-foreground mb-6">Сообщения</h2>
       
-      <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-280px)]">
+      <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
         <div className="lg:col-span-1 bg-gray-50 rounded-lg p-4 overflow-y-auto">
           <ChatsList
             chats={chats}
