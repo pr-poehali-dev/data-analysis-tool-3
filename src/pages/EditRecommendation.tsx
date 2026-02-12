@@ -136,34 +136,6 @@ export const EditRecommendation = () => {
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Информация о владельце</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="owner-email">Email владельца</Label>
-              <Input
-                id="owner-email"
-                type="email"
-                value={ownerEmail}
-                onChange={(e) => setOwnerEmail(e.target.value)}
-                placeholder="owner@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="invite-message">Текст приглашения</Label>
-              <Textarea
-                id="invite-message"
-                value={inviteMessage}
-                onChange={(e) => setInviteMessage(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Описание объекта</CardTitle>
