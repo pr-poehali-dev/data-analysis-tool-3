@@ -36,7 +36,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col items-center justify-end min-h-[600px] overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col justify-end min-h-[600px] overflow-hidden"
           >
             <a
               href={primaryButtonHref}
@@ -55,16 +55,16 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             </a>
 
             <h1
-              className="text-[56px] leading-[60px] tracking-tight text-[#202020] max-w-[800px] mb-6 font-medium text-center"
+              className="text-[56px] leading-[60px] tracking-tight text-[#202020] max-w-[520px] mb-6 font-medium"
             >
               {headline}
             </h1>
 
-            <p className="text-lg leading-7 text-[#404040] max-w-[700px] mb-6 text-center">
+            <p className="text-lg leading-7 text-[#404040] max-w-[520px] mb-6">
               {subheadline}
             </p>
 
-            <ul className="flex gap-1.5 flex-wrap mt-10 justify-center">
+            <ul className="flex gap-1.5 flex-wrap mt-10">
               <li>
                 <button
                   onClick={onRegisterClick}
