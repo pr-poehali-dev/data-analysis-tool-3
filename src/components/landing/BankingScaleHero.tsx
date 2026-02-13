@@ -113,7 +113,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
               </div>
             </div>
 
-            <h2 className="text-[40px] font-normal leading-tight tracking-tight text-[#111A4A] mb-6">
+            <h2 className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#111A4A] mb-6 font-medium">
               Три роли — одна платформа.{" "}
               <span className="opacity-40">
                 Арендаторы, рекомендатели и владельцы находят друг друга напрямую.
