@@ -92,9 +92,9 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               className="hidden lg:block flex-shrink-0 w-[480px] h-[480px]"
             >
               <img
-                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/files/c8eff581-884d-4b2b-ae25-1eaebeb8b908.jpg"
+                src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/2cec801d-231b-4bea-924d-763710d55fc0.png"
                 alt="SovetPay платформа аренды"
-                className="w-full h-full object-cover rounded-3xl"
+                className="w-full h-full object-contain rounded-3xl"
               />
             </motion.div>
           </motion.div>
