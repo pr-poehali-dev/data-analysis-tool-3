@@ -36,7 +36,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col justify-end min-h-[600px] overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex flex-col items-start justify-end min-h-[600px] overflow-hidden"
           >
             <a
               href={primaryButtonHref}
