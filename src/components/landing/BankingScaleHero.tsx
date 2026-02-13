@@ -8,7 +8,7 @@ interface BankingScaleHeroProps {
 }
 
 interface ProcessStep {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   delay: number;
@@ -132,7 +132,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
             </button>
           </div>
 
-          <div className="col-span-12 md:col-span-6">
+          <div className="hidden md:block col-span-12 md:col-span-6">
             <div className="relative w-full h-[416px] -ml-[200px]">
               <div className="absolute top-0 left-[302px] w-[680px] h-[416px] pointer-events-none">
                 <div className="relative w-full h-full">
