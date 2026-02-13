@@ -77,7 +77,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
                 <li className="w-full sm:w-auto">
                   <button
                     onClick={onRecommendClick}
-                    className="w-full sm:w-auto block cursor-pointer text-white sm:text-[#202020] bg-[#155eef] sm:bg-transparent sm:border sm:border-[#202020] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+                    className="w-full sm:w-auto block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                   >
                     {secondaryButtonText}
                   </button>
