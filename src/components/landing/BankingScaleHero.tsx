@@ -260,17 +260,17 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                 delay: 0.8,
                 ease: "easeOut",
               }}
-              className="flex justify-start gap-4 flex-wrap"
+              className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 w-full sm:w-auto"
             >
               <button
                 onClick={onRegisterClick}
-                className="block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
               >
                 Найти жильё
               </button>
               <button
                 onClick={onRecommendClick}
-                className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+                className="w-full sm:w-auto block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
               >
                 Рекомендовать варианты
               </button>
