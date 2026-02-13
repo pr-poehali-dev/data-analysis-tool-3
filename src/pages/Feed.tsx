@@ -82,28 +82,6 @@ export const Feed = () => {
           onSuggestProperty={handleSuggestProperty}
           isAuthenticated={isAuthenticated}
         />
-
-        {!isAuthenticated && (
-          <div className="mt-6 sm:mt-8 p-4 sm:p-6 rounded-xl" style={{backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px'}}>
-            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor: '#155eef'}}>
-                <Icon name="Info" className="text-white" size={20} />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-                  Зарегистрируйтесь, чтобы предлагать варианты
-                </h4>
-                <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                  Создайте аккаунт рекомендателя и начните зарабатывать на успешных рекомендациях жилья
-                </p>
-                <Button onClick={handleRegistrationClick} className="w-full sm:w-auto">
-                  <Icon name="UserPlus" size={16} className="mr-2" />
-                  Зарегистрироваться
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
 
       <Footer onRegisterClick={handleRegistrationClick} />
