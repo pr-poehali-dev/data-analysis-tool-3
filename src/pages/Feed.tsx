@@ -41,7 +41,7 @@ export const Feed = () => {
     }
   };
 
-  const handleRegistrationComplete = (data: any) => {
+  const handleRegistrationComplete = (data: { firstName: string; lastName: string; role: string; email: string; phone: string; city?: string }) => {
     authStore.setUser({
       firstName: data.firstName,
       lastName: data.lastName,
@@ -69,10 +69,10 @@ export const Feed = () => {
         showNavigation={false}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-8 mt-20">
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Лента заявок</h1>
-          <p className="text-lg text-muted-foreground">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">Лента заявок</h1>
+          <p className="text-base sm:text-lg text-muted-foreground">
             Просматривайте актуальные заявки арендаторов и предлагайте варианты жилья
           </p>
         </div>
@@ -84,19 +84,19 @@ export const Feed = () => {
         />
 
         {!isAuthenticated && (
-          <div className="mt-8 p-6 rounded-xl" style={{backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px'}}>
-            <div className="flex items-start gap-4">
+          <div className="mt-6 sm:mt-8 p-4 sm:p-6 rounded-xl" style={{backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px'}}>
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor: '#155eef'}}>
                 <Icon name="Info" className="text-white" size={20} />
               </div>
-              <div>
-                <h4 className="text-lg font-semibold text-foreground mb-2">
+              <div className="flex-1">
+                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                   Зарегистрируйтесь, чтобы предлагать варианты
                 </h4>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-4">
                   Создайте аккаунт рекомендателя и начните зарабатывать на успешных рекомендациях жилья
                 </p>
-                <Button onClick={handleRegistrationClick}>
+                <Button onClick={handleRegistrationClick} className="w-full sm:w-auto">
                   <Icon name="UserPlus" size={16} className="mr-2" />
                   Зарегистрироваться
                 </Button>

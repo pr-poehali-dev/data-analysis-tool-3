@@ -151,9 +151,9 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-white border-b border-border p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1">
+      <div className="bg-white border-b border-border p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
           <button
             onClick={() => setShowProfileModal(true)}
             className="flex-shrink-0 hover:opacity-80 transition-opacity"
@@ -178,7 +178,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
             <p className="text-xs text-muted-foreground">{chat.requestName}</p>
           </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 w-full sm:w-auto">
             {isTenant && (
               <Button
                 variant="default"
@@ -190,26 +190,28 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
                   );
                   setShowEscrowModal(true);
                 }}
-                className="flex items-center gap-2 whitespace-nowrap bg-primary hover:bg-primary/90"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-primary hover:bg-primary/90 px-2 sm:px-3"
               >
-                <Icon name="Handshake" size={16} />
-                Мы договорились
+                <Icon name="Handshake" size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Мы договорились</span>
+                <span className="sm:hidden">Договор</span>
               </Button>
             )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowReviewModal(true)}
-              className="flex items-center gap-2 whitespace-nowrap"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Icon name="Star" size={16} />
-              Оставить отзыв
+              <Icon name="Star" size={14} className="sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Оставить отзыв</span>
+              <span className="sm:hidden">Отзыв</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -366,28 +368,28 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="bg-white border-t border-border p-4">
+      <div className="bg-white border-t border-border p-3 sm:p-4">
         {previewUrls.length > 0 && (
-          <div className="flex gap-2 mb-3 flex-wrap">
+          <div className="flex gap-2 mb-2 sm:mb-3 flex-wrap">
             {previewUrls.map((url, index) => (
               <div key={index} className="relative">
                 <img
                   src={url}
                   alt={`Превью ${index + 1}`}
-                  className="w-20 h-20 object-cover rounded-lg border border-border"
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-border"
                 />
                 <button
                   onClick={() => removePhoto(index)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                  className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                 >
-                  <Icon name="X" size={14} />
+                  <Icon name="X" size={12} className="sm:w-[14px] sm:h-[14px]" />
                 </button>
               </div>
             ))}
           </div>
         )}
         
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -402,9 +404,9 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="self-end"
+            className="self-end flex-shrink-0"
           >
-            <Icon name="Image" size={18} />
+            <Icon name="Image" size={16} className="sm:w-[18px] sm:h-[18px]" />
           </Button>
           
           <Textarea
@@ -415,20 +417,20 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
             }}
             onKeyDown={handleKeyPress}
             placeholder="Напишите сообщение..."
-            className="resize-none"
+            className="resize-none text-sm sm:text-base"
             rows={2}
           />
           
           <Button
             onClick={handleSendMessage}
             disabled={!newMessage.trim() && attachedPhotos.length === 0}
-            className="self-end"
+            className="self-end flex-shrink-0"
           >
-            <Icon name="Send" size={18} />
+            <Icon name="Send" size={16} className="sm:w-[18px] sm:h-[18px]" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Нажмите Enter для отправки, Shift+Enter для новой строки. Можно прикрепить до 5 фото
+        <p className="text-xs text-muted-foreground mt-1.5 sm:mt-2">
+          Нажмите Enter для отправки. <span className="hidden sm:inline">Shift+Enter для новой строки.</span> Можно прикрепить до 5 фото
         </p>
       </div>
 

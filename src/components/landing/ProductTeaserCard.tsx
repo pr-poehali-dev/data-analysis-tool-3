@@ -29,16 +29,16 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
   } = props;
 
   return (
-    <section className="w-full px-8 pt-32 pb-8">
+    <section className="w-full px-4 sm:px-6 md:px-8 pt-24 sm:pt-28 md:pt-32 pb-6 sm:pb-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-12 gap-2">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[40px] p-12 lg:p-16 flex items-end justify-between gap-12 min-h-[600px] overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 min-h-[500px] sm:min-h-[550px] lg:min-h-[600px] overflow-hidden"
           >
-            <div className="flex flex-col items-start justify-end flex-1 max-w-[520px]">
+            <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[520px]">
               <a
                 href={primaryButtonHref}
                 onClick={(e) => e.preventDefault()}
@@ -56,28 +56,28 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               </a>
 
               <h1
-                className="text-[56px] leading-[60px] tracking-tight text-[#202020] mb-6 font-medium"
+                className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-4 sm:mb-5 md:mb-6 font-medium"
               >
                 {headline}
               </h1>
 
-              <p className="text-lg leading-7 text-[#404040] mb-6">
+              <p className="text-base sm:text-lg leading-6 sm:leading-7 text-[#404040] mb-4 sm:mb-5 md:mb-6">
                 {subheadline}
               </p>
 
-              <ul className="flex gap-1.5 flex-wrap mt-10">
-                <li>
+              <ul className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 flex-wrap mt-6 sm:mt-8 md:mt-10 w-full sm:w-auto">
+                <li className="w-full sm:w-auto">
                   <button
                     onClick={onRegisterClick}
-                    className="block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+                    className="w-full sm:w-auto block cursor-pointer text-white bg-[#155eef] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                   >
                     {primaryButtonText}
                   </button>
                 </li>
-                <li>
+                <li className="w-full sm:w-auto">
                   <button
                     onClick={onRecommendClick}
-                    className="block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
+                    className="w-full sm:w-auto block cursor-pointer text-[#202020] border border-[#202020] rounded-full px-[18px] py-[15px] text-sm sm:text-base leading-4 whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] hover:rounded-2xl"
                   >
                     {secondaryButtonText}
                   </button>
@@ -89,12 +89,12 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1], delay: 0.3 }}
-              className="hidden lg:block flex-shrink-0 w-[480px] h-[480px]"
+              className="hidden lg:block flex-shrink-0 w-[380px] xl:w-[480px] h-[380px] xl:h-[480px]"
             >
               <img
                 src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/2cec801d-231b-4bea-924d-763710d55fc0.png"
                 alt="SovetPay платформа аренды"
-                className="w-full h-full object-contain rounded-3xl"
+                className="w-full h-full object-contain rounded-2xl lg:rounded-3xl"
               />
             </motion.div>
           </motion.div>

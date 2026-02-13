@@ -132,6 +132,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     }
   };
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <MessageNotification userEmail={user.email} />
@@ -141,7 +143,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
+        <aside className="hidden lg:block w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
           <nav className="space-y-1">
             {menuItems.map((item) => (
               <button
@@ -166,7 +168,45 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </nav>
         </aside>
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 sm:p-6 md:p-8">
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-border rounded-lg text-foreground font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Icon name={menuItems.find(item => item.id === activeSection)?.icon || "List"} size={20} />
+                {menuItems.find(item => item.id === activeSection)?.label}
+              </span>
+              <Icon name={isMobileMenuOpen ? "ChevronUp" : "ChevronDown"} size={20} />
+            </button>
+            {isMobileMenuOpen && (
+              <div className="mt-2 bg-white border border-border rounded-lg overflow-hidden shadow-lg">
+                {menuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      handleMenuClick(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 transition-colors relative ${
+                      activeSection === item.id
+                        ? "bg-primary text-white"
+                        : "text-foreground hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon name={item.icon} size={20} />
+                    <span className="text-base font-medium">{item.label}</span>
+                    {item.id === "messages" && unreadMessagesCount > 0 && (
+                      <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] text-center">
+                        {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {renderContent()}
         </main>
       </div>
