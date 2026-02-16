@@ -171,18 +171,18 @@ export const HowItWorks = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 hover:shadow-xl transition-shadow scroll-mt-24"
+                  className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8 hover:shadow-xl transition-shadow scroll-mt-24"
                 >
-                  <div className="flex items-start gap-4 mb-4">
+                  <div className="flex flex-col items-center sm:flex-row sm:items-start gap-3 sm:gap-4 mb-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                       <Icon name={section.icon} size={24} className="text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 pt-1">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 pt-1 text-center sm:text-left">
                       {section.title}
                     </h3>
                   </div>
-                  <div className="pl-16">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  <div className="sm:pl-16">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line text-center sm:text-left">
                       {section.content}
                     </p>
                   </div>
