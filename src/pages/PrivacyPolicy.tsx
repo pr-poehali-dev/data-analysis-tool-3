@@ -42,7 +42,7 @@ export const PrivacyPolicy = () => {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <article className="bg-white rounded-2xl shadow-lg p-8 sm:p-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-xl sm:text-4xl font-bold text-gray-900 mb-4">
             Политика обработки персональных данных
           </h1>
           
@@ -53,7 +53,7 @@ export const PrivacyPolicy = () => {
 
           {/* 1. ОБЩИЕ ПОЛОЖЕНИЯ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               1. ОБЩИЕ ПОЛОЖЕНИЯ
             </h2>
             
@@ -72,7 +72,7 @@ export const PrivacyPolicy = () => {
 
           {/* 2. ОПРЕДЕЛЕНИЯ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               2. ОПРЕДЕЛЕНИЯ
             </h2>
             
@@ -94,7 +94,7 @@ export const PrivacyPolicy = () => {
 
           {/* 3. КАТЕГОРИИ ОБРАБАТЫВАЕМЫХ ПЕРСОНАЛЬНЫХ ДАННЫХ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               3. КАТЕГОРИИ ОБРАБАТЫВАЕМЫХ ПЕРСОНАЛЬНЫХ ДАННЫХ
             </h2>
             
@@ -158,7 +158,7 @@ export const PrivacyPolicy = () => {
 
           {/* 4. ЦЕЛИ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               4. ЦЕЛИ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ
             </h2>
             
@@ -182,7 +182,7 @@ export const PrivacyPolicy = () => {
 
           {/* 5. ПОРЯДОК И УСЛОВИЯ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               5. ПОРЯДОК И УСЛОВИЯ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ
             </h2>
             
@@ -220,7 +220,7 @@ export const PrivacyPolicy = () => {
 
           {/* 6. ПРАВА СУБЪЕКТА ПЕРСОНАЛЬНЫХ ДАННЫХ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               6. ПРАВА СУБЪЕКТА ПЕРСОНАЛЬНЫХ ДАННЫХ
             </h2>
             
@@ -250,7 +250,7 @@ export const PrivacyPolicy = () => {
 
           {/* 7. МЕРЫ ПО ЗАЩИТЕ ПЕРСОНАЛЬНЫХ ДАННЫХ */}
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               7. МЕРЫ ПО ЗАЩИТЕ ПЕРСОНАЛЬНЫХ ДАННЫХ
             </h2>
             
@@ -274,7 +274,7 @@ export const PrivacyPolicy = () => {
 
           {/* 8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ */}
           <section className="mb-12">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-base sm:text-2xl font-semibold text-gray-900 mb-4">
               8. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ
             </h2>
             
