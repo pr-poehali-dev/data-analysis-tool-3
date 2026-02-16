@@ -18,7 +18,7 @@ interface ProductTeaserCardProps {
 export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
   const {
     dailyVolumeLabel = "НОВАЯ МОДЕЛЬ АРЕНДЫ ЖИЛЬЯ",
-    headline = "Арендуйте по рекомендации, а не через агентов",
+    headline = "Арендуйте по рекомендации и без агентств",
     subheadline = "SovetPay — платформа аренды жилья через рекомендации. Арендаторы создают заявки, рекомендатели предлагают варианты за вознаграждение, владельцы находят проверенных жильцов без комиссий.",
     primaryButtonText = "Найти жильё",
     primaryButtonHref = "",
