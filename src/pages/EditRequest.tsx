@@ -242,7 +242,7 @@ export const EditRequest = () => {
         </AnimatePresence>
       </main>
 
-      <Footer />
+      <Footer hiddenOnMobile />
     </div>
   );
 };

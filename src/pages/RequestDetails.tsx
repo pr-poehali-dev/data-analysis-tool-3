@@ -182,7 +182,7 @@ export const RequestDetails = () => {
         </motion.div>
       </main>
 
-      <Footer />
+      <Footer hiddenOnMobile />
     </div>
   );
 };

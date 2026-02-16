@@ -211,7 +211,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         </main>
       </div>
 
-      <Footer />
+      <Footer hiddenOnMobile />
     </div>
   );
 };

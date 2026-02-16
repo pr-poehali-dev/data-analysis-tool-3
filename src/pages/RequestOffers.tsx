@@ -308,7 +308,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
         </div>
       </main>
 
-      <Footer />
+      <Footer hiddenOnMobile />
     </div>
   );
 };

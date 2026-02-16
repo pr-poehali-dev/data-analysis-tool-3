@@ -252,7 +252,7 @@ export const CreateRequest = () => {
         </AnimatePresence>
       </main>
 
-      <Footer />
+      <Footer hiddenOnMobile />
     </div>
   );
 };
