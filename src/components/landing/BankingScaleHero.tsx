@@ -147,7 +147,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                           delay: step.delay,
                           ease: "easeOut",
                         }}
-                        className="flex flex-col items-center text-center gap-3 p-4 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-100"
+                        className="flex flex-col items-center text-center gap-3 p-4 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-300"
                       >
                         <div className="w-12 h-12 rounded-full bg-[#155eef]/10 flex items-center justify-center">
                           <Icon className="w-6 h-6 text-[#155eef]" strokeWidth={2} />
@@ -176,12 +176,12 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                             delay: step.delay + 0.3,
                             ease: "easeOut",
                           }}
-                          className="hidden md:block absolute top-8 -right-2 w-4 h-0.5 bg-gradient-to-r from-[#155eef]/30 to-[#155eef]/10 origin-left"
+                          className="hidden md:block absolute top-8 -right-2 w-4 h-[2px] bg-[#155eef]/60 origin-left"
                           style={{
                             transform: 'translateX(100%)'
                           }}
                         >
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-4 border-l-[#155eef]/30 border-y-2 border-y-transparent" />
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[5px] border-l-[#155eef]/60 border-y-[3px] border-y-transparent" />
                         </motion.div>
                       )}
                     </div>
