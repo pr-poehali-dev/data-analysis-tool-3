@@ -78,7 +78,7 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
         onRegisterClick={handleRegistrationClick}
         onRecommendClick={handleRecommendClick}
       />
-      <Footer onRegisterClick={handleRegistrationClick} />
+      <Footer onRegisterClick={handleRegistrationClick} hiddenOnMobile />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

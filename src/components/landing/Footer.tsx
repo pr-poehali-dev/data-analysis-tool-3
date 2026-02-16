@@ -23,6 +23,7 @@ interface FooterProps {
   };
   copyrightText?: string;
   onRegisterClick?: () => void;
+  hiddenOnMobile?: boolean;
 }
 
 const defaultSections: FooterSection[] = [
@@ -71,6 +72,7 @@ export const Footer = ({
   },
   copyrightText,
   onRegisterClick,
+  hiddenOnMobile = false,
 }: FooterProps) => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
@@ -96,7 +98,7 @@ export const Footer = ({
   };
 
   return (
-    <footer className="w-full bg-[#fafafa] border-t border-[#e5e5e5]">
+    <footer className={`w-full bg-[#fafafa] border-t border-[#e5e5e5]${hiddenOnMobile ? ' hidden md:block' : ''}`}>
       <div className="max-w-[1200px] mx-auto px-8 py-6">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8 items-start">
           <motion.div
