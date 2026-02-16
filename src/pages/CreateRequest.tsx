@@ -210,7 +210,7 @@ export const CreateRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
+      <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} showMobileMenu={false} />
 
       <main className="max-w-4xl mx-auto px-6 py-8 mt-20 mb-20">
         <div className="mb-8">

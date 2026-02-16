@@ -55,6 +55,7 @@ interface PortfolioNavbarProps {
   onLoginClick?: () => void;
   onLogout?: () => void;
   showNavigation?: boolean;
+  showMobileMenu?: boolean;
 }
 
 const navigationLinks: NavigationLink[] = [
@@ -63,7 +64,7 @@ const navigationLinks: NavigationLink[] = [
   { name: "Лента заявок", href: "/feed" },
 ];
 
-export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showNavigation = true }: PortfolioNavbarProps = {}) => {
+export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showNavigation = true, showMobileMenu = true }: PortfolioNavbarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -242,15 +243,17 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
             )}
           </div>
 
-          <div className="md:hidden">
-            <button
-              onClick={toggleMobileMenu}
-              className="text-foreground hover:text-primary p-2 rounded-md transition-colors duration-200"
-              aria-label="Открыть меню"
-            >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+          {showMobileMenu && (
+            <div className="md:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="text-foreground hover:text-primary p-2 rounded-md transition-colors duration-200"
+                aria-label="Открыть меню"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
