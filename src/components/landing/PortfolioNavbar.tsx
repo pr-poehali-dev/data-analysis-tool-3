@@ -55,6 +55,15 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
     setIsMobileMenuOpen(false);
   };
 
+  const scrollToElement = (selector: string, retries = 10) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    } else if (retries > 0) {
+      setTimeout(() => scrollToElement(selector, retries - 1), 100);
+    }
+  };
+
   const handleLinkClick = (href: string) => {
     closeMobileMenu();
     if (href.startsWith('/')) {
@@ -62,21 +71,11 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 0);
+    } else if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => scrollToElement(href), 300);
     } else {
-      if (location.pathname !== '/') {
-        navigate('/');
-        setTimeout(() => {
-          const element = document.querySelector(href);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
-          }
-        }, 100);
-      } else {
-        const element = document.querySelector(href);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      }
+      scrollToElement(href);
     }
   };
 
