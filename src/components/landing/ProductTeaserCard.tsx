@@ -65,7 +65,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
                 {subheadline}
               </p>
 
-              <ul className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 flex-wrap mt-6 sm:mt-8 md:mt-10 w-full sm:w-auto">
+              <ul className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 flex-wrap mt-3 sm:mt-4 md:mt-5 w-full sm:w-auto">
                 <li className="w-full sm:w-auto">
                   <button
                     onClick={onRegisterClick}
