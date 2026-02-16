@@ -113,11 +113,11 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
               </div>
             </div>
 
-            <h2 className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#111A4A] mb-6 font-medium">
+            <h2 className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#111A4A] mb-3 font-medium">
               Три роли — одна платформа.
             </h2>
 
-            <button className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 mt-5 text-sm">
+            <button className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 mt-2.5 text-sm">
               <span className="relative z-10 flex items-center gap-1">
                 Как это работает
                 <ArrowRight className="w-4 h-4 -mr-1" />
