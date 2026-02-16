@@ -92,14 +92,14 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
       <div className="mx-auto max-w-7xl px-8 py-12 pt-8">
         <div className="grid grid-cols-12 gap-5 gap-y-5">
           <div className="col-span-12 md:col-span-6 relative z-10">
-            <div className="relative h-6 inline-flex items-center font-mono uppercase text-xs text-[#167E6C] mb-4 px-2">
+            <div className="relative h-6 inline-flex items-center font-mono uppercase text-xs text-[#9a9a9a] mb-4 px-2">
               <div className="flex items-center gap-0.5 overflow-hidden">
                 <motion.span
                   initial={{ width: 0 }}
                   animate={{ width: "auto" }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   className="block whitespace-nowrap overflow-hidden relative z-10"
-                  style={{ color: "#155eef" }}
+                  style={{ color: "#9a9a9a" }}
                 >
                   Аренда через доверие
                 </motion.span>
@@ -107,8 +107,8 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                   initial={{ opacity: 0 }}
                   animate={{ opacity: typingComplete ? [1, 0, 1, 0] : 0 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="block w-1.5 h-3 bg-[#167E6C] ml-0.5 relative z-10 rounded-sm"
-                  style={{ backgroundColor: "#155eef" }}
+                  className="block w-1.5 h-3 ml-0.5 relative z-10 rounded-sm"
+                  style={{ backgroundColor: "#9a9a9a" }}
                 />
               </div>
             </div>
