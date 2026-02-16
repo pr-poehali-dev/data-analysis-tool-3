@@ -36,7 +36,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 min-h-[500px] sm:min-h-[550px] lg:min-h-[600px] overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
           >
             <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[520px]">
               <a
@@ -89,12 +89,12 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1], delay: 0.3 }}
-              className="hidden lg:block flex-shrink-0 w-[380px] xl:w-[480px] h-[380px] xl:h-[480px]"
+              className="hidden lg:flex flex-shrink-0 w-[280px] xl:w-[340px] items-center self-stretch"
             >
               <img
                 src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/2cec801d-231b-4bea-924d-763710d55fc0.png"
                 alt="SovetPay платформа аренды"
-                className="w-full h-full object-contain rounded-2xl lg:rounded-3xl"
+                className="w-full h-auto object-contain rounded-2xl lg:rounded-3xl"
               />
             </motion.div>
           </motion.div>
