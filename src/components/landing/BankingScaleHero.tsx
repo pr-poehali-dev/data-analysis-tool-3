@@ -92,7 +92,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
       <div className="mx-auto max-w-7xl px-8 py-12 pt-8">
         <div className="grid grid-cols-12 gap-5 gap-y-5">
           <div className="col-span-12 md:col-span-6 relative z-10">
-            <div className="relative h-6 inline-flex items-center font-mono uppercase text-xs text-[#167E6C] mb-12 px-2">
+            <div className="relative h-6 inline-flex items-center font-mono uppercase text-xs text-[#167E6C] mb-4 px-2">
               <div className="flex items-center gap-0.5 overflow-hidden">
                 <motion.span
                   initial={{ width: 0 }}
