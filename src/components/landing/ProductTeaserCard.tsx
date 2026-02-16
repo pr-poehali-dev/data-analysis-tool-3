@@ -38,7 +38,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
             className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
           >
-            <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[520px]">
+            <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[620px]">
               <a
                 href={primaryButtonHref}
                 onClick={(e) => e.preventDefault()}
