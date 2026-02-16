@@ -33,7 +33,7 @@ const footerSections = [
     title: "Компания",
     links: [
       { label: "Помощь", href: "#help" },
-      { label: "Контакты", href: "#contact" },
+
       { label: "Политика конфиденциальности", href: "/privacy-policy" },
     ],
   },
