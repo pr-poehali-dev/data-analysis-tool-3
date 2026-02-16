@@ -350,7 +350,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
                   {footerSections.map((section, index) => (
                     <div key={index}>
-                      <h4 className="text-[10px] font-medium text-foreground/60 mb-1 uppercase tracking-wider">
+                      <h4 className="text-[10px] font-bold text-foreground/60 mb-1 uppercase tracking-wider">
                         {section.title}
                       </h4>
                       <ul className="space-y-0.5">
