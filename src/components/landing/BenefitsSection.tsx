@@ -59,7 +59,7 @@ export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsS
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <h2 className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-4 font-medium">
             Преимущества
