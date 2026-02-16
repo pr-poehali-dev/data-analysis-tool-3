@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   PortfolioNavbar,
   ProductTeaserCard,
@@ -19,6 +19,23 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const scrollTarget = location.state?.scrollTo;
+    if (scrollTarget) {
+      window.history.replaceState({}, '');
+      const tryScroll = (retries: number) => {
+        const el = document.querySelector(scrollTarget);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        } else if (retries > 0) {
+          requestAnimationFrame(() => tryScroll(retries - 1));
+        }
+      };
+      tryScroll(20);
+    }
+  }, [location.state]);
 
   const handleRegistrationClick = () => {
     setIsRegistrationOpen(true);
