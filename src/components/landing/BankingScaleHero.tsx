@@ -147,7 +147,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                           delay: step.delay,
                           ease: "easeOut",
                         }}
-                        className="flex flex-col items-center text-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-300 h-[100px] md:h-auto md:min-h-[180px] justify-center"
+                        className="flex flex-col items-center text-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-300 h-full min-h-[100px] md:min-h-[180px] justify-center"
                       >
                         <div className="w-12 h-12 rounded-full bg-[#155eef]/10 flex items-center justify-center">
                           <Icon className="w-6 h-6 text-[#155eef]" strokeWidth={2} />
