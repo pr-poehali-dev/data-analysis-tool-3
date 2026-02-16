@@ -200,16 +200,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
             className="md:hidden bg-background/95 backdrop-blur-md border-t border-border"
           >
             <div className="px-6 py-6 space-y-4">
-              {showNavigation && navigationLinks.map((link) => (
-                <button
-                  key={link.name}
-                  onClick={() => handleLinkClick(link.href)}
-                  className="block w-full text-left text-foreground hover:text-primary py-3 text-lg font-medium transition-colors duration-200"
-                >
-                  <span>{link.name}</span>
-                </button>
-              ))}
-              <div className={showNavigation ? "pt-4 border-t border-border" : ""}>
+              <div>
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 text-foreground mb-4 px-3">
@@ -257,6 +248,15 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                   </div>
                 )}
               </div>
+              {showNavigation && navigationLinks.map((link) => (
+                <button
+                  key={link.name}
+                  onClick={() => handleLinkClick(link.href)}
+                  className="block w-full text-left text-foreground hover:text-primary py-3 text-lg font-medium transition-colors duration-200 border-t border-border"
+                >
+                  <span>{link.name}</span>
+                </button>
+              ))}
             </div>
           </motion.div>
         )}
