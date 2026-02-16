@@ -392,7 +392,7 @@ export const PrivacyPolicy = () => {
         </article>
       </main>
 
-      <Footer hiddenOnMobile />
+      <Footer />
     </div>
   );
 };

@@ -193,7 +193,7 @@ export const HowItWorks = () => {
         </div>
       </main>
 
-      <Footer hiddenOnMobile />
+      <Footer />
     </div>
   );
 };
