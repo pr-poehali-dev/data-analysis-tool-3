@@ -127,7 +127,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
 
           <div className="col-span-12" style={{ marginTop: '0.8rem' }}>
             <div className="relative">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-[18px] md:gap-4">
                 {processSteps.map((step, index) => {
                   const Icon = step.icon;
                   return (
