@@ -162,27 +162,47 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
                         </div>
                       </motion.div>
                       {index < processSteps.length - 1 && (
-                        <motion.div
-                          initial={{ scaleX: 0 }}
-                          animate={
-                            isVisible
-                              ? {
-                                  scaleX: [0, 1],
-                                }
-                              : {}
-                          }
-                          transition={{
-                            duration: 0.5,
-                            delay: step.delay + 0.3,
-                            ease: "easeOut",
-                          }}
-                          className="hidden md:block absolute top-8 -right-2 w-4 h-[2px] bg-[#155eef]/60 origin-left"
-                          style={{
-                            transform: 'translateX(100%)'
-                          }}
-                        >
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[5px] border-l-[#155eef]/60 border-y-[3px] border-y-transparent" />
-                        </motion.div>
+                        <>
+                          <motion.div
+                            initial={{ scaleX: 0 }}
+                            animate={
+                              isVisible
+                                ? {
+                                    scaleX: [0, 1],
+                                  }
+                                : {}
+                            }
+                            transition={{
+                              duration: 0.5,
+                              delay: step.delay + 0.3,
+                              ease: "easeOut",
+                            }}
+                            className="hidden md:block absolute top-8 -right-2 w-4 h-[2px] bg-[#155eef]/60 origin-left"
+                            style={{
+                              transform: 'translateX(100%)'
+                            }}
+                          >
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[5px] border-l-[#155eef]/60 border-y-[3px] border-y-transparent" />
+                          </motion.div>
+                          <motion.div
+                            initial={{ scaleY: 0 }}
+                            animate={
+                              isVisible
+                                ? {
+                                    scaleY: [0, 1],
+                                  }
+                                : {}
+                            }
+                            transition={{
+                              duration: 0.5,
+                              delay: step.delay + 0.3,
+                              ease: "easeOut",
+                            }}
+                            className="md:hidden absolute -bottom-3 left-6 h-3 w-[2px] bg-[#155eef]/60 origin-top"
+                          >
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-t-[5px] border-t-[#155eef]/60 border-x-[3px] border-x-transparent" />
+                          </motion.div>
+                        </>
                       )}
                     </div>
                   );
