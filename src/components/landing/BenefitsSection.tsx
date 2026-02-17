@@ -118,7 +118,7 @@ export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsS
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 mt-16 w-full sm:w-auto"
+          className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 mt-[42px] md:mt-16 w-full sm:w-auto"
         >
           <button
             onClick={onRegisterClick}
