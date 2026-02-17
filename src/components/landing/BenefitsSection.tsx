@@ -66,7 +66,7 @@ export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsS
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8">
           {columns.map((column, index) => (
             <motion.div
               key={column.title}
@@ -74,21 +74,21 @@ export function BenefitsSection({ onRegisterClick, onRecommendClick }: BenefitsS
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="bg-white rounded-2xl p-8 border border-[#e5e5e5] hover:border-[#155eef]/30 hover:shadow-lg transition-all"
+              className="bg-white rounded-2xl p-5 md:p-8 border border-[#e5e5e5] hover:border-[#155eef]/30 hover:shadow-lg transition-all"
             >
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-3 md:mb-6">
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: `${column.color}15` }}
                 >
                   <Icon name={column.icon} size={24} style={{ color: column.color }} />
                 </div>
-                <h3 className="text-2xl font-medium text-[#202020]">
+                <h3 className="text-xl md:text-2xl font-medium text-[#202020]">
                   {column.title}
                 </h3>
               </div>
 
-              <ul className="space-y-4">
+              <ul className="space-y-2 md:space-y-4">
                 {column.benefits.map((benefit, benefitIndex) => (
                   <motion.li
                     key={benefitIndex}
