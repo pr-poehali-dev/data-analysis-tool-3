@@ -82,7 +82,7 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
       <div className="flex justify-start px-4 pt-4 pb-8 bg-[#fafafa] md:hidden">
         <button
           onClick={() => navigate("/feed")}
-          className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 text-sm"
+          className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 text-sm transition-all duration-200 hover:bg-white hover:shadow-md active:scale-95"
         >
           <span className="relative z-10 flex items-center gap-1">
             Перейти в ленту заявок
