@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, UserCheck, Handshake, FileCheck, Wallet } from "lucide-react";
 
@@ -77,6 +78,7 @@ const generateDataPoints = (): DataPoint[] => {
 };
 
 export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingScaleHeroProps = {}) => {
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [dataPoints] = useState<DataPoint[]>(generateDataPoints());
   const [typingComplete, setTypingComplete] = useState(false);
@@ -117,7 +119,7 @@ export const BankingScaleHero = ({ onRegisterClick, onRecommendClick }: BankingS
               Три роли — одна платформа.
             </h2>
 
-            <button className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 mt-2.5 text-sm">
+            <button onClick={() => navigate("/how-it-works")} className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 mt-2.5 text-sm">
               <span className="relative z-10 flex items-center gap-1">
                 Как это работает
                 <ArrowRight className="w-4 h-4 -mr-1" />
