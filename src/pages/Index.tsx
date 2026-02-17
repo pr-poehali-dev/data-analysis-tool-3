@@ -85,8 +85,8 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
           className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 text-sm"
         >
           <span className="relative z-10 flex items-center gap-1">
-            <ArrowRight className="w-4 h-4 -ml-1" />
             Перейти в ленту заявок
+            <ArrowRight className="w-4 h-4 -mr-1" />
           </span>
         </button>
       </div>
