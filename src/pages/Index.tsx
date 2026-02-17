@@ -78,6 +78,16 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
         onRegisterClick={handleRegistrationClick}
         onRecommendClick={handleRecommendClick}
       />
+      <div className="flex justify-center py-8 bg-[#fafafa] md:hidden">
+        <button
+          onClick={() => navigate("/feed")}
+          className="relative inline-flex justify-center items-center leading-4 text-center cursor-pointer whitespace-nowrap outline-none font-medium h-9 text-[#232730] bg-white/50 backdrop-blur-sm shadow-[0_1px_1px_0_rgba(255,255,255,0),0_0_0_1px_rgba(87,90,100,0.12)] rounded-lg px-4 text-sm"
+        >
+          <span className="relative z-10 flex items-center gap-1">
+            Перейти в ленту заявок
+          </span>
+        </button>
+      </div>
       <Footer onRegisterClick={handleRegistrationClick} hiddenOnMobile />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
