@@ -36,7 +36,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] px-6 py-4 sm:px-8 sm:py-5 md:px-12 md:py-8 lg:px-16 lg:py-10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] px-6 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
           >
             <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[620px]">
               <a
