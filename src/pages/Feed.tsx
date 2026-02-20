@@ -73,7 +73,7 @@ export const Feed = () => {
         <div className="mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">Лента заявок</h1>
           <p className="text-base sm:text-lg text-muted-foreground">
-            Просматривайте актуальные заявки арендаторов и предлагайте варианты жилья
+            Просматривайте заявки и предлагайте варианты жилья
           </p>
         </div>
 
