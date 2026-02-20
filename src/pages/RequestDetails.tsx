@@ -3,6 +3,8 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { authStore } from "@/store/authStore";
@@ -12,6 +14,7 @@ export const RequestDetails = () => {
   const location = useLocation();
   const { requestId } = useParams<{ requestId: string }>();
   const [request, setRequest] = useState<Request | null>(null);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   
   const fromDashboard = location.state?.fromDashboard || false;
 
@@ -160,13 +163,19 @@ export const RequestDetails = () => {
           <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6 border-t border-border">
             <Button
               className="flex-1"
-              onClick={() => navigate("/suggest-property", {
-                state: {
-                  requestId: request.id,
-                  requestName: request.name,
-                  fromDashboard: fromDashboard || !!authStore.getUser()
+              onClick={() => {
+                if (authStore.isAuthenticated()) {
+                  navigate("/suggest-property", {
+                    state: {
+                      requestId: request.id,
+                      requestName: request.name,
+                      fromDashboard: true
+                    }
+                  });
+                } else {
+                  setIsRegistrationOpen(true);
                 }
-              })}
+              }}
             >
               <Icon name="Home" size={16} className="mr-2" />
               Предложить объект
@@ -183,6 +192,21 @@ export const RequestDetails = () => {
       </main>
 
       <Footer hiddenOnMobile />
+
+      <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <RegistrationForm onSuccess={() => {
+            setIsRegistrationOpen(false);
+            navigate("/suggest-property", {
+              state: {
+                requestId: request?.id,
+                requestName: request?.name,
+                fromDashboard: true
+              }
+            });
+          }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
