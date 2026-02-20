@@ -36,13 +36,13 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, ease: [0.645, 0.045, 0.355, 1] }}
-            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] px-6 py-4 sm:px-8 sm:py-5 md:px-12 md:py-8 lg:px-16 lg:py-10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
+            className="col-span-12 bg-[#e9e9e9] rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] px-6 py-8 sm:px-8 sm:py-5 md:px-12 md:py-8 lg:px-16 lg:py-10 flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 sm:gap-8 lg:gap-12 overflow-hidden"
           >
             <div className="flex flex-col items-start justify-end flex-1 w-full lg:max-w-[620px]">
               <a
                 href={primaryButtonHref}
                 onClick={(e) => e.preventDefault()}
-                className="flex flex-col gap-1 text-[#9a9a9a]"
+                className="flex flex-col gap-1 text-[#9a9a9a] mb-3 sm:mb-0"
               >
                 <motion.span
                   initial={{ transform: "translateY(20px)", opacity: 0 }}
@@ -56,16 +56,16 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               </a>
 
               <h1
-                className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-4 sm:mb-5 md:mb-6 font-medium"
+                className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-6 sm:mb-5 md:mb-6 font-medium"
               >
                 {headline}
               </h1>
 
-              <p className="text-base sm:text-lg leading-6 sm:leading-7 text-[#404040] mb-4 sm:mb-5 md:mb-6">
+              <p className="text-base sm:text-lg leading-6 sm:leading-7 text-[#404040] mb-6 sm:mb-5 md:mb-6">
                 {subheadline}
               </p>
 
-              <ul className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 flex-wrap mt-3 sm:mt-4 md:mt-5 w-full sm:w-auto">
+              <ul className="flex flex-col sm:flex-row gap-3 sm:gap-1.5 flex-wrap mt-1 sm:mt-4 md:mt-5 w-full sm:w-auto">
                 <li className="w-full sm:w-auto">
                   <button
                     onClick={onRegisterClick}
