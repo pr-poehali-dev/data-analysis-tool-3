@@ -3,6 +3,7 @@ import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { authStore } from "@/store/authStore";
 export const Feed = () => {
   const navigate = useNavigate();
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export const Feed = () => {
     <div className="min-h-screen bg-background">
       <PortfolioNavbar 
         onRegisterClick={handleRegistrationClick}
+        onLoginClick={() => setIsLoginOpen(true)}
         onLogout={() => navigate("/")}
         showNavigation={!isAuthenticated}
       />
@@ -89,6 +92,15 @@ export const Feed = () => {
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <RegistrationForm onSuccess={handleRegistrationComplete} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+        <DialogContent className="max-w-md">
+          <LoginForm onSuccess={() => {
+            setIsLoginOpen(false);
+            navigate("/feed");
+          }} />
         </DialogContent>
       </Dialog>
     </div>
