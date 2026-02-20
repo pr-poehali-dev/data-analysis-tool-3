@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LogOut, User, Instagram } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authStore } from "@/store/authStore";
+import { messagesStore } from "@/store/messagesStore";
 import Icon from "@/components/ui/icon";
 
 const dashboardMenuItems = [
@@ -82,6 +83,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(authStore.getUser());
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -100,6 +102,14 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
     
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const update = () => setUnreadCount(messagesStore.getTotalUnreadCount(user.email));
+    update();
+    const unsubscribe = messagesStore.subscribe(update);
+    return unsubscribe;
+  }, [user?.email]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -311,6 +321,11 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                         >
                           <Icon name={item.icon} size={18} className="text-muted-foreground" />
                           <span className="text-sm font-medium">{item.label}</span>
+                          {item.id === "messages" && unreadCount > 0 && (
+                            <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
