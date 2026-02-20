@@ -71,19 +71,19 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Баланс</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Баланс</h2>
 
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg"
+          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
         >
           <div className="flex items-center justify-between mb-2">
             <Icon name="Lock" size={24} className="opacity-80" />
             <span className="text-sm opacity-80">На эскроу</span>
           </div>
-          <div className="text-3xl font-bold mb-1">
+          <div className="text-2xl sm:text-3xl font-bold mb-1">
             {balance.frozen.toLocaleString('ru-RU')} ₽
           </div>
           <p className="text-xs opacity-80">Средства в процессе</p>
@@ -93,13 +93,13 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg"
+          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
         >
           <div className="flex items-center justify-between mb-2">
             <Icon name="CheckCircle2" size={24} className="opacity-80" />
             <span className="text-sm opacity-80">Получено</span>
           </div>
-          <div className="text-3xl font-bold mb-1">
+          <div className="text-2xl sm:text-3xl font-bold mb-1">
             {balance.completed.toLocaleString('ru-RU')} ₽
           </div>
           <p className="text-xs opacity-80">Завершённые сделки</p>
@@ -109,26 +109,26 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-6 text-white shadow-lg"
+          className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
         >
           <div className="flex items-center justify-between mb-2">
             <Icon name="Clock" size={24} className="opacity-80" />
             <span className="text-sm opacity-80">К оплате</span>
           </div>
-          <div className="text-3xl font-bold mb-1">
+          <div className="text-2xl sm:text-3xl font-bold mb-1">
             {balance.pending.toLocaleString('ru-RU')} ₽
           </div>
           <p className="text-xs opacity-80">Ожидающие платежи</p>
         </motion.div>
       </div>
 
-      <div className="bg-white rounded-xl border border-border p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-foreground">История транзакций</h3>
-          <div className="flex gap-2">
+      <div className="bg-white rounded-xl border border-border p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <h3 className="text-lg sm:text-xl font-bold text-foreground">История транзакций</h3>
+          <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
             <button
               onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors whitespace-nowrap ${
                 filter === 'all' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-foreground hover:bg-gray-200'
@@ -138,7 +138,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             </button>
             <button
               onClick={() => setFilter('frozen')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors whitespace-nowrap ${
                 filter === 'frozen' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-foreground hover:bg-gray-200'
@@ -148,7 +148,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             </button>
             <button
               onClick={() => setFilter('completed')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors whitespace-nowrap ${
                 filter === 'completed' 
                   ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-foreground hover:bg-gray-200'
@@ -188,41 +188,39 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`border rounded-lg p-4 ${config.border} ${config.bg}`}
+                  className={`border rounded-lg p-3 sm:p-4 ${config.border} ${config.bg}`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${config.bg} border ${config.border}`}>
-                        <Icon name={config.icon} size={20} className={config.color} />
+                  <div className="flex items-start gap-3">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg} border ${config.border}`}>
+                      <Icon name={config.icon} size={16} className={`sm:w-5 sm:h-5 ${config.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h4 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                          {transaction.requestName}
+                        </h4>
+                        <span className={`text-sm sm:text-lg font-bold whitespace-nowrap ${config.color}`}>
+                          {isRecommender ? '+' : '-'}{amount.toLocaleString('ru-RU')} ₽
+                        </span>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-semibold text-foreground">
-                            {transaction.requestName}
-                          </h4>
-                          <span className={`text-lg font-bold ${config.color}`}>
-                            {isRecommender ? '+' : '-'}{amount.toLocaleString('ru-RU')} ₽
-                          </span>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 truncate">
+                        {isRecommender ? 'Вознаграждение от' : 'Оплата для'} {otherParty}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Icon name="Calendar" size={12} className="sm:w-[14px] sm:h-[14px]" />
+                          {format(transaction.createdAt, "d MMM yyyy, HH:mm", { locale: ru })}
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {isRecommender ? 'Вознаграждение от' : 'Оплата для'} {otherParty}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Icon name="Calendar" size={14} />
-                            {format(transaction.createdAt, "d MMM yyyy, HH:mm", { locale: ru })}
-                          </div>
-                          <div className={`flex items-center gap-1 px-2 py-1 rounded ${config.bg} ${config.color} font-medium`}>
-                            <Icon name={config.icon} size={14} />
-                            {config.label}
-                          </div>
+                        <div className={`flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded ${config.bg} ${config.color} font-medium`}>
+                          <Icon name={config.icon} size={12} className="sm:w-[14px] sm:h-[14px]" />
+                          {config.label}
                         </div>
-                        {transaction.completedAt && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Завершено: {format(transaction.completedAt, "d MMM yyyy, HH:mm", { locale: ru })}
-                          </div>
-                        )}
                       </div>
+                      {transaction.completedAt && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Завершено: {format(transaction.completedAt, "d MMM yyyy, HH:mm", { locale: ru })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

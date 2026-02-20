@@ -42,15 +42,15 @@ export const RentalAgreementConstructor = ({ documentId, initialFormData, onDocu
   }
 
   return (
-    <div className="bg-white border border-border rounded-xl p-8">
-      <div className="mb-6">
-        <h3 className="text-2xl font-bold text-foreground mb-2">Конструктор договора аренды</h3>
+    <div className="bg-white border border-border rounded-xl p-4 sm:p-8">
+      <div className="mb-4 sm:mb-6">
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Конструктор договора аренды</h3>
         <p className="text-sm text-muted-foreground">
           Заполните все поля для автоматического создания договора
         </p>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
             Шаг {step} из {totalSteps}
@@ -79,7 +79,7 @@ export const RentalAgreementConstructor = ({ documentId, initialFormData, onDocu
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex gap-4 mt-8 pt-6 border-t border-border">
+      <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-border">
         {step > 1 && (
           <Button variant="outline" onClick={() => setStep(step - 1)}>
             <Icon name="ChevronLeft" size={16} className="mr-2" />

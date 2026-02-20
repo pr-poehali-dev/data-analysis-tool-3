@@ -52,12 +52,28 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     messagesStore.markChatAsRead(chat.id, user.email);
   };
 
+  const handleBackToList = () => {
+    setSelectedChat(undefined);
+  };
+
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Сообщения</h2>
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+        {selectedChat && (
+          <button 
+            onClick={handleBackToList}
+            className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Icon name="ArrowLeft" size={20} className="text-foreground" />
+          </button>
+        )}
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Сообщения</h2>
+      </div>
       
-      <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-        <div className="lg:col-span-1 bg-gray-50 rounded-lg p-4 overflow-y-auto">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 h-[calc(100vh-200px)]">
+        <div className={`lg:col-span-1 bg-gray-50 rounded-lg p-3 sm:p-4 overflow-y-auto ${
+          selectedChat ? 'hidden lg:block' : 'block'
+        }`}>
           <ChatsList
             chats={chats}
             selectedChatId={selectedChat?.id}
@@ -66,7 +82,9 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
           />
         </div>
 
-        <div className="lg:col-span-2 bg-white border border-border rounded-lg overflow-hidden">
+        <div className={`lg:col-span-2 bg-white border border-border rounded-lg overflow-hidden ${
+          selectedChat ? 'block' : 'hidden lg:block'
+        }`}>
           {selectedChat ? (
             <ChatWindow
               chat={selectedChat}
@@ -76,7 +94,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
+              <div className="text-center p-6">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                   <Icon name="MessageSquare" size={32} className="text-muted-foreground" />
                 </div>

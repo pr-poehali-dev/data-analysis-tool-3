@@ -80,16 +80,16 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
     }
   };
   return (
-    <div className="bg-white border border-border rounded-xl p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-foreground">Предварительный просмотр</h3>
-        <Button variant="outline" onClick={onEdit}>
+    <div className="bg-white border border-border rounded-xl p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground">Предварительный просмотр</h3>
+        <Button variant="outline" onClick={onEdit} className="w-full sm:w-auto">
           <Icon name="Edit" size={16} className="mr-2" />
           Редактировать
         </Button>
       </div>
 
-      <div className="prose max-w-none mb-8 p-6 bg-gray-50 rounded-lg max-h-[600px] overflow-y-auto">
+      <div className="prose max-w-none mb-6 sm:mb-8 p-3 sm:p-6 bg-gray-50 rounded-lg max-h-[500px] sm:max-h-[600px] overflow-y-auto text-sm sm:text-base">
         <h2 className="text-center font-bold mb-4">ДОГОВОР АРЕНДЫ ЖИЛОГО ПОМЕЩЕНИЯ</h2>
         <p className="text-center text-sm mb-6">{formData.contractCity}, {new Date().toLocaleDateString("ru-RU")}</p>
 
@@ -185,11 +185,11 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
 
       <div className="space-y-4">
         {showEmailInput && (
-          <div className="p-4 bg-gray-50 rounded-lg border border-border">
+          <div className="p-3 sm:p-4 bg-gray-50 rounded-lg border border-border">
             <Label htmlFor="email" className="text-sm font-medium mb-2 block">
               Email для отправки договора
             </Label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 id="email"
                 type="email"
@@ -199,29 +199,31 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
                 onKeyDown={(e) => e.key === 'Enter' && handleSendEmail()}
                 className="flex-1"
               />
-              <Button onClick={handleSendEmail} disabled={isSendingEmail}>
-                <Icon name={isSendingEmail ? "Loader2" : "Send"} size={16} className={`mr-2 ${isSendingEmail ? 'animate-spin' : ''}`} />
-                {isSendingEmail ? 'Отправка...' : 'Отправить'}
-              </Button>
-              <Button variant="outline" onClick={() => setShowEmailInput(false)}>
-                <Icon name="X" size={16} />
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleSendEmail} disabled={isSendingEmail} className="flex-1 sm:flex-none">
+                  <Icon name={isSendingEmail ? "Loader2" : "Send"} size={16} className={`mr-2 ${isSendingEmail ? 'animate-spin' : ''}`} />
+                  {isSendingEmail ? 'Отправка...' : 'Отправить'}
+                </Button>
+                <Button variant="outline" onClick={() => setShowEmailInput(false)}>
+                  <Icon name="X" size={16} />
+                </Button>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Button onClick={handleSave} disabled={isSaving} className="flex-1">
             <Icon name={isSaving ? "Loader2" : "Save"} size={16} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
             {isSaving ? 'Сохранение...' : 'Сохранить'}
           </Button>
           <Button variant="outline" onClick={() => setShowEmailInput(!showEmailInput)} className="flex-1">
             <Icon name="Mail" size={16} className="mr-2" />
-            Отправить на Email
+            На Email
           </Button>
-          <Button variant="outline" onClick={onReset}>
+          <Button variant="outline" onClick={onReset} className="flex-1 sm:flex-none">
             <Icon name="RotateCcw" size={16} className="mr-2" />
-            Начать заново
+            Заново
           </Button>
         </div>
       </div>

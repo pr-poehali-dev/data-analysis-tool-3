@@ -103,12 +103,12 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Настройки профиля</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Настройки профиля</h2>
       
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg border border-border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-foreground">Информация о пользователе</h3>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="bg-white rounded-lg border border-border p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground">Информация о пользователе</h3>
             {!isEditing && (
               <Button variant="outline" onClick={() => setIsEditing(true)}>
                 <Icon name="Edit" size={16} />
@@ -118,17 +118,17 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-start gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
               <div className="relative">
                 {formData.photo ? (
                   <img
                     src={formData.photo}
                     alt="Фото профиля"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-border"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
-                    <Icon name="User" size={40} className="text-primary" />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
+                    <Icon name="User" size={36} className="text-primary" />
                   </div>
                 )}
                 {isEditing && (
@@ -157,7 +157,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
                   <Icon name="User" size={16} className="inline mr-2" />
@@ -277,7 +277,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
             </div>
 
             {isEditing && (
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button onClick={handleSaveProfile} className="flex-1">
                   <Icon name="Check" size={18} />
                   Сохранить изменения
@@ -291,16 +291,16 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-border p-6">
-          <h3 className="text-xl font-semibold text-foreground mb-4">Уведомления</h3>
+        <div className="bg-white rounded-lg border border-border p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Уведомления</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Icon name="Volume2" size={20} className="text-primary" />
-                <div>
-                  <p className="font-medium text-foreground">Звук сообщений</p>
-                  <p className="text-sm text-muted-foreground">
-                    Воспроизводить звуковой сигнал при получении новых сообщений
+            <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <Icon name="Volume2" size={20} className="text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground text-sm sm:text-base">Звук сообщений</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Звуковой сигнал при новых сообщениях
                   </p>
                 </div>
               </div>

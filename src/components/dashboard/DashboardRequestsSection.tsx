@@ -51,10 +51,11 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-foreground">Мои заявки</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Мои заявки</h2>
         {userRequests.length > 0 && (
           <Button 
+            className="w-full sm:w-auto"
             onClick={(e) => {
               e.preventDefault();
               navigate("/create-request");
@@ -87,27 +88,27 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
               key={request.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-border rounded-xl p-6"
+              className="bg-white border border-border rounded-xl p-4 sm:p-6"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
                 <img
                   src={request.avatar}
                   alt={request.name}
-                  className="w-16 h-16 rounded-full"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full"
                 />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-semibold text-foreground">{request.name}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground">{request.name}</h3>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
                         {getStatusLabel(request.status)}
                       </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {new Date(request.createdAt).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Локация:</span>
                       <span className="ml-2 text-foreground">{request.location}</span>
@@ -125,11 +126,11 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
                       <span className="ml-2 text-primary font-semibold">{request.reward}</span>
                     </div>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-3 sm:mt-4">
                     <p className="text-sm text-muted-foreground">О себе:</p>
                     <p className="text-sm text-foreground mt-1">{request.aboutYourself}</p>
                   </div>
-                  <div className="flex items-center gap-3 mt-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Статус:</span>
                       <Select
@@ -146,22 +147,24 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2 ml-auto">
+                    <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/edit-request/${request.id}`)}
+                        className="flex-1 sm:flex-none"
                       >
-                        <Icon name="Edit" size={16} className="mr-2" />
-                        Редактировать
+                        <Icon name="Edit" size={16} className="mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Редактировать</span>
+                        <span className="sm:hidden">Изменить</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteRequest(request.id)}
-                        className="text-red-600 hover:text-red-700 hover:border-red-600"
+                        className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:border-red-600"
                       >
-                        <Icon name="Trash2" size={16} className="mr-2" />
+                        <Icon name="Trash2" size={16} className="mr-1 sm:mr-2" />
                         Удалить
                       </Button>
                     </div>

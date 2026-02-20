@@ -21,7 +21,7 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Мои рекомендации</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Мои рекомендации</h2>
       {userRecommendations.length === 0 ? (
         <div className="bg-white border border-border rounded-xl p-8 text-center">
           <Icon name="ThumbsUp" size={48} className="mx-auto mb-4 text-muted-foreground" />
@@ -35,7 +35,7 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
           </Button>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {userRecommendations.map((recommendation) => (
             <motion.div
               key={recommendation.id}

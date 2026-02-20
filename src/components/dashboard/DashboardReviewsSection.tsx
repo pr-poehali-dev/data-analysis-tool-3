@@ -56,13 +56,13 @@ export const DashboardReviewsSection = ({ userEmail }: DashboardReviewsSectionPr
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-foreground mb-6">Отзывы</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Отзывы</h2>
 
       {avgRating !== null && reviews.length > 0 && (
-        <div className="bg-white rounded-xl border border-border p-6 mb-6">
-          <div className="flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-border p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex flex-col items-center">
-              <div className="text-5xl font-bold text-foreground">{avgRating.toFixed(1)}</div>
+              <div className="text-4xl sm:text-5xl font-bold text-foreground">{avgRating.toFixed(1)}</div>
               <div className="flex gap-1 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Icon
@@ -114,11 +114,11 @@ export const DashboardReviewsSection = ({ userEmail }: DashboardReviewsSectionPr
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-xl border border-border p-6"
+              className="bg-white rounded-xl border border-border p-4 sm:p-6"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
                 <div className="flex-1">
-                  <h4 className="font-semibold text-foreground mb-1">
+                  <h4 className="font-semibold text-foreground text-sm sm:text-base mb-1">
                     {review.reviewer_name}
                   </h4>
                   <p className="text-xs text-muted-foreground">
@@ -129,13 +129,13 @@ export const DashboardReviewsSection = ({ userEmail }: DashboardReviewsSectionPr
                     })}
                   </p>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-0.5 sm:gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Icon
                       key={star}
                       name="Star"
-                      size={18}
-                      className={`${
+                      size={16}
+                      className={`sm:w-[18px] sm:h-[18px] ${
                         star <= review.rating
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"

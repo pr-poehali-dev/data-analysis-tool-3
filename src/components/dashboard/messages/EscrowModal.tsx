@@ -100,15 +100,15 @@ export const EscrowModal = ({
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
         >
-            <div className="p-6 border-b border-border">
-              <div className="flex items-start justify-between">
+            <div className="p-4 sm:p-6 border-b border-border">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Icon name="ShieldCheck" size={24} className="text-primary" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Icon name="ShieldCheck" size={20} className="sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground">Условия сделки</h2>
-                    <p className="text-sm text-muted-foreground">{requestName}</p>
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground">Условия сделки</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{requestName}</p>
                   </div>
                 </div>
                 <button
@@ -120,7 +120,7 @@ export const EscrowModal = ({
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               <p className="text-xs text-muted-foreground text-center">
                 Безопасная сделка через эскроу. Вознаграждение будет переведено<br />рекомендателю после подтверждения сделки обеими сторонами
               </p>
@@ -192,7 +192,7 @@ export const EscrowModal = ({
               </div>
             </div>
 
-            <div className="p-6 border-t border-border bg-gray-50">
+            <div className="p-4 sm:p-6 border-t border-border bg-gray-50">
               <div className="flex gap-3">
                 <Button
                   variant="outline"

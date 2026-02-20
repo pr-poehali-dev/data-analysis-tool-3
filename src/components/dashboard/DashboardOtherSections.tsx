@@ -57,8 +57,8 @@ export const DashboardOtherSections = ({ activeSection, user }: DashboardOtherSe
     case "documents":
       return (
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-foreground">Документы</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Документы</h2>
             {showConstructor && (
               <Button variant="outline" onClick={handleBackToList}>
                 <Icon name="ArrowLeft" size={16} className="mr-2" />

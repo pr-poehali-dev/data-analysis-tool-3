@@ -101,7 +101,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       case "feed":
         return (
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-6">Лента заявок</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Лента заявок</h2>
             <RequestsFeed 
               isAuthenticated={true}
               currentUserEmail={user.email}
@@ -168,7 +168,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </nav>
         </aside>
 
-        <main className="flex-1 p-4 sm:p-6 md:p-8">
+        <main className="flex-1 p-3 sm:p-6 md:p-8">
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
