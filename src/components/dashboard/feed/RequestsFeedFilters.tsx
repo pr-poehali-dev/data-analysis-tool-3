@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import {
@@ -47,6 +48,8 @@ export const RequestsFeedFilters = ({
   handleApplyFilters,
   handleResetFilters,
 }: RequestsFeedFiltersProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const getDistrictOptions = () => {
     if (!selectedCity) return [];
     const districts = citiesWithDistricts[selectedCity] || [];
@@ -58,9 +61,19 @@ export const RequestsFeedFilters = ({
 
   return (
     <div className="bg-white border border-border rounded-lg p-3">
-      <div className="flex items-center justify-between gap-4 mb-2">
-        <h3 className="text-sm font-semibold text-foreground">Фильтры</h3>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-4 mb-2 md:mb-2">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-1.5 md:pointer-events-none"
+        >
+          <h3 className="text-sm font-semibold text-foreground">Фильтры</h3>
+          <Icon
+            name={isOpen ? "ChevronUp" : "ChevronDown"}
+            size={14}
+            className="text-muted-foreground md:hidden"
+          />
+        </button>
+        <div className={`${isOpen ? "flex" : "hidden"} md:flex gap-2`}>
           <Button onClick={handleApplyFilters} size="sm" className="h-7 px-3 text-xs">
             <Icon name="Search" size={12} className="mr-1" />
             Применить
@@ -72,7 +85,7 @@ export const RequestsFeedFilters = ({
         </div>
       </div>
       
-      <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className={`${isOpen ? "grid" : "hidden"} md:grid md:grid-cols-3 lg:grid-cols-6 gap-2`}>
         <div>
           <label className="text-xs text-muted-foreground mb-1 block">Город</label>
           <Combobox
