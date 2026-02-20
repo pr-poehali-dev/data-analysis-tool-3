@@ -26,13 +26,13 @@ export const Step1AboutYourself = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
-      className="bg-white border border-border rounded-xl p-8"
+      className="bg-white border border-border rounded-xl p-4 sm:p-8"
     >
-      <h2 className="text-2xl font-bold text-foreground mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">
         Шаг 1: О себе
       </h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
           <label className="text-sm font-medium text-foreground mb-3 block">
             Кто будет жить? <span className="text-red-500">*</span>
@@ -42,7 +42,7 @@ export const Step1AboutYourself = ({
               <button
                 key={option}
                 onClick={() => updateFormData("whoWillLive", option)}
-                className={`p-4 border-2 rounded-lg text-center font-medium transition-all ${
+                className={`p-3 sm:p-4 border-2 rounded-lg text-center font-medium transition-all ${
                   formData.whoWillLive === option
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-border hover:border-primary/50"
@@ -80,7 +80,7 @@ export const Step1AboutYourself = ({
               <button
                 key={option}
                 onClick={() => updateFormData("hasPets", option)}
-                className={`p-4 border-2 rounded-lg text-center font-medium transition-all ${
+                className={`p-3 sm:p-4 border-2 rounded-lg text-center font-medium transition-all ${
                   formData.hasPets === option
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-border hover:border-primary/50"
@@ -93,7 +93,7 @@ export const Step1AboutYourself = ({
         </div>
       </div>
 
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-end mt-6 sm:mt-8">
         <Button
           onClick={onNext}
           disabled={!canProceed}

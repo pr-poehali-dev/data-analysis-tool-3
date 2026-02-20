@@ -60,7 +60,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
     <div className="min-h-screen bg-background">
       <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
 
-      <main className="max-w-6xl mx-auto px-6 py-8 mt-20 mb-20">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20 mb-20">
         <div className="mb-8">
           <Button
             variant="outline"
@@ -70,18 +70,18 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
             <Icon name="ArrowLeft" size={16} className="mr-2" />
             Назад к заявкам
           </Button>
-          <h1 className="text-4xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
             Предложения по заявке
           </h1>
-          <div className="bg-white border border-border rounded-xl p-6 mt-4">
+          <div className="bg-white border border-border rounded-xl p-4 sm:p-6 mt-4">
             <div className="flex items-start gap-4">
               <img
                 src={request.avatar}
                 alt={request.name}
-                className="w-16 h-16 rounded-full"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full"
               />
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-foreground mb-2">{request.name}</h3>
+                <h3 className="text-base sm:text-xl font-semibold text-foreground mb-2">{request.name}</h3>
                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Локация:</span>
@@ -106,7 +106,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6">
             Полученные предложения ({recommendations.length})
           </h2>
           {recommendations.length === 0 ? (
@@ -121,15 +121,15 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                   key={recommendation.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white border border-border rounded-xl p-6"
+                  className="bg-white border border-border rounded-xl p-4 sm:p-6"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon name="Home" size={32} className="text-primary" />
+                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon name="Home" size={24} className="text-primary" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 w-full">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xl font-semibold text-foreground">
+                        <h3 className="text-base sm:text-xl font-semibold text-foreground">
                           {recommendation.propertyData.address}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -202,7 +202,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           <p className="text-sm text-muted-foreground mb-2">
                             Фотографии ({recommendation.photos.length}):
                           </p>
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                             {recommendation.photos.slice(0, 8).map((photo, index) => (
                               <img
                                 key={index}
@@ -214,7 +214,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           </div>
                         </div>
                       )}
-                      <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">Статус:</span>
                           <Select

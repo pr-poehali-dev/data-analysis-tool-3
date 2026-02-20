@@ -79,13 +79,13 @@ export const Step2HousingParameters = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
-      className="bg-white border border-border rounded-xl p-8"
+      className="bg-white border border-border rounded-xl p-4 sm:p-8"
     >
-      <h2 className="text-2xl font-bold text-foreground mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">
         Шаг 2: Параметры жилья
       </h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Город <span className="text-red-500">*</span>
@@ -242,7 +242,7 @@ export const Step2HousingParameters = ({
           </Select>
         </div>
 
-        <div className="border-t border-border pt-6">
+        <div className="border-t border-border pt-4 sm:pt-6">
           <label className="text-sm font-medium text-foreground mb-3 block">
             Вознаграждение рекомендателю <span className="text-red-500">*</span>
           </label>
@@ -314,11 +314,12 @@ export const Step2HousingParameters = ({
         </div>
       </div>
 
-      <div className="flex justify-between mt-8">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
         <Button
           onClick={onBack}
           variant="outline"
           size="lg"
+          className="w-full sm:w-auto"
         >
           <Icon name="ArrowLeft" size={16} className="mr-2" />
           Назад
@@ -327,6 +328,7 @@ export const Step2HousingParameters = ({
           onClick={onSubmit}
           disabled={!canProceed}
           size="lg"
+          className="w-full sm:w-auto"
         >
           Создать заявку
           <Icon name="Check" size={16} className="ml-2" />

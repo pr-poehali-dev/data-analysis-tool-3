@@ -115,7 +115,7 @@ export const EditRecommendation = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => navigate("/", { state: { activeSection: "recommendations" } })}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -126,12 +126,12 @@ export const EditRecommendation = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
             Редактирование рекомендации
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-sm sm:text-lg text-muted-foreground">
             Внесите необходимые изменения в рекомендацию
           </p>
         </div>
@@ -158,7 +158,7 @@ export const EditRecommendation = () => {
 
             <div className="space-y-2">
               <Label>Фотографии (до 20 шт.)</Label>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {photos.map((photo, index) => (
                   <div key={index} className="relative aspect-square">
                     <img

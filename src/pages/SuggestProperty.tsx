@@ -161,7 +161,7 @@ export const SuggestProperty = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => {
               if (step === "property") {
@@ -183,14 +183,14 @@ export const SuggestProperty = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-2">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "invite" ? "bg-primary text-white" : "bg-green-500 text-white"}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base ${step === "invite" ? "bg-primary text-white" : "bg-green-500 text-white"}`}>
               1
             </div>
             <div className={`flex-1 h-1 ${step === "property" ? "bg-green-500" : "bg-gray-300"}`} />
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step === "property" ? "bg-primary text-white" : "bg-gray-300 text-gray-600"}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base ${step === "property" ? "bg-primary text-white" : "bg-gray-300 text-gray-600"}`}>
               2
             </div>
           </div>
@@ -281,7 +281,7 @@ export const SuggestProperty = () => {
 
               <div className="space-y-2">
                 <Label>Фотографии (до 20 шт.)</Label>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                   {photos.map((photo, index) => (
                     <div key={index} className="relative aspect-square">
                       <img

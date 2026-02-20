@@ -129,14 +129,14 @@ export const HowItWorks = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Как работает SovetPay
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -158,7 +158,7 @@ export const HowItWorks = () => {
                     transition={{ duration: 0.4 }}
                     className="mb-6 mt-12 first:mt-0"
                   >
-                    <h2 className="text-2xl font-bold text-primary uppercase tracking-wide">
+                    <h2 className="text-xl sm:text-2xl font-bold text-primary uppercase tracking-wide">
                       {section.category}
                     </h2>
                     <div className="h-1 w-20 bg-primary mt-2 rounded-full"></div>

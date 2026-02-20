@@ -202,12 +202,12 @@ export const EditRequest = () => {
     <div className="min-h-screen bg-background">
       <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 mt-20 mb-20">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20 mb-20">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
             Редактирование заявки
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-sm sm:text-lg text-muted-foreground">
             Внесите необходимые изменения в заявку
           </p>
         </div>
