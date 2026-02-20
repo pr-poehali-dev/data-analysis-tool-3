@@ -42,7 +42,7 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               <a
                 href={primaryButtonHref}
                 onClick={(e) => e.preventDefault()}
-                className="flex flex-col gap-1 text-[#9a9a9a]"
+                className="flex flex-col gap-1 text-[#9a9a9a] mb-2 sm:mb-3"
               >
                 <motion.span
                   initial={{ transform: "translateY(20px)", opacity: 0 }}
@@ -56,16 +56,16 @@ export const ProductTeaserCard = (props: ProductTeaserCardProps) => {
               </a>
 
               <h1
-                className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-4 sm:mb-5 md:mb-6 font-medium"
+                className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] leading-[36px] sm:leading-[44px] md:leading-[52px] lg:leading-[60px] tracking-tight text-[#202020] mb-6 sm:mb-7 md:mb-8 font-medium"
               >
                 {headline}
               </h1>
 
-              <p className="text-base sm:text-lg leading-6 sm:leading-7 text-[#404040] mb-4 sm:mb-5 md:mb-6">
+              <p className="text-base sm:text-lg leading-6 sm:leading-7 text-[#404040] mb-6 sm:mb-7 md:mb-8">
                 {subheadline}
               </p>
 
-              <ul className="flex flex-col sm:flex-row gap-2 sm:gap-1.5 flex-wrap mt-3 sm:mt-4 md:mt-5 w-full sm:w-auto">
+              <ul className="flex flex-col sm:flex-row gap-3 sm:gap-2 flex-wrap mt-2 w-full sm:w-auto">
                 <li className="w-full sm:w-auto">
                   <button
                     onClick={onRegisterClick}
