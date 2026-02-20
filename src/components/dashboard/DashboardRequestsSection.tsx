@@ -51,27 +51,28 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Мои заявки</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-3xl font-bold text-foreground">Мои заявки</h2>
         {userRequests.length > 0 && (
           <Button 
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-sm"
             onClick={(e) => {
               e.preventDefault();
               navigate("/create-request");
             }}
           >
-            <Icon name="Plus" size={16} className="mr-2" />
-            Создать ещё одну заявку
+            <Icon name="Plus" size={16} className="mr-1.5" />
+            Создать заявку
           </Button>
         )}
       </div>
+
       {userRequests.length === 0 ? (
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <Icon name="FileText" size={48} className="mx-auto mb-4 text-muted-foreground" />
-          <p className="text-lg text-muted-foreground">У вас пока нет активных заявок</p>
+        <div className="bg-white border border-border rounded-xl p-6 sm:p-8 text-center">
+          <Icon name="FileText" size={40} className="mx-auto mb-3 text-muted-foreground" />
+          <p className="text-base sm:text-lg text-muted-foreground">У вас пока нет активных заявок</p>
           <Button 
-            className="mt-6" 
+            className="mt-4 sm:mt-6 w-full sm:w-auto" 
             onClick={(e) => {
               e.preventDefault();
               navigate("/create-request");
@@ -82,108 +83,108 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {userRequests.map((request) => (
             <motion.div
               key={request.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-border rounded-xl p-4 sm:p-6"
+              className="bg-white border border-border rounded-xl p-3 sm:p-6"
             >
-              <div className="flex flex-col sm:flex-row items-start gap-4">
+              <div className="flex items-start gap-3 sm:gap-4 mb-3">
                 <img
                   src={request.avatar}
                   alt={request.name}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full"
+                  className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex-shrink-0"
                 />
-                <div className="flex-1 w-full">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                      <h3 className="text-lg sm:text-xl font-semibold text-foreground">{request.name}</h3>
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                        {getStatusLabel(request.status)}
-                      </span>
-                    </div>
-                    <span className="text-xs sm:text-sm text-muted-foreground">
-                      {new Date(request.createdAt).toLocaleDateString('ru-RU')}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <h3 className="text-base sm:text-xl font-semibold text-foreground truncate">{request.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap ${getStatusColor(request.status)}`}>
+                      {getStatusLabel(request.status)}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Локация:</span>
-                      <span className="ml-2 text-foreground">{request.location}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Бюджет:</span>
-                      <span className="ml-2 text-foreground">{request.budget}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Тип жилья:</span>
-                      <span className="ml-2 text-foreground">{request.housingType}, {request.roomsCount}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Вознаграждение:</span>
-                      <span className="ml-2 text-primary font-semibold">{request.reward}</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 sm:mt-4">
-                    <p className="text-sm text-muted-foreground">О себе:</p>
-                    <p className="text-sm text-foreground mt-1">{request.aboutYourself}</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Статус:</span>
-                      <Select
-                        value={request.status}
-                        onValueChange={(value) => handleStatusChange(request.id, value as RequestStatus)}
-                      >
-                        <SelectTrigger className="w-[150px] h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Активна</SelectItem>
-                          <SelectItem value="in_progress">В работе</SelectItem>
-                          <SelectItem value="archived">Архивная</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/edit-request/${request.id}`)}
-                        className="flex-1 sm:flex-none"
-                      >
-                        <Icon name="Edit" size={16} className="mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Редактировать</span>
-                        <span className="sm:hidden">Изменить</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteRequest(request.id)}
-                        className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:border-red-600"
-                      >
-                        <Icon name="Trash2" size={16} className="mr-1 sm:mr-2" />
-                        Удалить
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <Button
-                      className="w-full bg-[#155eef] hover:bg-[#155eef]/90 relative"
-                      onClick={() => navigate(`/request-offers/${request.id}`)}
-                    >
-                      <Icon name="Eye" size={16} className="mr-2" />
-                      Смотреть предложения
-                      {getOffersCount(request.id) > 0 && (
-                        <span className="ml-2 bg-white text-[#155eef] px-2 py-0.5 rounded-full text-xs font-semibold">
-                          {getOffersCount(request.id)}
-                        </span>
-                      )}
-                    </Button>
-                  </div>
+                  <span className="text-[11px] sm:text-sm text-muted-foreground">
+                    {new Date(request.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 sm:gap-x-6 sm:gap-y-3 text-xs sm:text-sm mb-3 sm:mb-4">
+                <div>
+                  <span className="text-muted-foreground">Локация:</span>
+                  <p className="text-foreground font-medium truncate">{request.location}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Бюджет:</span>
+                  <p className="text-foreground font-medium">{request.budget}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Тип жилья:</span>
+                  <p className="text-foreground font-medium truncate">{request.housingType}, {request.roomsCount}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Вознаграждение:</span>
+                  <p className="text-primary font-semibold">{request.reward}</p>
+                </div>
+              </div>
+
+              <div className="mb-3 sm:mb-4">
+                <p className="text-[11px] sm:text-sm text-muted-foreground mb-0.5">О себе:</p>
+                <p className="text-xs sm:text-sm text-foreground line-clamp-2 sm:line-clamp-none">{request.aboutYourself}</p>
+              </div>
+
+              <div className="border-t border-border pt-3 space-y-2.5 sm:space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">Статус:</span>
+                  <Select
+                    value={request.status}
+                    onValueChange={(value) => handleStatusChange(request.id, value as RequestStatus)}
+                  >
+                    <SelectTrigger className="w-[130px] sm:w-[150px] h-8 text-xs sm:text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Активна</SelectItem>
+                      <SelectItem value="in_progress">В работе</SelectItem>
+                      <SelectItem value="archived">Архивная</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/edit-request/${request.id}`)}
+                    className="text-xs sm:text-sm h-8 sm:h-9"
+                  >
+                    <Icon name="Edit" size={14} className="mr-1 sm:mr-1.5" />
+                    Изменить
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteRequest(request.id)}
+                    className="text-xs sm:text-sm h-8 sm:h-9 text-red-600 hover:text-red-700 hover:border-red-600"
+                  >
+                    <Icon name="Trash2" size={14} className="mr-1 sm:mr-1.5" />
+                    Удалить
+                  </Button>
+                </div>
+
+                <Button
+                  className="w-full bg-[#155eef] hover:bg-[#155eef]/90 relative text-xs sm:text-sm h-9 sm:h-10"
+                  onClick={() => navigate(`/request-offers/${request.id}`)}
+                >
+                  <Icon name="Eye" size={15} className="mr-1.5" />
+                  Смотреть предложения
+                  {getOffersCount(request.id) > 0 && (
+                    <span className="ml-2 bg-white text-[#155eef] px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold">
+                      {getOffersCount(request.id)}
+                    </span>
+                  )}
+                </Button>
               </div>
             </motion.div>
           ))}
