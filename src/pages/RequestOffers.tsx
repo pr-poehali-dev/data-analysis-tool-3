@@ -184,12 +184,6 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           <span className="ml-2 text-foreground">{recommendation.ownerEmail}</span>
                         </div>
                       </div>
-                      {recommendation.inviteMessage && (
-                        <div className="mb-4 bg-gray-50 p-3 rounded-lg">
-                          <p className="text-sm text-muted-foreground mb-1">Сообщение владельцу:</p>
-                          <p className="text-sm text-foreground">{recommendation.inviteMessage}</p>
-                        </div>
-                      )}
                       {recommendation.propertyData.comments && (
                         <div className="mb-4">
                           <p className="text-sm text-muted-foreground">Комментарий:</p>
