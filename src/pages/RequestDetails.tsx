@@ -5,6 +5,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { authStore } from "@/store/authStore";
@@ -15,6 +16,7 @@ export const RequestDetails = () => {
   const { requestId } = useParams<{ requestId: string }>();
   const [request, setRequest] = useState<Request | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   
   const fromDashboard = location.state?.fromDashboard || false;
 
@@ -46,7 +48,12 @@ export const RequestDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} />
+      <PortfolioNavbar
+        onRegisterClick={() => setIsRegistrationOpen(true)}
+        onLoginClick={() => setIsLoginOpen(true)}
+        onLogout={() => navigate("/")}
+        showNavigation={!authStore.isAuthenticated()}
+      />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20 mb-20">
         <Button
@@ -199,6 +206,14 @@ export const RequestDetails = () => {
                 fromDashboard: true
               }
             });
+          }} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+        <DialogContent className="max-w-md">
+          <LoginForm onSuccess={() => {
+            setIsLoginOpen(false);
           }} />
         </DialogContent>
       </Dialog>
