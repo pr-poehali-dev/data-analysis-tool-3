@@ -179,10 +179,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                             {recommendation.propertyData.hasAppliances ? 'Да' : 'Нет'}
                           </span>
                         </div>
-                        <div className="md:col-span-2">
-                          <span className="text-muted-foreground">Владелец:</span>
-                          <span className="ml-2 text-foreground">{recommendation.ownerEmail}</span>
-                        </div>
+
                       </div>
                       {recommendation.propertyData.comments && (
                         <div className="mb-4">
