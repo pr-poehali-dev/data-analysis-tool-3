@@ -19,12 +19,7 @@ export const RequestDetails = () => {
   const fromDashboard = location.state?.fromDashboard || false;
 
   const goBack = () => {
-    const user = authStore.getUser();
-    if (user || fromDashboard) {
-      navigate("/dashboard", { state: { activeSection: "feed" } });
-    } else {
-      navigate("/", { state: { activeSection: "feed" } });
-    }
+    navigate("/feed");
   };
 
   useEffect(() => {
