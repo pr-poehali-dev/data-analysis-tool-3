@@ -62,7 +62,7 @@ export function Combobox({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full min-w-[300px] p-0" align="start" side="bottom">
+      <PopoverContent className="w-full min-w-[300px] p-0" align="start" side="bottom" avoidCollisions={false}>
         <Command shouldFilter={false} className="rounded-lg border-0 shadow-lg">
           <CommandInput 
             placeholder={searchPlaceholder}
