@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { useNavigate } from "react-router-dom";
+import Icon from "@/components/ui/icon";
 import { requestsStore } from "@/store/requestsStore";
 import { authStore } from "@/store/authStore";
 import { StepIndicator } from "@/components/request/StepIndicator";
@@ -213,6 +214,14 @@ export const CreateRequest = () => {
       <PortfolioNavbar onLogout={() => navigate("/")} showNavigation={false} showMobileMenu={false} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20 mb-20">
+        <button
+          onClick={() => navigate("/dashboard", { state: { activeSection: "requests" } })}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <Icon name="ArrowLeft" size={16} />
+          Назад к заявкам
+        </button>
+
         <div className="mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
             Создание заявки на аренду
