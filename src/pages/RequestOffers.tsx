@@ -62,14 +62,13 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 mt-20 mb-20">
         <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/", { state: { activeSection: "requests" } })}
-            className="mb-4"
+          <button
+            onClick={() => navigate("/dashboard", { state: { activeSection: "requests" } })}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors mb-4"
           >
-            <Icon name="ArrowLeft" size={16} className="mr-2" />
+            <Icon name="ArrowLeft" size={16} />
             Назад к заявкам
-          </Button>
+          </button>
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
             Предложения по заявке
           </h1>
