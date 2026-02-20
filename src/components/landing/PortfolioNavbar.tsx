@@ -3,6 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LogOut, User, Instagram } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authStore } from "@/store/authStore";
+import Icon from "@/components/ui/icon";
+
+const dashboardMenuItems = [
+  { id: "feed", label: "Лента заявок", icon: "List" },
+  { id: "requests", label: "Мои заявки", icon: "FileText" },
+  { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp" },
+  { id: "messages", label: "Сообщения", icon: "MessageSquare" },
+  { id: "documents", label: "Документы", icon: "FolderOpen" },
+  { id: "balance", label: "Баланс", icon: "Wallet" },
+  { id: "reviews", label: "Отзывы", icon: "Star" },
+  { id: "settings", label: "Настройки профиля", icon: "Settings" },
+];
 
 const footerSections = [
   {
@@ -285,9 +297,26 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                       )}
                       <span className="text-sm font-medium">{user.firstName} {user.lastName}</span>
                     </div>
+                    <div className="mt-3 space-y-0.5">
+                      {dashboardMenuItems.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            closeMobileMenu();
+                            setTimeout(() => {
+                              navigate("/dashboard", { state: { activeSection: item.id } });
+                            }, 350);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-100 transition-colors"
+                        >
+                          <Icon name={item.icon} size={18} className="text-muted-foreground" />
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 text-white bg-red-500 hover:bg-red-600 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2 text-white bg-red-500 hover:bg-red-600 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 mt-2"
                     >
                       <LogOut size={15} />
                       <span>Выйти</span>
