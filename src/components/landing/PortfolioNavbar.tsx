@@ -312,7 +312,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                       )}
                       <span className="text-sm font-medium">{user.firstName} {user.lastName}</span>
                     </div>
-                    <div className="mt-3 space-y-0.5">
+                    <div className="mt-3 space-y-1">
                       {dashboardMenuItems.map((item) => (
                         <button
                           key={item.id}
@@ -322,12 +322,12 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                               navigate("/dashboard", { state: { activeSection: item.id } });
                             }, 350);
                           }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-100 transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-foreground hover:bg-gray-100 transition-colors"
                         >
-                          <Icon name={item.icon} size={18} className="text-muted-foreground" />
-                          <span className="text-sm font-medium">{item.label}</span>
+                          <Icon name={item.icon} size={20} className="text-muted-foreground" />
+                          <span className="text-base font-medium">{item.label}</span>
                           {item.id === "messages" && unreadCount > 0 && (
-                            <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
+                            <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
                               {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                           )}
