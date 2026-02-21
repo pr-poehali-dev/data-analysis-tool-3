@@ -143,23 +143,23 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="hidden md:block w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
-          <nav className="space-y-1">
+        <aside className="hidden md:block w-44 lg:w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-2 lg:p-4 sticky top-[80px] self-start flex-shrink-0">
+          <nav className="space-y-0.5 lg:space-y-1">
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleMenuClick(item.id)}
                 type="button"
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap relative ${
+                className={`w-full flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg transition-colors whitespace-nowrap relative ${
                   activeSection === item.id
                     ? "bg-primary text-white"
                     : "text-foreground hover:bg-gray-100"
                 }`}
               >
-                <Icon name={item.icon} size={18} />
-                <span className="text-sm font-medium">{item.label}</span>
+                <Icon name={item.icon} size={16} className="lg:w-[18px] lg:h-[18px]" />
+                <span className="text-xs lg:text-sm font-medium">{item.label}</span>
                 {item.id === "messages" && unreadMessagesCount > 0 && (
-                  <span className="absolute top-1 right-1 px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                  <span className="absolute top-0.5 right-0.5 lg:top-1 lg:right-1 px-1 lg:px-1.5 py-0.5 bg-red-500 text-white text-[10px] lg:text-xs font-bold rounded-full min-w-[18px] lg:min-w-[20px] text-center">
                     {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
                   </span>
                 )}
