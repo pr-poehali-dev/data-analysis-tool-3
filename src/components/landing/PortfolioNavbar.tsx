@@ -168,8 +168,13 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
   };
 
   const handleLogoClick = () => {
-    if (location.pathname === '/') {
+    if (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard')) {
+      navigate('/dashboard', { state: { activeSection: 'feed' } });
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (user) {
+      navigate('/dashboard', { state: { activeSection: 'feed' } });
     } else {
       navigate('/');
     }
