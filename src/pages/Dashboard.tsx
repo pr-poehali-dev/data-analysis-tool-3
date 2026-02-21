@@ -143,7 +143,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
-        <aside className="hidden lg:block w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
+        <aside className="hidden md:block w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-4 sticky top-[80px] self-start">
           <nav className="space-y-1">
             {menuItems.map((item) => (
               <button
