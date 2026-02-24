@@ -1,4 +1,5 @@
 {
+  "yandex-auth-yandex-auth": "https://functions.poehali.dev/587c9b97-241f-40d8-9790-15e169d54ec1",
   "reviews": "https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f",
   "send-contract-email": "https://functions.poehali.dev/ef87cab5-dd87-4cb9-b8bd-a4fa837976a4",
   "sms-verify": "https://functions.poehali.dev/4f15da38-48d3-4d79-a81e-4cc876c6b4d5",
