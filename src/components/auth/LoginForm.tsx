@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/store/authStore";
+import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
+import funcUrls from "../../../backend/func2url.json";
+
+const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
 
 const loginSchema = z.object({
   email: z.string().email("Некорректный email"),
@@ -20,6 +25,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const { toast } = useToast();
+  const [yandexLoading, setYandexLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -47,6 +53,34 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
     }
   };
 
+  const handleYandexLogin = async () => {
+    setYandexLoading(true);
+    try {
+      const res = await fetch(`${AUTH_URL}?action=auth-url`);
+      const data = await res.json();
+      if (data.auth_url) {
+        if (data.state) {
+          sessionStorage.setItem("yandex_auth_state", data.state);
+        }
+        window.location.href = data.auth_url;
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось начать авторизацию",
+          variant: "destructive",
+        });
+        setYandexLoading(false);
+      }
+    } catch {
+      toast({
+        title: "Ошибка сети",
+        description: "Попробуйте позже",
+        variant: "destructive",
+      });
+      setYandexLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -54,6 +88,21 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         <p className="text-sm text-[#666666] mt-2">
           Введите данные для входа в систему
         </p>
+      </div>
+
+      <YandexLoginButton
+        onClick={handleYandexLogin}
+        isLoading={yandexLoading}
+        className="w-full"
+      />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">или</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

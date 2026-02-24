@@ -17,6 +17,7 @@ import { RequestOffers } from "./pages/RequestOffers";
 import { RequestDetails } from "./pages/RequestDetails";
 import { HowItWorks } from "./pages/HowItWorks";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import YandexCallback from "./pages/YandexCallback";
 import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
@@ -98,6 +99,7 @@ const AppContent = () => {
       <Route path="/edit-recommendation/:recommendationId" element={<EditRecommendation />} />
       <Route path="/request-offers/:requestId" element={<RequestOffers currentUser={user || undefined} />} />
       <Route path="/request/:requestId" element={<RequestDetails />} />
+      <Route path="/auth/yandex/callback" element={<YandexCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

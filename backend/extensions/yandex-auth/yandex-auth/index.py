@@ -270,7 +270,8 @@ def handle_callback(event: dict, origin: str) -> dict:
         yandex_id = str(user_info.get('id', ''))
         email = user_info.get('default_email', '')
         name = user_info.get('real_name') or user_info.get('display_name', '')
-        # Yandex avatar: https://avatars.yandex.net/get-yapic/{avatar_id}/islands-200
+        first_name = user_info.get('first_name', '')
+        last_name = user_info.get('last_name', '')
         avatar_id = user_info.get('default_avatar_id', '')
         picture = f"https://avatars.yandex.net/get-yapic/{avatar_id}/islands-200" if avatar_id else ''
 
@@ -283,16 +284,14 @@ def handle_callback(event: dict, origin: str) -> dict:
 
             cleanup_expired_tokens(cur, S)
 
-            # 1. Check if user exists by yandex_id
             cur.execute(
-                f"SELECT id, email, name, avatar_url FROM {S}users WHERE yandex_id = %s",
+                f"SELECT id, email, name, avatar_url, first_name, last_name, role, phone, city FROM {S}users WHERE yandex_id = %s",
                 (yandex_id,)
             )
             row = cur.fetchone()
 
             if row:
-                # User found by yandex_id - just login
-                user_id, db_email, db_name, db_avatar = row
+                user_id, db_email, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city = row
                 cur.execute(
                     f"UPDATE {S}users SET last_login_at = %s, updated_at = %s WHERE id = %s",
                     (now, now, user_id)
@@ -300,35 +299,46 @@ def handle_callback(event: dict, origin: str) -> dict:
                 email = db_email or email
                 name = db_name or name
                 picture = db_avatar or picture
+                first_name = db_fn or first_name
+                last_name = db_ln or last_name
+                role = db_role or 'tenant'
+                phone = db_phone or ''
+                city = db_city or ''
             else:
-                # 2. Check if user exists by email - link Yandex account
                 if email:
                     cur.execute(
-                        f"SELECT id, name, avatar_url FROM {S}users WHERE email = %s",
+                        f"SELECT id, name, avatar_url, first_name, last_name, role, phone, city FROM {S}users WHERE email = %s",
                         (email,)
                     )
                     row = cur.fetchone()
 
                 if email and row:
-                    # User found by email - link Yandex account
-                    user_id, db_name, db_avatar = row
+                    user_id, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city = row
                     cur.execute(
                         f"""UPDATE {S}users
                             SET yandex_id = %s, avatar_url = COALESCE(avatar_url, %s),
+                                first_name = COALESCE(first_name, %s), last_name = COALESCE(last_name, %s),
                                 last_login_at = %s, updated_at = %s
                             WHERE id = %s""",
-                        (yandex_id, picture, now, now, user_id)
+                        (yandex_id, picture, first_name, last_name, now, now, user_id)
                     )
                     name = db_name or name
                     picture = db_avatar or picture
+                    first_name = db_fn or first_name
+                    last_name = db_ln or last_name
+                    role = db_role or 'tenant'
+                    phone = db_phone or ''
+                    city = db_city or ''
                 else:
-                    # 3. Create new user
+                    role = 'tenant'
+                    phone = ''
+                    city = ''
                     cur.execute(
                         f"""INSERT INTO {S}users
-                            (yandex_id, email, name, avatar_url, email_verified, created_at, updated_at, last_login_at)
-                            VALUES (%s, %s, %s, %s, TRUE, %s, %s, %s)
+                            (yandex_id, email, name, avatar_url, email_verified, first_name, last_name, role, created_at, updated_at, last_login_at)
+                            VALUES (%s, %s, %s, %s, TRUE, %s, %s, %s, %s, %s, %s)
                             RETURNING id""",
-                        (yandex_id, email, name, picture, now, now, now)
+                        (yandex_id, email, name, picture, first_name, last_name, role, now, now, now)
                     )
                     user_id = cur.fetchone()[0]
 
@@ -354,7 +364,12 @@ def handle_callback(event: dict, origin: str) -> dict:
                     'email': email,
                     'name': name,
                     'avatar_url': picture,
-                    'yandex_id': yandex_id
+                    'yandex_id': yandex_id,
+                    'firstName': first_name,
+                    'lastName': last_name,
+                    'role': role,
+                    'phone': phone,
+                    'city': city
                 }
             }, origin)
 
@@ -402,7 +417,8 @@ def handle_refresh(event: dict, origin: str) -> dict:
         token_hash = hash_token(refresh_token)
 
         cur.execute(
-            f"""SELECT rt.user_id, u.email, u.name, u.avatar_url, u.yandex_id
+            f"""SELECT rt.user_id, u.email, u.name, u.avatar_url, u.yandex_id,
+                       u.first_name, u.last_name, u.role, u.phone, u.city
                 FROM {S}refresh_tokens rt
                 JOIN {S}users u ON u.id = rt.user_id
                 WHERE rt.token_hash = %s AND rt.expires_at > %s""",
@@ -414,7 +430,7 @@ def handle_refresh(event: dict, origin: str) -> dict:
             conn.commit()
             return error(401, 'Invalid or expired refresh token', origin)
 
-        user_id, email, name, avatar_url, yandex_id = row
+        user_id, email, name, avatar_url, yandex_id, first_name, last_name, role, phone, city = row
 
         access_token, expires_in = create_access_token(user_id, email)
 
@@ -428,7 +444,12 @@ def handle_refresh(event: dict, origin: str) -> dict:
                 'email': email,
                 'name': name,
                 'avatar_url': avatar_url,
-                'yandex_id': yandex_id
+                'yandex_id': yandex_id,
+                'firstName': first_name or '',
+                'lastName': last_name or '',
+                'role': role or 'tenant',
+                'phone': phone or '',
+                'city': city or ''
             }
         }, origin)
 
