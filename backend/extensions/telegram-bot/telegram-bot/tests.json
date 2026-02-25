@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS request", "method": "OPTIONS", "path": "/", "expectedStatus": 204}, {"name": "Webhook empty body", "method": "POST", "path": "/", "expectedStatus": 200, "expectedBody": {"ok": true}, "bodyMatcher": "partial"}]}

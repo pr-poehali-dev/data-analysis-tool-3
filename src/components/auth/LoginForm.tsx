@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/store/authStore";
 import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
+import { TelegramLoginButton } from "@/components/extensions/telegram-bot/TelegramLoginButton";
 import funcUrls from "../../../backend/func2url.json";
 
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
+const TG_BOT_USERNAME = "sovetpay_bot";
 
 const loginSchema = z.object({
   email: z.string().email("Некорректный email"),
@@ -53,6 +55,10 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
     }
   };
 
+  const handleTelegramLogin = () => {
+    window.open(`https://t.me/${TG_BOT_USERNAME}?start=web_auth`, "_blank");
+  };
+
   const handleYandexLogin = async () => {
     setYandexLoading(true);
     try {
@@ -93,6 +99,11 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
       <YandexLoginButton
         onClick={handleYandexLogin}
         isLoading={yandexLoading}
+        className="w-full"
+      />
+
+      <TelegramLoginButton
+        onClick={handleTelegramLogin}
         className="w-full"
       />
 

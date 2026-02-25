@@ -18,6 +18,7 @@ import { RequestDetails } from "./pages/RequestDetails";
 import { HowItWorks } from "./pages/HowItWorks";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import YandexCallback from "./pages/YandexCallback";
+import TelegramCallback from "./pages/TelegramCallback";
 import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
@@ -100,6 +101,7 @@ const AppContent = () => {
       <Route path="/request-offers/:requestId" element={<RequestOffers currentUser={user || undefined} />} />
       <Route path="/request/:requestId" element={<RequestDetails />} />
       <Route path="/auth/yandex/callback" element={<YandexCallback />} />
+      <Route path="/auth/telegram/callback" element={<TelegramCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
