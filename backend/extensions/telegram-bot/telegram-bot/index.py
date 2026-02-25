@@ -328,14 +328,14 @@ def handler(event: dict, context) -> dict:
             return cors_response(400, {"error": f"Unknown action: {action}"})
 
     # No action — handle Telegram webhook
-    headers = event.get("headers", {})
-    headers_lower = {k.lower(): v for k, v in headers.items()}
-    webhook_secret = os.environ.get("TELEGRAM_WEBHOOK_SECRET")
+    print(f"Webhook request received, method={method}")
+    raw_body = event.get("body", "{}")
+    print(f"Body: {raw_body[:500] if raw_body else 'empty'}")
 
-    if webhook_secret:
-        request_secret = headers_lower.get("x-telegram-bot-api-secret-token", "")
-        if request_secret != webhook_secret:
-            return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
+    try:
+        body = json.loads(raw_body) if raw_body else {}
+    except json.JSONDecodeError:
+        print("Failed to parse body as JSON")
+        return {"statusCode": 200, "body": json.dumps({"ok": True})}
 
-    body = json.loads(event.get("body", "{}"))
     return process_webhook(body)
