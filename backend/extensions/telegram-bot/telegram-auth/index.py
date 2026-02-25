@@ -173,10 +173,10 @@ def create_or_update_user(
     else:
         # Create new user
         cursor.execute(f"""
-            INSERT INTO {schema}users (telegram_id, name, avatar_url, email_verified, password_hash, created_at, updated_at, last_login_at)
-            VALUES (%s, %s, %s, TRUE, '', NOW(), NOW(), NOW())
+            INSERT INTO {schema}users (telegram_id, name, first_name, last_name, avatar_url, email_verified, created_at, updated_at, last_login_at)
+            VALUES (%s, %s, %s, %s, %s, TRUE, NOW(), NOW(), NOW())
             RETURNING id, email, name, avatar_url, telegram_id
-        """, (telegram_id, display_name, photo_url))
+        """, (telegram_id, display_name, first_name, last_name, photo_url))
 
     row = cursor.fetchone()
     return {
