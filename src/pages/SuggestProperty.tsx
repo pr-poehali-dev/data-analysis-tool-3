@@ -74,6 +74,14 @@ export const SuggestProperty = () => {
     setStep("property");
   };
 
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async () => {
     if (!propertyData.address || !propertyData.rent) {
       toast({
@@ -95,24 +103,39 @@ export const SuggestProperty = () => {
       return;
     }
 
-    const photoUrls = photos.map(photo => URL.createObjectURL(photo));
+    let photoUrls: string[] = [];
+    try {
+      photoUrls = await Promise.all(photos.map(fileToDataUrl));
+    } catch {
+      photoUrls = [];
+    }
 
-    const recommendation = await recommendationsStore.addRecommendation({
-      userId: user.email,
-      requestId: requestData?.requestId,
-      requestName: requestData?.requestName,
-      ownerEmail: inviteEmail,
-      inviteMessage,
-      propertyData: {
-        ...propertyData,
-        area: propertyData.area || '',
-        floor: propertyData.floor || '',
-        totalFloors: propertyData.totalFloors || '',
-        rooms: propertyData.rooms || '',
-        comments: propertyData.comments || '',
-      },
-      photos: photoUrls,
-    });
+    let recommendation;
+    try {
+      recommendation = await recommendationsStore.addRecommendation({
+        userId: user.email,
+        requestId: requestData?.requestId,
+        requestName: requestData?.requestName,
+        ownerEmail: inviteEmail,
+        inviteMessage,
+        propertyData: {
+          ...propertyData,
+          area: propertyData.area || '',
+          floor: propertyData.floor || '',
+          totalFloors: propertyData.totalFloors || '',
+          rooms: propertyData.rooms || '',
+          comments: propertyData.comments || '',
+        },
+        photos: photoUrls,
+      });
+    } catch {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить предложение. Попробуйте позже.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (requestData?.requestId) {
       const request = requestsStore.getRequestById(requestData.requestId);
