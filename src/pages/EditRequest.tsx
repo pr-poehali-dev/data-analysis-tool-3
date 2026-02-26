@@ -96,42 +96,49 @@ export const EditRequest = () => {
       return;
     }
 
-    const request = requestsStore.getRequestById(requestId);
-    if (!request) {
-      toast({
-        title: "Ошибка",
-        description: "Заявка не найдена",
-        variant: "destructive",
-      });
-      navigate("/dashboard");
-      return;
-    }
+    const loadRequest = async () => {
+      let request = requestsStore.getRequestById(requestId);
+      if (!request) {
+        request = await requestsStore.fetchRequestById(requestId);
+      }
+      if (!request) {
+        toast({
+          title: "Ошибка",
+          description: "Заявка не найдена",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
 
-    const user = authStore.getUser();
-    if (!user || request.userId !== user.email) {
-      toast({
-        title: "Ошибка",
-        description: "У вас нет прав для редактирования этой заявки",
-        variant: "destructive",
-      });
-      navigate("/dashboard");
-      return;
-    }
+      const user = authStore.getUser();
+      if (!user || (request.userId !== user.email && request.userEmail !== user.email)) {
+        toast({
+          title: "Ошибка",
+          description: "У вас нет прав для редактирования этой заявки",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
 
-    setFormData({
-      whoWillLive: request.whoWillLive,
-      aboutYourself: request.aboutYourself,
-      hasPets: request.hasPets,
-      city: request.city,
-      districts: request.districts,
-      budgetMin: request.budgetMin,
-      budgetMax: request.budgetMax,
-      housingType: request.housingType,
-      roomsCount: request.roomsCount,
-      rentalPeriod: request.rentalPeriod,
-      moveInDate: request.moveInDate,
-      reward: parseInt(request.reward.replace(/[^\d]/g, '')),
-    });
+      setFormData({
+        whoWillLive: request.whoWillLive,
+        aboutYourself: request.aboutYourself,
+        hasPets: request.hasPets,
+        city: request.city,
+        districts: request.districts,
+        budgetMin: request.budgetMin,
+        budgetMax: request.budgetMax,
+        housingType: request.housingType,
+        roomsCount: request.roomsCount,
+        rentalPeriod: request.rentalPeriod,
+        moveInDate: request.moveInDate,
+        reward: parseInt(request.reward.replace(/[^\d]/g, '')),
+      });
+    };
+
+    loadRequest();
   }, [requestId, navigate, toast]);
 
   const updateFormData = (field: keyof RequestFormData, value: any) => {
@@ -169,12 +176,12 @@ export const EditRequest = () => {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!requestId) return;
 
     const districtsText = formData.districts.join(", ");
     
-    requestsStore.updateRequest(requestId, {
+    await requestsStore.updateRequest(requestId, {
       location: `${formData.city}, ${districtsText}`,
       budget: `${parseInt(formData.budgetMin).toLocaleString('ru-RU')} - ${parseInt(formData.budgetMax).toLocaleString('ru-RU')} ₽`,
       reward: `${formData.reward.toLocaleString('ru-RU')} ₽`,

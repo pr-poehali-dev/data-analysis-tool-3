@@ -45,6 +45,12 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const otherUserVkLink = isRecommender ? chat.tenantVkLink : chat.recommenderVkLink;
 
   useEffect(() => {
+    if (chat.requestId) {
+      requestsStore.fetchRequestById(chat.requestId);
+    }
+  }, [chat.requestId]);
+
+  useEffect(() => {
     const loadMessages = () => {
       const chatMessages = messagesStore.getMessages(chat.id);
       setMessages(chatMessages);

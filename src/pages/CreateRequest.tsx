@@ -180,12 +180,12 @@ export const CreateRequest = () => {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const districtsText = formData.districts.join(", ");
     const user = authStore.getUser();
     const userId = user?.email || 'anonymous';
     
-    requestsStore.addRequest({
+    await requestsStore.addRequest({
       userId,
       name: user ? `${user.firstName} ${user.lastName}` : "Вы",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NewUser",

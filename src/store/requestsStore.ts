@@ -1,8 +1,11 @@
+import funcUrls from "../../backend/func2url.json";
+
 export type RequestStatus = 'active' | 'in_progress' | 'archived';
 
 export interface Request {
   id: string;
   userId: string;
+  userEmail?: string;
   name: string;
   avatar: string;
   location: string;
@@ -24,36 +27,152 @@ export interface Request {
   createdAt: Date;
 }
 
-const STORAGE_KEY = 'sovietpay_requests';
+const API_URL = funcUrls["requests-api"];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseRequest(raw: any): Request {
+  return {
+    ...raw,
+    createdAt: new Date(raw.createdAt),
+  };
+}
 
 class RequestsStore {
   private listeners: Set<() => void> = new Set();
+  private cache: Request[] = [];
+  private fetched = false;
+  private userFetched: Set<string> = new Set();
 
   getRequests(): Request[] {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return this.getInitialRequests();
-    const requests = JSON.parse(stored);
-    return requests.map((r: any) => ({
-      ...r,
-      createdAt: new Date(r.createdAt)
-    }));
+    return this.cache;
   }
 
-  addRequest(request: Omit<Request, 'id' | 'createdAt' | 'status'>): Request {
-    const newRequest: Request = {
-      ...request,
-      id: Date.now().toString(),
-      status: 'active',
-      createdAt: new Date(),
-    };
-    
-    const requests = this.getRequests();
-    requests.unshift(newRequest);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+  getUserRequests(email: string): Request[] {
+    return this.cache.filter(r => r.userId === email || r.userEmail === email);
+  }
+
+  getRequestById(requestId: string): Request | undefined {
+    return this.cache.find(r => r.id === requestId);
+  }
+
+  async fetchRequests(): Promise<Request[]> {
+    try {
+      const res = await fetch(`${API_URL}?status=active`);
+      const data = await res.json();
+      const fetched: Request[] = (data.requests || []).map(parseRequest);
+      this.mergeCache(fetched);
+      this.fetched = true;
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.cache;
+    }
+  }
+
+  async fetchAllRequests(): Promise<Request[]> {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const fetched: Request[] = (data.requests || []).map(parseRequest);
+      this.mergeCache(fetched);
+      this.fetched = true;
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.cache;
+    }
+  }
+
+  async fetchUserRequests(email: string): Promise<Request[]> {
+    try {
+      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      const fetched: Request[] = (data.requests || []).map(parseRequest);
+      this.mergeCache(fetched);
+      this.userFetched.add(email);
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.getUserRequests(email);
+    }
+  }
+
+  async fetchRequestById(requestId: string): Promise<Request | undefined> {
+    try {
+      const res = await fetch(`${API_URL}?id=${encodeURIComponent(requestId)}`);
+      const data = await res.json();
+      if (data.request) {
+        const parsed = parseRequest(data.request);
+        this.mergeSingle(parsed);
+        this.notifyListeners();
+        return parsed;
+      }
+      return undefined;
+    } catch (e) {
+      console.error(e);
+      return this.getRequestById(requestId);
+    }
+  }
+
+  async addRequest(request: Omit<Request, 'id' | 'createdAt' | 'status'>): Promise<Request> {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userEmail: request.userId,
+        name: request.name,
+        avatar: request.avatar,
+        location: request.location,
+        budget: request.budget,
+        reward: request.reward,
+        bonus: request.bonus,
+        whoWillLive: request.whoWillLive,
+        aboutYourself: request.aboutYourself,
+        hasPets: request.hasPets,
+        city: request.city,
+        districts: request.districts,
+        budgetMin: request.budgetMin,
+        budgetMax: request.budgetMax,
+        housingType: request.housingType,
+        roomsCount: request.roomsCount,
+        rentalPeriod: request.rentalPeriod,
+        moveInDate: request.moveInDate,
+      }),
+    });
+    const data = await res.json();
+    const newRequest = parseRequest(data.request);
+    this.cache.unshift(newRequest);
     this.notifyListeners();
-    
     return newRequest;
+  }
+
+  async updateRequest(requestId: string, updates: Partial<Omit<Request, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: requestId, ...updates }),
+    });
+    const data = await res.json();
+    if (data.request) {
+      const updated = parseRequest(data.request);
+      this.mergeSingle(updated);
+      this.notifyListeners();
+    }
+  }
+
+  async updateRequestStatus(requestId: string, status: RequestStatus): Promise<void> {
+    await this.updateRequest(requestId, { status });
+  }
+
+  async deleteRequest(requestId: string): Promise<void> {
+    await fetch(`${API_URL}?id=${encodeURIComponent(requestId)}`, {
+      method: 'DELETE',
+    });
+    this.cache = this.cache.filter(r => r.id !== requestId);
+    this.notifyListeners();
   }
 
   subscribe(listener: () => void) {
@@ -65,155 +184,24 @@ class RequestsStore {
     this.listeners.forEach(listener => listener());
   }
 
-  getUserRequests(userId: string): Request[] {
-    return this.getRequests().filter(r => r.userId === userId);
-  }
-
-  deleteRequest(requestId: string): void {
-    const requests = this.getRequests().filter(r => r.id !== requestId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
-    this.notifyListeners();
-  }
-
-  updateRequest(requestId: string, updates: Partial<Omit<Request, 'id' | 'userId' | 'createdAt'>>): void {
-    const requests = this.getRequests();
-    const index = requests.findIndex(r => r.id === requestId);
-    if (index !== -1) {
-      requests[index] = { ...requests[index], ...updates };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
-      this.notifyListeners();
+  private mergeCache(items: Request[]) {
+    const map = new Map<string, Request>();
+    for (const r of this.cache) {
+      map.set(r.id, r);
     }
+    for (const r of items) {
+      map.set(r.id, r);
+    }
+    this.cache = Array.from(map.values());
   }
 
-  updateRequestStatus(requestId: string, status: RequestStatus): void {
-    this.updateRequest(requestId, { status });
-  }
-
-  getRequestById(requestId: string): Request | undefined {
-    return this.getRequests().find(r => r.id === requestId);
-  }
-
-  private getInitialRequests(): Request[] {
-    const initial = [
-      {
-        id: "1",
-        userId: "demo",
-        name: "Анна Петрова",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anna",
-        location: "Москва, ЦАО или ЮЗАО",
-        budget: "50 000 - 70 000 ₽",
-        reward: "10 000 ₽",
-        bonus: "",
-        whoWillLive: "Я один",
-        aboutYourself: "Работаю в IT компании, предпочитаю тихие районы с хорошей инфраструктурой",
-        hasPets: "Нет",
-        city: "Москва",
-        districts: ["ЦАО", "ЮЗАО"],
-        budgetMin: "50000",
-        budgetMax: "70000",
-        housingType: "Квартира",
-        roomsCount: "1",
-        rentalPeriod: "6-12 месяцев",
-        moveInDate: "2024-02-01",
-        status: "active" as RequestStatus,
-        createdAt: new Date("2024-01-15"),
-      },
-      {
-        id: "2",
-        userId: "demo",
-        name: "Дмитрий Соколов",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry",
-        location: "Москва, САО или СВАО",
-        budget: "60 000 - 80 000 ₽",
-        reward: "12 000 ₽",
-        bonus: "",
-        whoWillLive: "Пара",
-        aboutYourself: "Молодая семья, оба работаем удаленно, нужна тихая квартира с хорошим интернетом",
-        hasPets: "Кошка",
-        city: "Москва",
-        districts: ["САО", "СВАО"],
-        budgetMin: "60000",
-        budgetMax: "80000",
-        housingType: "Квартира",
-        roomsCount: "2",
-        rentalPeriod: "6-12 месяцев",
-        moveInDate: "2024-02-15",
-        status: "active" as RequestStatus,
-        createdAt: new Date("2024-01-16"),
-      },
-      {
-        id: "3",
-        userId: "demo",
-        name: "Елена Иванова",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
-        location: "Москва, ЗАО или СЗАО",
-        budget: "40 000 - 55 000 ₽",
-        reward: "8 000 ₽",
-        bonus: "",
-        whoWillLive: "Я один",
-        aboutYourself: "Студентка магистратуры, ищу спокойное место для учебы",
-        hasPets: "Нет",
-        city: "Москва",
-        districts: ["ЗАО", "СЗАО"],
-        budgetMin: "40000",
-        budgetMax: "55000",
-        housingType: "Студия",
-        roomsCount: "Студия",
-        rentalPeriod: "6-12 месяцев",
-        moveInDate: "2024-02-10",
-        status: "active" as RequestStatus,
-        createdAt: new Date("2024-01-17"),
-      },
-      {
-        id: "4",
-        userId: "demo",
-        name: "Сергей Морозов",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey",
-        location: "Москва, ВАО",
-        budget: "70 000 - 90 000 ₽",
-        reward: "14 000 ₽",
-        bonus: "",
-        whoWillLive: "Семья с детьми",
-        aboutYourself: "Семья из трех человек, ребенок 5 лет, нужна квартира рядом с детским садом",
-        hasPets: "Нет",
-        city: "Москва",
-        districts: ["ВАО"],
-        budgetMin: "70000",
-        budgetMax: "90000",
-        housingType: "Квартира",
-        roomsCount: "3",
-        rentalPeriod: "Более года",
-        moveInDate: "2024-03-01",
-        status: "in_progress" as RequestStatus,
-        createdAt: new Date("2024-01-18"),
-      },
-      {
-        id: "5",
-        userId: "demo",
-        name: "Мария Кузнецова",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-        location: "Москва, ЮВАО или ЮАО",
-        budget: "45 000 - 60 000 ₽",
-        reward: "9 000 ₽",
-        bonus: "",
-        whoWillLive: "Пара",
-        aboutYourself: "Переезжаем в Москву по работе, нужна квартира с мебелью",
-        hasPets: "Собака",
-        city: "Москва",
-        districts: ["ЮВАО", "ЮАО"],
-        budgetMin: "45000",
-        budgetMax: "60000",
-        housingType: "Квартира",
-        roomsCount: "1",
-        rentalPeriod: "6-12 месяцев",
-        moveInDate: "2024-02-20",
-        status: "active" as RequestStatus,
-        createdAt: new Date("2024-01-19"),
-      },
-    ];
-    
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-    return initial;
+  private mergeSingle(item: Request) {
+    const idx = this.cache.findIndex(r => r.id === item.id);
+    if (idx !== -1) {
+      this.cache[idx] = item;
+    } else {
+      this.cache.unshift(item);
+    }
   }
 }
 

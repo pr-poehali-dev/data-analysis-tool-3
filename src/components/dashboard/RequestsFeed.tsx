@@ -150,16 +150,18 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
   };
 
   useEffect(() => {
-    const allRequests = requestsStore.getRequests();
-    const activeRequests = allRequests.filter(r => r.status === 'active');
-    setRequests(activeRequests);
-    
-    const unsubscribe = requestsStore.subscribe(() => {
+    const updateFromCache = () => {
       const allRequests = requestsStore.getRequests();
       const activeRequests = allRequests.filter(r => r.status === 'active');
       setRequests(activeRequests);
+    };
+
+    requestsStore.fetchRequests().then(() => {
+      updateFromCache();
     });
-    
+    updateFromCache();
+
+    const unsubscribe = requestsStore.subscribe(updateFromCache);
     return unsubscribe;
   }, []);
 

@@ -19,14 +19,14 @@ interface DashboardRequestsSectionProps {
 export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSectionProps) => {
   const navigate = useNavigate();
 
-  const handleDeleteRequest = (requestId: string) => {
+  const handleDeleteRequest = async (requestId: string) => {
     if (window.confirm('Вы уверены, что хотите удалить эту заявку?')) {
-      requestsStore.deleteRequest(requestId);
+      await requestsStore.deleteRequest(requestId);
     }
   };
 
-  const handleStatusChange = (requestId: string, status: RequestStatus) => {
-    requestsStore.updateRequestStatus(requestId, status);
+  const handleStatusChange = async (requestId: string, status: RequestStatus) => {
+    await requestsStore.updateRequestStatus(requestId, status);
   };
 
   const getOffersCount = (requestId: string): number => {

@@ -36,13 +36,18 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
       return;
     }
 
-    const fetchedRequest = requestsStore.getRequestById(requestId);
-    if (!fetchedRequest) {
-      navigate("/dashboard");
-      return;
+    const cached = requestsStore.getRequestById(requestId);
+    if (cached) {
+      setRequest(cached);
     }
 
-    setRequest(fetchedRequest);
+    requestsStore.fetchRequestById(requestId).then((fetched) => {
+      if (fetched) {
+        setRequest(fetched);
+      } else if (!cached) {
+        navigate("/dashboard");
+      }
+    });
 
     const updateRecommendations = () => {
       const offers = recommendationsStore.getRecommendationsByRequestId(requestId);

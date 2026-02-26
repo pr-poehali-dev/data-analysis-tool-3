@@ -65,6 +65,9 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       setUserRequests(requests);
     };
 
+    requestsStore.fetchUserRequests(user.email).then(() => {
+      updateUserRequests();
+    });
     updateUserRequests();
     const unsubscribe = requestsStore.subscribe(updateUserRequests);
     return unsubscribe;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, Sofa, Zap } from "lucide-react";
 import Icon from "@/components/ui/icon";
@@ -43,6 +43,15 @@ export const SuggestProperty = () => {
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
+
+  useEffect(() => {
+    if (requestData?.requestId) {
+      const cached = requestsStore.getRequestById(requestData.requestId);
+      if (!cached) {
+        requestsStore.fetchRequestById(requestData.requestId);
+      }
+    }
+  }, [requestData?.requestId]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -106,13 +115,14 @@ export const SuggestProperty = () => {
     });
 
     if (requestData?.requestId) {
-      const request = requestsStore.getRequests().find(r => r.id === requestData.requestId);
+      const request = requestsStore.getRequestById(requestData.requestId);
       if (request) {
         const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
         if (!existingChat) {
           const tenantUser = authStore.getUser();
-          const tenantPhoto = tenantUser?.email === request.email ? tenantUser.photo : undefined;
-          const tenantVkLink = tenantUser?.email === request.email ? tenantUser.vkLink : undefined;
+          const tenantEmail = request.userEmail || request.userId;
+          const tenantPhoto = tenantUser?.email === tenantEmail ? tenantUser.photo : undefined;
+          const tenantVkLink = tenantUser?.email === tenantEmail ? tenantUser.vkLink : undefined;
           
           messagesStore.createChat({
             recommendationId: recommendation.id,
@@ -122,7 +132,7 @@ export const SuggestProperty = () => {
             recommenderName: `${user.firstName} ${user.lastName}`,
             recommenderPhoto: user.photo,
             recommenderVkLink: user.vkLink,
-            tenantEmail: request.email,
+            tenantEmail: request.userEmail || request.userId,
             tenantName: request.name,
             tenantPhoto: tenantPhoto,
             tenantVkLink: tenantVkLink,

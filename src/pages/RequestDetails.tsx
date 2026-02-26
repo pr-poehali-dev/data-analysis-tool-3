@@ -30,13 +30,18 @@ export const RequestDetails = () => {
       return;
     }
 
-    const fetchedRequest = requestsStore.getRequestById(requestId);
-    if (!fetchedRequest) {
-      goBack();
-      return;
+    const cached = requestsStore.getRequestById(requestId);
+    if (cached) {
+      setRequest(cached);
     }
 
-    setRequest(fetchedRequest);
+    requestsStore.fetchRequestById(requestId).then((fetched) => {
+      if (fetched) {
+        setRequest(fetched);
+      } else if (!cached) {
+        goBack();
+      }
+    });
   }, [requestId]);
 
   if (!request) return null;
