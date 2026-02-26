@@ -55,6 +55,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
     };
 
     updateRecommendations();
+    recommendationsStore.fetchRecommendationsByRequestId(requestId);
     const unsubscribe = recommendationsStore.subscribe(updateRecommendations);
     return unsubscribe;
   }, [requestId, navigate]);
@@ -214,9 +215,9 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           <span className="text-sm text-muted-foreground">Статус:</span>
                           <Select
                             value={recommendation.status}
-                            onValueChange={(value) => {
+                            onValueChange={async (value) => {
                               const newStatus = value as 'pending' | 'accepted' | 'rejected';
-                              recommendationsStore.updateRecommendationStatus(
+                              await recommendationsStore.updateRecommendationStatus(
                                 recommendation.id, 
                                 newStatus
                               );

@@ -1,3 +1,5 @@
+import funcUrls from "../../backend/func2url.json";
+
 export interface Recommendation {
   id: string;
   userId: string;
@@ -22,74 +24,144 @@ export interface Recommendation {
   createdAt: Date;
 }
 
-const STORAGE_KEY = 'sovietpay_recommendations';
+const API_URL = funcUrls["recommendations-api"];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseRecommendation(raw: any): Recommendation {
+  return {
+    ...raw,
+    createdAt: new Date(raw.createdAt),
+  };
+}
 
 class RecommendationsStore {
   private listeners: Set<() => void> = new Set();
+  private cache: Recommendation[] = [];
+  private userFetched: Set<string> = new Set();
+  private requestFetched: Set<string> = new Set();
 
   getRecommendations(): Recommendation[] {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    const recommendations = JSON.parse(stored);
-    return recommendations.map((r: any) => ({
-      ...r,
-      createdAt: new Date(r.createdAt)
-    }));
-  }
-
-  addRecommendation(recommendation: Omit<Recommendation, 'id' | 'createdAt' | 'status'>): Recommendation {
-    const newRecommendation: Recommendation = {
-      ...recommendation,
-      id: Date.now().toString(),
-      status: 'pending',
-      createdAt: new Date(),
-    };
-    
-    const recommendations = this.getRecommendations();
-    recommendations.unshift(newRecommendation);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
-    this.notifyListeners();
-    
-    return newRecommendation;
+    return this.cache;
   }
 
   getUserRecommendations(userId: string): Recommendation[] {
-    return this.getRecommendations().filter(r => r.userId === userId);
+    return this.cache.filter(r => r.userId === userId);
   }
 
   getRecommendationsByRequestId(requestId: string): Recommendation[] {
-    return this.getRecommendations().filter(r => r.requestId === requestId);
-  }
-
-  deleteRecommendation(recommendationId: string): void {
-    const recommendations = this.getRecommendations().filter(r => r.id !== recommendationId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
-    this.notifyListeners();
-  }
-
-  updateRecommendationStatus(recommendationId: string, status: 'pending' | 'accepted' | 'rejected'): void {
-    const recommendations = this.getRecommendations();
-    const index = recommendations.findIndex(r => r.id === recommendationId);
-    if (index !== -1) {
-      recommendations[index].status = status;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
-      this.notifyListeners();
-    }
+    return this.cache.filter(r => r.requestId === requestId);
   }
 
   getRecommendationById(recommendationId: string): Recommendation | undefined {
-    return this.getRecommendations().find(r => r.id === recommendationId);
+    return this.cache.find(r => r.id === recommendationId);
   }
 
-  updateRecommendation(recommendationId: string, updates: Partial<Omit<Recommendation, 'id' | 'userId' | 'createdAt'>>): void {
-    const recommendations = this.getRecommendations();
-    const index = recommendations.findIndex(r => r.id === recommendationId);
-    if (index !== -1) {
-      recommendations[index] = { ...recommendations[index], ...updates };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recommendations));
+  async fetchRecommendations(): Promise<Recommendation[]> {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
+      this.mergeCache(fetched);
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.cache;
+    }
+  }
+
+  async fetchUserRecommendations(userId: string): Promise<Recommendation[]> {
+    try {
+      const res = await fetch(`${API_URL}?user_id=${encodeURIComponent(userId)}`);
+      const data = await res.json();
+      const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
+      this.mergeCache(fetched);
+      this.userFetched.add(userId);
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.getUserRecommendations(userId);
+    }
+  }
+
+  async fetchRecommendationsByRequestId(requestId: string): Promise<Recommendation[]> {
+    try {
+      const res = await fetch(`${API_URL}?request_id=${encodeURIComponent(requestId)}`);
+      const data = await res.json();
+      const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
+      this.mergeCache(fetched);
+      this.requestFetched.add(requestId);
+      this.notifyListeners();
+      return fetched;
+    } catch (e) {
+      console.error(e);
+      return this.getRecommendationsByRequestId(requestId);
+    }
+  }
+
+  async fetchRecommendationById(id: string): Promise<Recommendation | undefined> {
+    try {
+      const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (data.recommendation) {
+        const parsed = parseRecommendation(data.recommendation);
+        this.mergeSingle(parsed);
+        this.notifyListeners();
+        return parsed;
+      }
+      return undefined;
+    } catch (e) {
+      console.error(e);
+      return this.getRecommendationById(id);
+    }
+  }
+
+  async addRecommendation(recommendation: Omit<Recommendation, 'id' | 'createdAt' | 'status'>): Promise<Recommendation> {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: recommendation.userId,
+        requestId: recommendation.requestId,
+        requestName: recommendation.requestName,
+        ownerEmail: recommendation.ownerEmail,
+        inviteMessage: recommendation.inviteMessage,
+        propertyData: recommendation.propertyData,
+        photos: recommendation.photos,
+      }),
+    });
+    const data = await res.json();
+    const newRecommendation = parseRecommendation(data.recommendation);
+    this.cache.unshift(newRecommendation);
+    this.notifyListeners();
+    return newRecommendation;
+  }
+
+  async updateRecommendation(recommendationId: string, updates: Partial<Omit<Recommendation, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: recommendationId, ...updates }),
+    });
+    const data = await res.json();
+    if (data.recommendation) {
+      const updated = parseRecommendation(data.recommendation);
+      this.mergeSingle(updated);
       this.notifyListeners();
     }
+  }
+
+  async updateRecommendationStatus(recommendationId: string, status: 'pending' | 'accepted' | 'rejected'): Promise<void> {
+    await this.updateRecommendation(recommendationId, { status });
+  }
+
+  async deleteRecommendation(recommendationId: string): Promise<void> {
+    await fetch(`${API_URL}?id=${encodeURIComponent(recommendationId)}`, {
+      method: 'DELETE',
+    });
+    this.cache = this.cache.filter(r => r.id !== recommendationId);
+    this.notifyListeners();
   }
 
   subscribe(listener: () => void) {
@@ -99,6 +171,26 @@ class RecommendationsStore {
 
   private notifyListeners() {
     this.listeners.forEach(listener => listener());
+  }
+
+  private mergeCache(items: Recommendation[]) {
+    const map = new Map<string, Recommendation>();
+    for (const r of this.cache) {
+      map.set(r.id, r);
+    }
+    for (const r of items) {
+      map.set(r.id, r);
+    }
+    this.cache = Array.from(map.values());
+  }
+
+  private mergeSingle(item: Recommendation) {
+    const idx = this.cache.findIndex(r => r.id === item.id);
+    if (idx !== -1) {
+      this.cache[idx] = item;
+    } else {
+      this.cache.unshift(item);
+    }
   }
 }
 

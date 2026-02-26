@@ -39,32 +39,40 @@ export const EditRecommendation = () => {
       return;
     }
 
-    const recommendation = recommendationsStore.getRecommendationById(recommendationId);
-    if (!recommendation) {
-      toast({
-        title: "Ошибка",
-        description: "Рекомендация не найдена",
-        variant: "destructive",
-      });
-      navigate("/", { state: { activeSection: "recommendations" } });
-      return;
+    const applyRecommendation = (recommendation: NonNullable<ReturnType<typeof recommendationsStore.getRecommendationById>>) => {
+      const user = authStore.getUser();
+      if (!user || recommendation.userId !== user.email) {
+        toast({
+          title: "Ошибка",
+          description: "У вас нет прав для редактирования этой рекомендации",
+          variant: "destructive",
+        });
+        navigate("/", { state: { activeSection: "recommendations" } });
+        return;
+      }
+      setPropertyData(recommendation.propertyData);
+      setOwnerEmail(recommendation.ownerEmail);
+      setInviteMessage(recommendation.inviteMessage);
+      setPhotos(recommendation.photos);
+    };
+
+    const cached = recommendationsStore.getRecommendationById(recommendationId);
+    if (cached) {
+      applyRecommendation(cached);
     }
 
-    const user = authStore.getUser();
-    if (!user || recommendation.userId !== user.email) {
-      toast({
-        title: "Ошибка",
-        description: "У вас нет прав для редактирования этой рекомендации",
-        variant: "destructive",
-      });
-      navigate("/", { state: { activeSection: "recommendations" } });
-      return;
-    }
-
-    setPropertyData(recommendation.propertyData);
-    setOwnerEmail(recommendation.ownerEmail);
-    setInviteMessage(recommendation.inviteMessage);
-    setPhotos(recommendation.photos);
+    recommendationsStore.fetchRecommendationById(recommendationId).then((fetched) => {
+      if (fetched) {
+        applyRecommendation(fetched);
+      } else if (!cached) {
+        toast({
+          title: "Ошибка",
+          description: "Рекомендация не найдена",
+          variant: "destructive",
+        });
+        navigate("/", { state: { activeSection: "recommendations" } });
+      }
+    });
   }, [recommendationId, navigate, toast]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +93,7 @@ export const EditRecommendation = () => {
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!propertyData.address || !propertyData.rent) {
       toast({
         title: "Ошибка",
@@ -97,7 +105,7 @@ export const EditRecommendation = () => {
 
     if (!recommendationId) return;
 
-    recommendationsStore.updateRecommendation(recommendationId, {
+    await recommendationsStore.updateRecommendation(recommendationId, {
       ownerEmail,
       inviteMessage,
       propertyData,

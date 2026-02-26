@@ -1,0 +1,302 @@
+"""API для управления рекомендациями недвижимости."""
+import json
+import os
+from datetime import datetime, timezone
+import psycopg2
+
+
+def get_connection():
+    return psycopg2.connect(os.environ['DATABASE_URL'])
+
+
+def get_schema() -> str:
+    schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+    return f"{schema}." if schema else ""
+
+
+CORS_HEADERS = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
+}
+
+
+def response(status, body):
+    return {
+        'statusCode': status,
+        'headers': CORS_HEADERS,
+        'body': json.dumps(body, default=str),
+    }
+
+
+def parse_body(event):
+    body_str = event.get('body', '{}')
+    if not body_str:
+        return {}
+    return json.loads(body_str)
+
+
+COLUMNS = """id, user_id, request_id, request_name, owner_email, invite_message,
+             address, coordinates_lat, coordinates_lng, area, floor, total_floors,
+             rooms, has_furniture, has_appliances, rent, property_comments,
+             photos, status, created_at, updated_at"""
+
+
+def row_to_dict(row):
+    return {
+        'id': str(row[0]),
+        'userId': row[1] or '',
+        'requestId': str(row[2]) if row[2] else '',
+        'requestName': row[3] or '',
+        'ownerEmail': row[4] or '',
+        'inviteMessage': row[5] or '',
+        'propertyData': {
+            'address': row[6] or '',
+            'coordinates': [row[7] or 0, row[8] or 0],
+            'area': row[9] or '',
+            'floor': row[10] or '',
+            'totalFloors': row[11] or '',
+            'rooms': row[12] or '',
+            'hasFurniture': bool(row[13]),
+            'hasAppliances': bool(row[14]),
+            'rent': row[15] or '',
+            'comments': row[16] or '',
+        },
+        'photos': row[17] if row[17] else [],
+        'status': row[18] or 'pending',
+        'createdAt': row[19].isoformat() if row[19] else None,
+        'updatedAt': row[20].isoformat() if row[20] else None,
+    }
+
+
+def handle_list(event):
+    params = event.get('queryStringParameters') or {}
+    user_id = params.get('user_id')
+    request_id = params.get('request_id')
+    rec_id = params.get('id')
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        if rec_id:
+            cur.execute(f"SELECT {COLUMNS} FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+            row = cur.fetchone()
+            if not row:
+                return response(404, {'error': 'Рекомендация не найдена'})
+            return response(200, {'recommendation': row_to_dict(row)})
+
+        conditions = []
+        values = []
+
+        if user_id:
+            conditions.append("user_id = %s")
+            values.append(user_id)
+        if request_id:
+            conditions.append("request_id = %s")
+            values.append(request_id)
+
+        where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+        cur.execute(f"SELECT {COLUMNS} FROM {S}recommendations{where} ORDER BY created_at DESC", tuple(values))
+        rows = cur.fetchall()
+        return response(200, {'recommendations': [row_to_dict(r) for r in rows]})
+    finally:
+        conn.close()
+
+
+def handle_create(event):
+    body = parse_body(event)
+
+    if not body.get('userId'):
+        return response(400, {'error': 'Поле userId обязательно'})
+
+    pd = body.get('propertyData', {})
+    coords = pd.get('coordinates', [0, 0])
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        now = datetime.now(timezone.utc)
+
+        cur.execute(f"""
+            INSERT INTO {S}recommendations (
+                user_id, request_id, request_name, owner_email, invite_message,
+                address, coordinates_lat, coordinates_lng, area, floor, total_floors,
+                rooms, has_furniture, has_appliances, rent, property_comments,
+                photos, status, created_at, updated_at
+            ) VALUES (
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s
+            )
+            RETURNING {COLUMNS}
+        """, (
+            body['userId'],
+            body.get('requestId'),
+            body.get('requestName', ''),
+            body.get('ownerEmail', ''),
+            body.get('inviteMessage', ''),
+            pd.get('address', ''),
+            coords[0] if len(coords) > 0 else 0,
+            coords[1] if len(coords) > 1 else 0,
+            pd.get('area', ''),
+            pd.get('floor', ''),
+            pd.get('totalFloors', ''),
+            pd.get('rooms', ''),
+            pd.get('hasFurniture', False),
+            pd.get('hasAppliances', False),
+            pd.get('rent', ''),
+            pd.get('comments', ''),
+            body.get('photos', []),
+            'pending',
+            now,
+            now,
+        ))
+
+        row = cur.fetchone()
+        conn.commit()
+        return response(201, {'recommendation': row_to_dict(row)})
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def handle_update(event):
+    body = parse_body(event)
+    rec_id = body.get('id')
+    if not rec_id:
+        params = event.get('queryStringParameters') or {}
+        rec_id = params.get('id')
+    if not rec_id:
+        return response(400, {'error': 'Поле id обязательно'})
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        now = datetime.now(timezone.utc)
+
+        updates = []
+        values = []
+
+        simple_fields = {
+            'requestId': 'request_id', 'requestName': 'request_name',
+            'ownerEmail': 'owner_email', 'inviteMessage': 'invite_message',
+            'status': 'status',
+        }
+        for js_key, db_key in simple_fields.items():
+            if js_key in body:
+                updates.append(f"{db_key} = %s")
+                values.append(body[js_key])
+
+        if 'photos' in body:
+            updates.append("photos = %s")
+            values.append(body['photos'])
+
+        pd = body.get('propertyData')
+        if pd:
+            if 'address' in pd:
+                updates.append("address = %s")
+                values.append(pd['address'])
+            coords = pd.get('coordinates')
+            if coords and len(coords) == 2:
+                updates.append("coordinates_lat = %s")
+                values.append(coords[0])
+                updates.append("coordinates_lng = %s")
+                values.append(coords[1])
+            for js_key, db_key in {'area': 'area', 'floor': 'floor', 'totalFloors': 'total_floors',
+                                    'rooms': 'rooms', 'rent': 'rent', 'comments': 'property_comments'}.items():
+                if js_key in pd:
+                    updates.append(f"{db_key} = %s")
+                    values.append(pd[js_key])
+            if 'hasFurniture' in pd:
+                updates.append("has_furniture = %s")
+                values.append(pd['hasFurniture'])
+            if 'hasAppliances' in pd:
+                updates.append("has_appliances = %s")
+                values.append(pd['hasAppliances'])
+
+        if not updates:
+            return response(400, {'error': 'Нет полей для обновления'})
+
+        updates.append("updated_at = %s")
+        values.append(now)
+        values.append(int(rec_id))
+
+        cur.execute(
+            f"UPDATE {S}recommendations SET {', '.join(updates)} WHERE id = %s RETURNING {COLUMNS}",
+            tuple(values)
+        )
+
+        row = cur.fetchone()
+        if not row:
+            return response(404, {'error': 'Рекомендация не найдена'})
+
+        conn.commit()
+        return response(200, {'recommendation': row_to_dict(row)})
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def handle_delete(event):
+    params = event.get('queryStringParameters') or {}
+    rec_id = params.get('id')
+    if not rec_id:
+        body = parse_body(event)
+        rec_id = body.get('id')
+    if not rec_id:
+        return response(400, {'error': 'Поле id обязательно'})
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        now = datetime.now(timezone.utc)
+        cur.execute(
+            f"UPDATE {S}recommendations SET status = 'deleted', updated_at = %s WHERE id = %s RETURNING id",
+            (now, int(rec_id))
+        )
+        row = cur.fetchone()
+        if not row:
+            return response(404, {'error': 'Рекомендация не найдена'})
+        conn.commit()
+        return response(200, {'success': True, 'id': str(row[0])})
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def handler(event, context):
+    """API для управления рекомендациями недвижимости."""
+    if event.get('httpMethod') == 'OPTIONS':
+        return response(200, {})
+
+    method = event.get('httpMethod', 'GET')
+
+    try:
+        if method == 'GET':
+            return handle_list(event)
+        elif method == 'POST':
+            return handle_create(event)
+        elif method == 'PUT':
+            return handle_update(event)
+        elif method == 'DELETE':
+            return handle_delete(event)
+        else:
+            return response(405, {'error': 'Метод не поддерживается'})
+    except json.JSONDecodeError:
+        return response(400, {'error': 'Некорректный JSON'})
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return response(500, {'error': 'Внутренняя ошибка сервера'})

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,15 @@ interface DashboardRequestsSectionProps {
 
 export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSectionProps) => {
   const navigate = useNavigate();
+  const [, setRefresh] = useState(0);
+
+  useEffect(() => {
+    userRequests.forEach(r => {
+      recommendationsStore.fetchRecommendationsByRequestId(r.id);
+    });
+    const unsubscribe = recommendationsStore.subscribe(() => setRefresh(n => n + 1));
+    return unsubscribe;
+  }, [userRequests]);
 
   const handleDeleteRequest = async (requestId: string) => {
     if (window.confirm('Вы уверены, что хотите удалить эту заявку?')) {

@@ -74,7 +74,7 @@ export const SuggestProperty = () => {
     setStep("property");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!propertyData.address || !propertyData.rent) {
       toast({
         title: "Ошибка",
@@ -97,7 +97,7 @@ export const SuggestProperty = () => {
 
     const photoUrls = photos.map(photo => URL.createObjectURL(photo));
 
-    const recommendation = recommendationsStore.addRecommendation({
+    const recommendation = await recommendationsStore.addRecommendation({
       userId: user.email,
       requestId: requestData?.requestId,
       requestName: requestData?.requestName,

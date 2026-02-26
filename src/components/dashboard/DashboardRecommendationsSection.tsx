@@ -135,9 +135,9 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
                     if (window.confirm('Удалить рекомендацию?')) {
-                      recommendationsStore.deleteRecommendation(recommendation.id);
+                      await recommendationsStore.deleteRecommendation(recommendation.id);
                     }
                   }}
                   className="h-8 text-xs text-red-600 hover:text-red-700 hover:border-red-600"

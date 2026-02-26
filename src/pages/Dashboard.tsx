@@ -79,6 +79,9 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       setUserRecommendations(recommendations);
     };
 
+    recommendationsStore.fetchUserRecommendations(user.email).then(() => {
+      updateUserRecommendations();
+    });
     updateUserRecommendations();
     const unsubscribe = recommendationsStore.subscribe(updateUserRecommendations);
     return unsubscribe;

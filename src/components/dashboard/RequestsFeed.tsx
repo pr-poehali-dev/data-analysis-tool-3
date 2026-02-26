@@ -165,6 +165,13 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    if (!currentUserEmail) return;
+    recommendationsStore.fetchUserRecommendations(currentUserEmail);
+    const unsubscribe = recommendationsStore.subscribe(() => {});
+    return unsubscribe;
+  }, [currentUserEmail]);
+
   const filteredRequests = requests.filter(request => {
     if (!filtersApplied) return true;
     

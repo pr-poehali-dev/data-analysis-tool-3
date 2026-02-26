@@ -1,0 +1,1 @@
+{"tests": [{"name": "OPTIONS запрос", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Получить все рекомендации", "method": "GET", "path": "/", "expectedStatus": 200}, {"name": "Получить по user_id", "method": "GET", "path": "/?user_id=test@test.ru", "expectedStatus": 200}]}
