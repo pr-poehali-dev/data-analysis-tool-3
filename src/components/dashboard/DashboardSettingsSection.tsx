@@ -315,18 +315,6 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                <Icon name="Briefcase" size={16} className="inline mr-2" />
-                Роль
-              </label>
-              <p className="font-medium text-foreground">
-                {user.role === 'tenant' && 'Арендатор'}
-                {user.role === 'recommender' && 'Рекомендатель'}
-                {user.role === 'landlord' && 'Арендодатель'}
-              </p>
-            </div>
-
             {isEditing && (
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button onClick={handleSaveProfile} disabled={saving} className="flex-1">
