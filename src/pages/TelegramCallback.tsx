@@ -41,6 +41,7 @@ export default function TelegramCallback() {
         }
 
         const user = data.user;
+        const telegramUsername = user.telegramUsername || "";
         const userEmail = user.email || `tg_${user.telegram_id || user.id}`;
         authStore.setUser({
           firstName: user.firstName || user.name?.split(" ")[0] || "",
@@ -51,6 +52,7 @@ export default function TelegramCallback() {
           city: user.city || "",
           photo: user.avatar_url || "",
           vkLink: user.vkLink || "",
+          telegramUsername,
         });
 
         navigate("/dashboard", { replace: true });

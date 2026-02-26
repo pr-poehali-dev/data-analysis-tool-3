@@ -7,6 +7,7 @@ type User = {
   city?: string;
   photo?: string;
   vkLink?: string;
+  telegramUsername?: string;
 } | null;
 
 let currentUser: User = null;

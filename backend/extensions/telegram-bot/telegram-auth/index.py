@@ -121,7 +121,7 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
     schema = get_schema()
     cursor.execute(f"""
         SELECT id, email, name, avatar_url, telegram_id,
-               first_name, last_name, role, phone, city, vk_link
+               first_name, last_name, role, phone, city, vk_link, telegram_username
         FROM {schema}users
         WHERE telegram_id = %s
     """, (telegram_id,))
@@ -140,6 +140,7 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
             "phone": row[8] or "",
             "city": row[9] or "",
             "vkLink": row[10] or "",
+            "telegramUsername": row[11] or "",
         }
     return None
 
@@ -171,19 +172,20 @@ def create_or_update_user(
             UPDATE {schema}users
             SET name = COALESCE(%s, name),
                 avatar_url = COALESCE(%s, avatar_url),
+                telegram_username = COALESCE(%s, telegram_username),
                 last_login_at = NOW(),
                 updated_at = NOW()
             WHERE telegram_id = %s
             RETURNING id, email, name, avatar_url, telegram_id,
-                      first_name, last_name, role, phone, city, vk_link
-        """, (display_name, photo_url, telegram_id))
+                      first_name, last_name, role, phone, city, vk_link, telegram_username
+        """, (display_name, photo_url, username, telegram_id))
     else:
         cursor.execute(f"""
-            INSERT INTO {schema}users (telegram_id, name, first_name, last_name, avatar_url, email_verified, created_at, updated_at, last_login_at)
-            VALUES (%s, %s, %s, %s, %s, TRUE, NOW(), NOW(), NOW())
+            INSERT INTO {schema}users (telegram_id, telegram_username, name, first_name, last_name, avatar_url, email_verified, created_at, updated_at, last_login_at)
+            VALUES (%s, %s, %s, %s, %s, %s, TRUE, NOW(), NOW(), NOW())
             RETURNING id, email, name, avatar_url, telegram_id,
-                      first_name, last_name, role, phone, city, vk_link
-        """, (telegram_id, display_name, first_name, last_name, photo_url))
+                      first_name, last_name, role, phone, city, vk_link, telegram_username
+        """, (telegram_id, username, display_name, first_name, last_name, photo_url))
 
     row = cursor.fetchone()
     return {
@@ -198,6 +200,7 @@ def create_or_update_user(
         "phone": row[8] or "",
         "city": row[9] or "",
         "vkLink": row[10] or "",
+        "telegramUsername": row[11] or "",
     }
 
 
@@ -236,7 +239,7 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
     schema = get_schema()
     cursor.execute(f"""
         SELECT id, email, name, avatar_url, telegram_id,
-               first_name, last_name, role, phone, city, vk_link
+               first_name, last_name, role, phone, city, vk_link, telegram_username
         FROM {schema}users WHERE id = %s
     """, (user_id,))
 
@@ -254,6 +257,7 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
             "phone": row[8] or "",
             "city": row[9] or "",
             "vkLink": row[10] or "",
+            "telegramUsername": row[11] or "",
         }
     return None
 
