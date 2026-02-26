@@ -24,7 +24,7 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const savedDoc = documentsStore.saveDocument(formData, documentId);
+      const savedDoc = await documentsStore.saveDocument(formData, documentId);
       if (onDocumentSaved) {
         onDocumentSaved(savedDoc.id);
       }

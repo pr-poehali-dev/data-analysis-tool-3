@@ -324,7 +324,7 @@ export const generateDOCX = async (formData: RentalAgreementData, existingDocId?
     console.log('Документ Word создан');
 
     console.log('Сохранение документа в store...');
-    const savedDoc = documentsStore.saveDocument(formData, existingDocId);
+    const savedDoc = await documentsStore.saveDocument(formData, existingDocId);
     const fileName = savedDoc.fileName.replace('.pdf', '.docx');
     console.log('Документ сохранён, имя файла:', fileName);
     

@@ -1,4 +1,8 @@
 import { RentalAgreementData } from "@/components/dashboard/documents/rental-agreement/types";
+import { authStore } from "@/store/authStore";
+import funcUrls from "../../backend/func2url.json";
+
+const API_URL = funcUrls["documents-api"];
 
 export interface SavedDocument {
   id: string;
@@ -9,14 +13,26 @@ export interface SavedDocument {
   fileName: string;
 }
 
+function parseDocument(raw: Record<string, unknown>): SavedDocument {
+  return {
+    id: raw.id as string,
+    type: (raw.type as "rental-agreement") || "rental-agreement",
+    data: raw.data as RentalAgreementData,
+    createdAt: new Date(raw.createdAt as string),
+    updatedAt: new Date(raw.updatedAt as string),
+    fileName: raw.fileName as string,
+  };
+}
+
 class DocumentsStore {
-  private documents: SavedDocument[] = [];
+  private cache: SavedDocument[] = [];
   private listeners: (() => void)[] = [];
+  private fetched = false;
 
   constructor() {
     const saved = localStorage.getItem("documents");
     if (saved) {
-      this.documents = JSON.parse(saved, (key, value) => {
+      this.cache = JSON.parse(saved, (key, value) => {
         if (key === "createdAt" || key === "updatedAt") {
           return new Date(value);
         }
@@ -33,50 +49,116 @@ class DocumentsStore {
   }
 
   private notify() {
-    localStorage.setItem("documents", JSON.stringify(this.documents));
+    localStorage.setItem("documents", JSON.stringify(this.cache));
     this.listeners.forEach((listener) => listener());
   }
 
-  saveDocument(data: RentalAgreementData, existingId?: string): SavedDocument {
-    const now = new Date();
-    
-    if (existingId) {
-      const index = this.documents.findIndex((doc) => doc.id === existingId);
-      if (index !== -1) {
-        this.documents[index] = {
-          ...this.documents[index],
-          data,
-          updatedAt: now,
-        };
-        this.notify();
-        return this.documents[index];
-      }
+  private getUserEmail(): string {
+    const user = authStore.getUser();
+    return user?.email || "";
+  }
+
+  async fetchDocuments(): Promise<SavedDocument[]> {
+    const email = this.getUserEmail();
+    if (!email) return this.cache;
+
+    try {
+      const res = await fetch(
+        `${API_URL}?user_email=${encodeURIComponent(email)}`
+      );
+      const data = await res.json();
+      const docs: SavedDocument[] = (data.documents || []).map(parseDocument);
+      this.cache = docs;
+      this.fetched = true;
+      this.notify();
+      return docs;
+    } catch (e) {
+      console.error("Ошибка загрузки документов:", e);
+      return this.cache;
     }
+  }
 
-    const newDocument: SavedDocument = {
-      id: crypto.randomUUID(),
-      type: "rental-agreement",
-      data,
-      createdAt: now,
-      updatedAt: now,
-      fileName: `Договор_аренды_${now.toLocaleDateString("ru-RU").replace(/\./g, "_")}.docx`,
-    };
+  async saveDocument(
+    data: RentalAgreementData,
+    existingId?: string
+  ): Promise<SavedDocument> {
+    const email = this.getUserEmail();
+    const now = new Date();
+    const fileName = `Договор_аренды_${now.toLocaleDateString("ru-RU").replace(/\./g, "_")}.docx`;
 
-    this.documents.unshift(newDocument);
-    this.notify();
-    return newDocument;
+    try {
+      const res = await fetch(API_URL, {
+        method: existingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: existingId || undefined,
+          userEmail: email,
+          type: "rental-agreement",
+          fileName,
+          data,
+        }),
+      });
+      const result = await res.json();
+      const saved = parseDocument(result.document);
+
+      if (existingId) {
+        const idx = this.cache.findIndex((d) => d.id === existingId);
+        if (idx !== -1) {
+          this.cache[idx] = saved;
+        } else {
+          this.cache.unshift(saved);
+        }
+      } else {
+        this.cache.unshift(saved);
+      }
+
+      this.notify();
+      return saved;
+    } catch (e) {
+      console.error("Ошибка сохранения документа:", e);
+      const fallback: SavedDocument = {
+        id: existingId || crypto.randomUUID(),
+        type: "rental-agreement",
+        data,
+        createdAt: now,
+        updatedAt: now,
+        fileName,
+      };
+      if (existingId) {
+        const idx = this.cache.findIndex((d) => d.id === existingId);
+        if (idx !== -1) {
+          this.cache[idx] = { ...this.cache[idx], data, updatedAt: now };
+        }
+      } else {
+        this.cache.unshift(fallback);
+      }
+      this.notify();
+      return existingId
+        ? this.cache.find((d) => d.id === existingId) || fallback
+        : fallback;
+    }
   }
 
   getDocuments(): SavedDocument[] {
-    return [...this.documents];
+    if (!this.fetched) {
+      this.fetchDocuments();
+    }
+    return [...this.cache];
   }
 
   getDocument(id: string): SavedDocument | undefined {
-    return this.documents.find((doc) => doc.id === id);
+    return this.cache.find((doc) => doc.id === id);
   }
 
-  deleteDocument(id: string) {
-    this.documents = this.documents.filter((doc) => doc.id !== id);
+  async deleteDocument(id: string) {
+    try {
+      await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Ошибка удаления документа:", e);
+    }
+    this.cache = this.cache.filter((doc) => doc.id !== id);
     this.notify();
   }
 }

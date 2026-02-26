@@ -34,8 +34,8 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   const handleDelete = (id: string) => {
     if (window.confirm("Вы уверены, что хотите удалить этот документ?")) {
       setDeletingId(id);
-      setTimeout(() => {
-        documentsStore.deleteDocument(id);
+      setTimeout(async () => {
+        await documentsStore.deleteDocument(id);
         setDeletingId(null);
       }, 300);
     }
