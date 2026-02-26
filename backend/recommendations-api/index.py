@@ -31,9 +31,12 @@ def response(status, body):
 
 
 def parse_body(event):
+    import base64
     body_str = event.get('body', '{}')
     if not body_str:
         return {}
+    if event.get('isBase64Encoded'):
+        body_str = base64.b64decode(body_str).decode('utf-8')
     return json.loads(body_str)
 
 
@@ -114,6 +117,7 @@ def handle_create(event):
 
     pd = body.get('propertyData', {})
     coords = pd.get('coordinates', [0, 0])
+    request_id = body.get('requestId') or None
 
     S = get_schema()
     conn = get_connection()
@@ -136,7 +140,7 @@ def handle_create(event):
             RETURNING {COLUMNS}
         """, (
             body['userId'],
-            body.get('requestId'),
+            request_id,
             body.get('requestName', ''),
             body.get('ownerEmail', ''),
             body.get('inviteMessage', ''),
@@ -160,8 +164,9 @@ def handle_create(event):
         row = cur.fetchone()
         conn.commit()
         return response(201, {'recommendation': row_to_dict(row)})
-    except Exception:
+    except Exception as e:
         conn.rollback()
+        print(f"Ошибка создания рекомендации: {e}")
         raise
     finally:
         conn.close()

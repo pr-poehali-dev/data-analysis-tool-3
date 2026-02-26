@@ -123,7 +123,7 @@ class RecommendationsStore {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: recommendation.userId,
-        requestId: recommendation.requestId,
+        requestId: recommendation.requestId || undefined,
         requestName: recommendation.requestName,
         ownerEmail: recommendation.ownerEmail,
         inviteMessage: recommendation.inviteMessage,
@@ -132,6 +132,9 @@ class RecommendationsStore {
       }),
     });
     const data = await res.json();
+    if (!res.ok || !data.recommendation) {
+      throw new Error(data.error || 'Ошибка создания рекомендации');
+    }
     const newRecommendation = parseRecommendation(data.recommendation);
     this.cache.unshift(newRecommendation);
     this.notifyListeners();

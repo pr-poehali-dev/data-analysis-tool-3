@@ -128,7 +128,8 @@ export const SuggestProperty = () => {
         },
         photos: photoUrls,
       });
-    } catch {
+    } catch (err) {
+      console.error("Ошибка отправки предложения:", err);
       toast({
         title: "Ошибка",
         description: "Не удалось отправить предложение. Попробуйте позже.",
