@@ -18,13 +18,14 @@ export const MessagesList = ({
   typingUsers,
   onOpenViewer,
 }: MessagesListProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const prevMessagesLengthRef = useRef(0);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (messages.length > prevMessagesLengthRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevMessagesLengthRef.current && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
     prevMessagesLengthRef.current = messages.length;
   }, [messages]);
@@ -40,7 +41,7 @@ export const MessagesList = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
