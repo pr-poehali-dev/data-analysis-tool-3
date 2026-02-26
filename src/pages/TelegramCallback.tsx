@@ -49,6 +49,7 @@ export default function TelegramCallback() {
           phone: user.phone || "",
           city: user.city || "",
           photo: user.avatar_url || "",
+          vkLink: user.vkLink || "",
         });
 
         navigate("/dashboard", { replace: true });

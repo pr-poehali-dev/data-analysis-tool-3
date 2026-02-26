@@ -285,13 +285,13 @@ def handle_callback(event: dict, origin: str) -> dict:
             cleanup_expired_tokens(cur, S)
 
             cur.execute(
-                f"SELECT id, email, name, avatar_url, first_name, last_name, role, phone, city FROM {S}users WHERE yandex_id = %s",
+                f"SELECT id, email, name, avatar_url, first_name, last_name, role, phone, city, vk_link FROM {S}users WHERE yandex_id = %s",
                 (yandex_id,)
             )
             row = cur.fetchone()
 
             if row:
-                user_id, db_email, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city = row
+                user_id, db_email, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city, db_vk = row
                 cur.execute(
                     f"UPDATE {S}users SET last_login_at = %s, updated_at = %s WHERE id = %s",
                     (now, now, user_id)
@@ -304,16 +304,17 @@ def handle_callback(event: dict, origin: str) -> dict:
                 role = db_role or 'tenant'
                 phone = db_phone or ''
                 city = db_city or ''
+                vk_link = db_vk or ''
             else:
                 if email:
                     cur.execute(
-                        f"SELECT id, name, avatar_url, first_name, last_name, role, phone, city FROM {S}users WHERE email = %s",
+                        f"SELECT id, name, avatar_url, first_name, last_name, role, phone, city, vk_link FROM {S}users WHERE email = %s",
                         (email,)
                     )
                     row = cur.fetchone()
 
                 if email and row:
-                    user_id, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city = row
+                    user_id, db_name, db_avatar, db_fn, db_ln, db_role, db_phone, db_city, db_vk = row
                     cur.execute(
                         f"""UPDATE {S}users
                             SET yandex_id = %s, avatar_url = COALESCE(avatar_url, %s),
@@ -329,10 +330,12 @@ def handle_callback(event: dict, origin: str) -> dict:
                     role = db_role or 'tenant'
                     phone = db_phone or ''
                     city = db_city or ''
+                    vk_link = db_vk or ''
                 else:
                     role = 'tenant'
                     phone = ''
                     city = ''
+                    vk_link = ''
                     cur.execute(
                         f"""INSERT INTO {S}users
                             (yandex_id, email, name, avatar_url, email_verified, first_name, last_name, role, created_at, updated_at, last_login_at)
@@ -369,7 +372,8 @@ def handle_callback(event: dict, origin: str) -> dict:
                     'lastName': last_name,
                     'role': role,
                     'phone': phone,
-                    'city': city
+                    'city': city,
+                    'vkLink': vk_link
                 }
             }, origin)
 
@@ -418,7 +422,7 @@ def handle_refresh(event: dict, origin: str) -> dict:
 
         cur.execute(
             f"""SELECT rt.user_id, u.email, u.name, u.avatar_url, u.yandex_id,
-                       u.first_name, u.last_name, u.role, u.phone, u.city
+                       u.first_name, u.last_name, u.role, u.phone, u.city, u.vk_link
                 FROM {S}refresh_tokens rt
                 JOIN {S}users u ON u.id = rt.user_id
                 WHERE rt.token_hash = %s AND rt.expires_at > %s""",
@@ -430,7 +434,7 @@ def handle_refresh(event: dict, origin: str) -> dict:
             conn.commit()
             return error(401, 'Invalid or expired refresh token', origin)
 
-        user_id, email, name, avatar_url, yandex_id, first_name, last_name, role, phone, city = row
+        user_id, email, name, avatar_url, yandex_id, first_name, last_name, role, phone, city, vk_link = row
 
         access_token, expires_in = create_access_token(user_id, email)
 
@@ -449,7 +453,8 @@ def handle_refresh(event: dict, origin: str) -> dict:
                 'lastName': last_name or '',
                 'role': role or 'tenant',
                 'phone': phone or '',
-                'city': city or ''
+                'city': city or '',
+                'vkLink': vk_link or ''
             }
         }, origin)
 

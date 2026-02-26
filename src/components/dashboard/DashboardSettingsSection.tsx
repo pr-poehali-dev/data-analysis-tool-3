@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/store/authStore";
+import funcUrls from "../../../backend/func2url.json";
+
+const PROFILE_URL = funcUrls["profile-update"];
 
 interface DashboardSettingsSectionProps {
   user: {
@@ -39,7 +43,9 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     firstName: user.firstName,
@@ -66,15 +72,60 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     }
   };
 
-  const handleSaveProfile = () => {
-    authStore.updateUser({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      city: formData.city,
-      photo: formData.photo,
-      vkLink: formData.vkLink,
-    });
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    const token = localStorage.getItem("yandex_auth_access_token") || localStorage.getItem("telegram_auth_access_token");
+
+    if (token) {
+      try {
+        const res = await fetch(PROFILE_URL, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            city: formData.city,
+            vkLink: formData.vkLink,
+            avatar_url: formData.photo,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.user) {
+          authStore.updateUser({
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            email: data.user.email,
+            city: data.user.city,
+            photo: data.user.avatar_url || formData.photo,
+            vkLink: data.user.vkLink,
+          });
+        } else {
+          toast({ title: "Ошибка", description: "Не удалось сохранить профиль", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+      } catch {
+        toast({ title: "Ошибка сети", description: "Попробуйте позже", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    } else {
+      authStore.updateUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        city: formData.city,
+        photo: formData.photo,
+        vkLink: formData.vkLink,
+      });
+    }
+
+    setSaving(false);
     setIsEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -278,9 +329,9 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
 
             {isEditing && (
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button onClick={handleSaveProfile} className="flex-1">
+                <Button onClick={handleSaveProfile} disabled={saving} className="flex-1">
                   <Icon name="Check" size={18} />
-                  Сохранить изменения
+                  {saving ? "Сохранение..." : "Сохранить изменения"}
                 </Button>
                 <Button variant="outline" onClick={handleCancel} className="flex-1">
                   <Icon name="X" size={18} />
