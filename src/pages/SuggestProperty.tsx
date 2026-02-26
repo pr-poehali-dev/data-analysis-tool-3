@@ -110,10 +110,12 @@ export const SuggestProperty = () => {
       photoUrls = [];
     }
 
+    const userId = user.email || `user_${Date.now()}`;
+
     let recommendation;
     try {
       recommendation = await recommendationsStore.addRecommendation({
-        userId: user.email,
+        userId,
         requestId: requestData?.requestId,
         requestName: requestData?.requestName,
         ownerEmail: inviteEmail,

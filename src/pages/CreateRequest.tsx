@@ -183,7 +183,7 @@ export const CreateRequest = () => {
   const handleSubmit = async () => {
     const districtsText = formData.districts.join(", ");
     const user = authStore.getUser();
-    const userId = user?.email || 'anonymous';
+    const userId = user?.email || `user_${Date.now()}`;
     
     await requestsStore.addRequest({
       userId,

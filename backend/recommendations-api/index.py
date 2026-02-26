@@ -111,8 +111,10 @@ def handle_list(event):
 
 def handle_create(event):
     body = parse_body(event)
+    print(f"POST body keys: {list(body.keys())}, userId='{body.get('userId', '')}'")
 
     if not body.get('userId'):
+        print(f"Ошибка: userId пустой или отсутствует. body={json.dumps(body, default=str)[:500]}")
         return response(400, {'error': 'Поле userId обязательно'})
 
     pd = body.get('propertyData', {})

@@ -41,11 +41,12 @@ export default function TelegramCallback() {
         }
 
         const user = data.user;
+        const userEmail = user.email || `tg_${user.telegram_id || user.id}`;
         authStore.setUser({
           firstName: user.firstName || user.name?.split(" ")[0] || "",
           lastName: user.lastName || user.name?.split(" ").slice(1).join(" ") || "",
           role: user.role || "tenant",
-          email: user.email || "",
+          email: userEmail,
           phone: user.phone || "",
           city: user.city || "",
           photo: user.avatar_url || "",
