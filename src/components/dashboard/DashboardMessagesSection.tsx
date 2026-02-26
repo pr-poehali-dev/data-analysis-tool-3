@@ -21,10 +21,6 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
   const selectedChatIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    selectedChatIdRef.current = selectedChat?.id;
-  }, [selectedChat?.id]);
-
-  useEffect(() => {
     const loadChats = () => {
       const userChats = messagesStore.getUserChats(user.email);
       setChats(userChats);
@@ -55,6 +51,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
       const userChats = messagesStore.getUserChats(user.email);
       const targetChat = userChats.find(c => c.id === state.chatId);
       if (targetChat) {
+        selectedChatIdRef.current = targetChat.id;
         setSelectedChat(targetChat);
         messagesStore.markChatAsRead(targetChat.id, user.email);
       }
@@ -62,11 +59,13 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
   }, [location.state, user.email]);
 
   const handleChatSelect = (chat: Chat) => {
+    selectedChatIdRef.current = chat.id;
     setSelectedChat(chat);
     messagesStore.markChatAsRead(chat.id, user.email);
   };
 
   const handleBackToList = () => {
+    selectedChatIdRef.current = undefined;
     setSelectedChat(undefined);
   };
 
