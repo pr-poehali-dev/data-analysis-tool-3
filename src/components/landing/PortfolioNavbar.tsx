@@ -106,6 +106,13 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
   useEffect(() => {
     if (!user) return;
     const update = () => setUnreadCount(messagesStore.getTotalUnreadCount(user.email));
+
+    const init = async () => {
+      await messagesStore.fetchUserChats(user.email);
+      update();
+    };
+    init();
+
     update();
     const unsubscribe = messagesStore.subscribe(update);
     return unsubscribe;

@@ -143,6 +143,7 @@ export const SuggestProperty = () => {
     if (requestData?.requestId) {
       const request = requestsStore.getRequestById(requestData.requestId);
       if (request) {
+        await messagesStore.fetchChatByRecommendation(recommendation.id);
         const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
         if (!existingChat) {
           const tenantUser = authStore.getUser();
@@ -150,7 +151,7 @@ export const SuggestProperty = () => {
           const tenantPhoto = tenantUser?.email === tenantEmail ? tenantUser.photo : undefined;
           const tenantVkLink = tenantUser?.email === tenantEmail ? tenantUser.vkLink : undefined;
           
-          messagesStore.createChat({
+          await messagesStore.createChat({
             recommendationId: recommendation.id,
             requestId: requestData.requestId,
             requestName: requestData.requestName || request.name,

@@ -59,11 +59,20 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
       setTypingUsers(typing);
     };
 
+    const init = async () => {
+      await messagesStore.fetchMessages(chat.id);
+      loadMessages();
+    };
+    init();
+
     loadMessages();
     messagesStore.markChatAsRead(chat.id, currentUserEmail);
 
     const cleanupInterval = setInterval(() => {
       messagesStore.cleanupOldTypingStatuses();
+      const currentMessages = messagesStore.getMessages(chat.id);
+      const lastMessage = currentMessages[currentMessages.length - 1];
+      messagesStore.fetchMessages(chat.id, lastMessage?.id);
       loadMessages();
     }, 2000);
 
@@ -189,8 +198,8 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => {
-                  messagesStore.sendSystemMessage(
+                onClick={async () => {
+                  await messagesStore.sendSystemMessage(
                     chat.id,
                     '🤝 Стороны договорились о сделке и переходят к оформлению через эскроу'
                   );

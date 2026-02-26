@@ -30,6 +30,12 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
       }
     };
 
+    const init = async () => {
+      await messagesStore.fetchUserChats(user.email);
+      loadChats();
+    };
+    init();
+
     loadChats();
     const unsubscribe = messagesStore.subscribe(loadChats);
     return unsubscribe;

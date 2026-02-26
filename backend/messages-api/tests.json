@@ -1,0 +1,48 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS returns CORS headers",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET chats requires user_email",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "GET chats with user_email",
+      "method": "GET",
+      "path": "/?user_email=test@example.com",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET messages requires chat_id",
+      "method": "GET",
+      "path": "/?action=messages",
+      "expectedStatus": 400
+    },
+    {
+      "name": "GET unread count",
+      "method": "GET",
+      "path": "/?action=unread_count&user_email=test@example.com",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST send requires chatId",
+      "method": "POST",
+      "path": "/?action=send",
+      "body": {"senderId": "test@test.com", "text": "hello"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST mark_read requires params",
+      "method": "POST",
+      "path": "/?action=mark_read",
+      "body": {},
+      "expectedStatus": 400
+    }
+  ]
+}

@@ -93,6 +93,12 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       setUnreadMessagesCount(count);
     };
 
+    const init = async () => {
+      await messagesStore.fetchUserChats(user.email);
+      updateUnreadCount();
+    };
+    init();
+
     updateUnreadCount();
     const unsubscribe = messagesStore.subscribe(updateUnreadCount);
     return unsubscribe;

@@ -410,10 +410,11 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                               );
                               
                               if (newStatus === 'accepted' && currentUser) {
+                                await messagesStore.fetchChatByRecommendation(recommendation.id);
                                 let chat = messagesStore.getChatByRecommendation(recommendation.id);
                                 
                                 if (!chat) {
-                                  chat = messagesStore.createChat({
+                                  chat = await messagesStore.createChat({
                                     recommendationId: recommendation.id,
                                     requestId: request?.id || '',
                                     requestName: request?.name || '',
@@ -425,7 +426,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                                   });
                                 }
                                 
-                                messagesStore.sendSystemMessage(
+                                await messagesStore.sendSystemMessage(
                                   chat.id,
                                   '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
                                 );
@@ -448,12 +449,13 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
+                            onClick={async () => {
+                              await messagesStore.fetchChatByRecommendation(recommendation.id);
                               const chat = messagesStore.getChatByRecommendation(recommendation.id);
                               if (chat) {
                                 navigate("/", { state: { activeSection: "messages" } });
                               } else {
-                                messagesStore.createChat({
+                                await messagesStore.createChat({
                                   recommendationId: recommendation.id,
                                   requestId: request?.id || '',
                                   requestName: request?.name || '',

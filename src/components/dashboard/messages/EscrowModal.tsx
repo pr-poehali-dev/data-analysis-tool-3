@@ -55,7 +55,7 @@ export const EscrowModal = ({
         commissionAmount: commission,
       });
       
-      messagesStore.sendSystemMessage(
+      await messagesStore.sendSystemMessage(
         chatId,
         `🔒 Средства вознаграждения (${commission.toLocaleString('ru-RU')} ₽) заморожены на счёте эскроу до подтверждения сделки`
       );
