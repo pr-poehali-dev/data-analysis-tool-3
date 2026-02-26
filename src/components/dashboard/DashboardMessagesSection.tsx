@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Chat, messagesStore } from "@/store/messagesStore";
 import { ChatsList } from "./messages/ChatsList";
@@ -18,15 +18,23 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
   const location = useLocation();
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | undefined>(undefined);
+  const selectedChatIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChat?.id;
+  }, [selectedChat?.id]);
 
   useEffect(() => {
     const loadChats = () => {
       const userChats = messagesStore.getUserChats(user.email);
       setChats(userChats);
       
-      if (selectedChat) {
-        const updatedChat = userChats.find(c => c.id === selectedChat.id);
-        setSelectedChat(updatedChat);
+      const currentId = selectedChatIdRef.current;
+      if (currentId) {
+        const updatedChat = userChats.find(c => c.id === currentId);
+        if (updatedChat) {
+          setSelectedChat(updatedChat);
+        }
       }
     };
 
@@ -39,7 +47,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     loadChats();
     const unsubscribe = messagesStore.subscribe(loadChats);
     return unsubscribe;
-  }, [user.email, selectedChat?.id]);
+  }, [user.email]);
 
   useEffect(() => {
     const state = location.state as { chatId?: string } | null;
