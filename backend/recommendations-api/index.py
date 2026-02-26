@@ -45,9 +45,14 @@ COLUMNS = """id, user_id, request_id, request_name, owner_email, invite_message,
              rooms, has_furniture, has_appliances, rent, property_comments,
              photos, status, created_at, updated_at"""
 
+COLUMNS_SHORT = """id, user_id, request_id, request_name, owner_email, invite_message,
+             address, coordinates_lat, coordinates_lng, area, floor, total_floors,
+             rooms, has_furniture, has_appliances, rent, property_comments,
+             array_length(photos, 1) as photo_count, status, created_at, updated_at"""
 
-def row_to_dict(row):
-    return {
+
+def row_to_dict(row, include_photos=True):
+    result = {
         'id': str(row[0]),
         'userId': row[1] or '',
         'requestId': str(row[2]) if row[2] else '',
@@ -66,11 +71,16 @@ def row_to_dict(row):
             'rent': row[15] or '',
             'comments': row[16] or '',
         },
-        'photos': row[17] if row[17] else [],
         'status': row[18] or 'pending',
         'createdAt': row[19].isoformat() if row[19] else None,
         'updatedAt': row[20].isoformat() if row[20] else None,
     }
+    if include_photos:
+        result['photos'] = row[17] if row[17] else []
+    else:
+        result['photos'] = []
+        result['photoCount'] = row[17] or 0
+    return result
 
 
 def handle_list(event):
@@ -89,7 +99,7 @@ def handle_list(event):
             row = cur.fetchone()
             if not row:
                 return response(404, {'error': 'Рекомендация не найдена'})
-            return response(200, {'recommendation': row_to_dict(row)})
+            return response(200, {'recommendation': row_to_dict(row, include_photos=True)})
 
         conditions = []
         values = []
@@ -102,9 +112,10 @@ def handle_list(event):
             values.append(request_id)
 
         where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
-        cur.execute(f"SELECT {COLUMNS} FROM {S}recommendations{where} ORDER BY created_at DESC", tuple(values))
+        limit = " LIMIT 50" if not conditions else ""
+        cur.execute(f"SELECT {COLUMNS_SHORT} FROM {S}recommendations{where} ORDER BY created_at DESC{limit}", tuple(values))
         rows = cur.fetchall()
-        return response(200, {'recommendations': [row_to_dict(r) for r in rows]})
+        return response(200, {'recommendations': [row_to_dict(r, include_photos=False) for r in rows]})
     finally:
         conn.close()
 
