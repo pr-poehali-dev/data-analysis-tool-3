@@ -35,9 +35,19 @@ export const EscrowModal = ({
 }: EscrowModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const [editableRent, setEditableRent] = useState('');
   
-  const rent = parseFloat(rentAmount.replace(/\s/g, '')) || 0;
   const commission = parseFloat(rewardAmount.replace(/[^\d]/g, '')) || 0;
+
+  useEffect(() => {
+    if (isOpen) {
+      const initialRent = parseFloat(rentAmount.replace(/\s/g, '')) || 0;
+      setEditableRent(initialRent > 0 ? String(initialRent) : '');
+    }
+  }, [isOpen, rentAmount]);
+
+  const rent = parseFloat(editableRent) || 0;
+  const canPay = rent > 0;
   
   const handlePayment = async () => {
     setIsProcessing(true);
@@ -127,12 +137,21 @@ export const EscrowModal = ({
 
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Стоимость аренды за месяц</span>
-                    <span className="text-lg font-semibold text-foreground">
-                      {rentAmount} ₽
-                    </span>
+                  <label className="text-xs text-muted-foreground block mb-1.5">Стоимость аренды за месяц</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      value={editableRent}
+                      onChange={(e) => setEditableRent(e.target.value)}
+                      placeholder="Введите сумму"
+                      className="w-full text-lg font-semibold text-foreground bg-white border border-border rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₽</span>
                   </div>
+                  {!canPay && editableRent !== '' && (
+                    <p className="text-xs text-red-500 mt-1">Укажите корректную сумму</p>
+                  )}
                 </div>
 
                 <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border-2 border-primary/20">
@@ -205,7 +224,7 @@ export const EscrowModal = ({
                 <Button
                   onClick={handlePayment}
                   className="flex-1 bg-primary hover:bg-primary/90"
-                  disabled={isProcessing}
+                  disabled={isProcessing || !canPay}
                 >
                   {isProcessing ? (
                     <div className="flex items-center gap-2">
