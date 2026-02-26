@@ -6,7 +6,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { authStore } from "@/store/authStore";
+import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
+import { TelegramLoginButton } from "@/components/extensions/telegram-bot/TelegramLoginButton";
 import { PhoneVerification } from "./PhoneVerification";
+import funcUrls from "../../../backend/func2url.json";
+
+const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
+const TG_BOT_USERNAME = "sovetpay_bot";
 
 const registrationSchema = z.object({
   firstName: z.string().min(2, "Минимум 2 символа"),
@@ -25,6 +33,8 @@ interface RegistrationFormProps {
 export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   const [step, setStep] = useState<"form" | "phone-verify">("form");
   const [formData, setFormData] = useState<FormData | null>(null);
+  const [yandexLoading, setYandexLoading] = useState(false);
+  const { toast } = useToast();
 
   const {
     register,
@@ -35,9 +45,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   });
 
   const onSubmit = async (data: FormData) => {
-    console.log("Form submitted with data:", data);
     setFormData(data);
-    console.log("Switching to phone-verify step");
     setStep("phone-verify");
   };
 
@@ -47,8 +55,37 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
     }
   };
 
-  console.log("Current step:", step);
-  console.log("Form data:", formData);
+  const handleYandexLogin = async () => {
+    setYandexLoading(true);
+    try {
+      const res = await fetch(`${AUTH_URL}?action=auth-url`);
+      const data = await res.json();
+      if (data.auth_url) {
+        if (data.state) {
+          sessionStorage.setItem("yandex_auth_state", data.state);
+        }
+        window.location.href = data.auth_url;
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось начать авторизацию",
+          variant: "destructive",
+        });
+        setYandexLoading(false);
+      }
+    } catch {
+      toast({
+        title: "Ошибка сети",
+        description: "Попробуйте позже",
+        variant: "destructive",
+      });
+      setYandexLoading(false);
+    }
+  };
+
+  const handleTelegramLogin = () => {
+    window.open(`https://t.me/${TG_BOT_USERNAME}?start=web_auth`, "_blank");
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -66,8 +103,29 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 Регистрация
               </h2>
               <p className="text-muted-foreground">
-                Заполните данные для регистрации
+                Быстрая регистрация через соцсети или заполните форму
               </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <YandexLoginButton
+                onClick={handleYandexLogin}
+                isLoading={yandexLoading}
+                className="w-full"
+              />
+              <TelegramLoginButton
+                onClick={handleTelegramLogin}
+                className="w-full"
+              />
+            </div>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">или заполните форму</span>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
