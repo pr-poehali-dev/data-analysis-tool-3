@@ -52,6 +52,11 @@ export const initialData: RentalAgreementData = {
   additionalConditions: "",
 };
 
+export interface FormStepProps {
+  formData: RentalAgreementData;
+  updateField: (field: keyof RentalAgreementData, value: string | boolean) => void;
+}
+
 export const getPropertyTypeName = (type: string) => {
   switch (type) {
     case "apartment": return "квартиру";
