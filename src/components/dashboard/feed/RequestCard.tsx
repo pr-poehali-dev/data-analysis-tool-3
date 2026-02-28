@@ -84,7 +84,7 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
         </DropdownMenu>
       </div>
       <div 
-        className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 cursor-pointer"
+        className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 cursor-pointer pr-24 sm:pr-28"
         onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
       >
         <img
