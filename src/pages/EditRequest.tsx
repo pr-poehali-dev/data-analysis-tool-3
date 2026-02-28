@@ -9,6 +9,7 @@ import { StepIndicator } from "@/components/request/StepIndicator";
 import { Step1AboutYourself } from "@/components/request/Step1AboutYourself";
 import { Step2HousingParameters } from "@/components/request/Step2HousingParameters";
 import { useToast } from "@/hooks/use-toast";
+import { citiesWithDistricts, getSortedCities } from "@/data/citiesWithDistricts";
 
 interface RequestFormData {
   whoWillLive: string;
@@ -25,43 +26,14 @@ interface RequestFormData {
   reward: number;
 }
 
-const cities = [
-  "Москва",
-  "Санкт-Петербург",
-  "Новосибирск",
-  "Екатеринбург",
-  "Казань",
-  "Нижний Новгород",
-  "Челябинск",
-  "Самара",
-  "Омск",
-  "Ростов-на-Дону",
-];
-
-const moscowDistricts = [
-  "ЦАО",
-  "САО",
-  "СВАО",
-  "ВАО",
-  "ЮВАО",
-  "ЮАО",
-  "ЮЗАО",
-  "ЗАО",
-  "СЗАО",
-  "Зеленоград",
-  "Новомосковский",
-  "Троицкий",
-];
-
 const housingTypes = [
   "Квартира",
   "Студия",
   "Комната",
   "Дом",
-  "Таунхаус",
 ];
 
-const roomsCounts = ["Студия", "1", "2", "3", "4+"];
+const roomsCounts = ["1", "2", "3", "4", "4+"];
 
 const rentalPeriods = [
   "1-3 месяца",
@@ -134,7 +106,7 @@ export const EditRequest = () => {
         roomsCount: request.roomsCount,
         rentalPeriod: request.rentalPeriod,
         moveInDate: request.moveInDate,
-        reward: parseInt(request.reward.replace(/[^\d]/g, '')),
+        reward: parseInt(request.reward.replace(/[^\d]/g, '')) || 10000,
       });
     };
 
@@ -171,7 +143,6 @@ export const EditRequest = () => {
       formData.housingType &&
       formData.roomsCount &&
       formData.rentalPeriod &&
-      formData.moveInDate &&
       formData.reward >= 3000
     );
   };
@@ -248,8 +219,8 @@ export const EditRequest = () => {
               onBack={() => setCurrentStep(1)}
               onSubmit={handleSubmit}
               canProceed={canProceedStep2()}
-              cities={cities}
-              moscowDistricts={moscowDistricts}
+              citiesWithDistricts={citiesWithDistricts}
+              getSortedCities={getSortedCities}
               housingTypes={housingTypes}
               roomsCounts={roomsCounts}
               rentalPeriods={rentalPeriods}
