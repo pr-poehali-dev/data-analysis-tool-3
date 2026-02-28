@@ -56,6 +56,12 @@ def get_user_id_from_event(event: dict) -> int:
 
 
 def handle_get_profile(event: dict) -> dict:
+    params = event.get('queryStringParameters') or {}
+    email = params.get('email')
+
+    if email:
+        return handle_get_public_profile(email)
+
     user_id = get_user_id_from_event(event)
     S = get_schema()
     conn = get_connection()
@@ -83,6 +89,37 @@ def handle_get_profile(event: dict) -> dict:
                 'vkLink': row[9] or '',
                 'telegram_id': row[10] or '',
                 'yandex_id': row[11] or '',
+            }
+        })
+    finally:
+        conn.close()
+
+
+def handle_get_public_profile(email: str) -> dict:
+    """Получение публичного профиля по email."""
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT id, email, name, avatar_url, first_name, last_name,
+                   role, city, vk_link
+            FROM {S}users WHERE email = %s
+        """, (email,))
+        row = cur.fetchone()
+        if not row:
+            return response(404, {'error': 'User not found'})
+        return response(200, {
+            'user': {
+                'id': row[0],
+                'email': row[1] or '',
+                'name': row[2] or '',
+                'avatar_url': row[3] or '',
+                'firstName': row[4] or '',
+                'lastName': row[5] or '',
+                'role': row[6] or 'tenant',
+                'city': row[7] or '',
+                'vkLink': row[8] or '',
             }
         })
     finally:

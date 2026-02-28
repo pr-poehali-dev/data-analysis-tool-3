@@ -14,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import funcUrls from "../../backend/func2url.json";
 
 function PhotoLightbox({ photos, initialIndex, onClose }: { photos: string[]; initialIndex: number; onClose: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -218,6 +220,24 @@ function RecommendationPhotos({ recommendation }: { recommendation: Recommendati
   );
 }
 
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  avatar_url: string;
+  city: string;
+  vkLink: string;
+  role: string;
+  email: string;
+}
+
+interface Review {
+  id: string;
+  reviewer_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
 interface RequestOffersProps {
   currentUser?: {
     email: string;
@@ -232,6 +252,10 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
   const { requestId } = useParams<{ requestId: string }>();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [request, setRequest] = useState(requestsStore.getRequestById(requestId || ''));
+  const [profiles, setProfiles] = useState<Record<string, UserProfile>>({});
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [profileReviews, setProfileReviews] = useState<{ reviews: Review[]; avg_rating: number | null; total: number }>({ reviews: [], avg_rating: null, total: 0 });
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!requestId) {
@@ -262,6 +286,36 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
     const unsubscribe = recommendationsStore.subscribe(updateRecommendations);
     return unsubscribe;
   }, [requestId, navigate]);
+
+  useEffect(() => {
+    const emails = [...new Set(recommendations.map(r => r.userId))];
+    const PROFILE_API = funcUrls["profile-update"];
+    emails.forEach(async (email) => {
+      if (profiles[email]) return;
+      try {
+        const res = await fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data.user) {
+          setProfiles(prev => ({ ...prev, [email]: data.user }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }, [recommendations]);
+
+  const openProfile = async (profile: UserProfile) => {
+    setSelectedProfile(profile);
+    setProfileDialogOpen(true);
+    const REVIEWS_API = funcUrls["reviews"];
+    try {
+      const res = await fetch(`${REVIEWS_API}?reviewee_email=${encodeURIComponent(profile.email)}`);
+      const data = await res.json();
+      setProfileReviews({ reviews: data.reviews || [], avg_rating: data.avg_rating, total: data.total || 0 });
+    } catch (e) {
+      setProfileReviews({ reviews: [], avg_rating: null, total: 0 });
+    }
+  };
 
   if (!request) return null;
 
@@ -331,6 +385,30 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white border border-border rounded-xl p-4 sm:p-6"
                 >
+                  {(() => {
+                    const profile = profiles[recommendation.userId];
+                    return (
+                      <div 
+                        className="flex items-center gap-3 mb-4 pb-4 border-b border-border cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                        onClick={() => profile && openProfile(profile)}
+                      >
+                        <img
+                          src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${recommendation.userId}`}
+                          alt={profile ? `${profile.firstName} ${profile.lastName}` : recommendation.userId}
+                          className="w-10 h-10 rounded-full flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {profile ? `${profile.firstName} ${profile.lastName}` : recommendation.userId.split('@')[0]}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {profile?.city || 'Рекомендатель'}
+                          </p>
+                        </div>
+                        <Icon name="ChevronRight" size={16} className="text-muted-foreground flex-shrink-0" />
+                      </div>
+                    );
+                  })()}
                   <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Icon name="Home" size={24} className="text-primary" />
@@ -492,6 +570,95 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
           )}
         </div>
       </main>
+
+      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          {selectedProfile && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={selectedProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedProfile.email}`}
+                  alt={`${selectedProfile.firstName} ${selectedProfile.lastName}`}
+                  className="w-16 h-16 rounded-full"
+                />
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    {selectedProfile.firstName} {selectedProfile.lastName}
+                  </h3>
+                  {selectedProfile.city && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Icon name="MapPin" size={14} />
+                      {selectedProfile.city}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {selectedProfile.vkLink && (
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-2">Социальные сети</p>
+                  <a
+                    href={selectedProfile.vkLink.startsWith('http') ? selectedProfile.vkLink : `https://vk.com/${selectedProfile.vkLink}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Icon name="ExternalLink" size={14} />
+                    ВКонтакте
+                  </a>
+                </div>
+              )}
+
+              <div>
+                <p className="text-sm font-medium text-foreground mb-3">Рейтинг и отзывы</p>
+                {profileReviews.total > 0 ? (
+                  <>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Icon
+                            key={star}
+                            name="Star"
+                            size={18}
+                            className={star <= Math.round(profileReviews.avg_rating || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-semibold">{profileReviews.avg_rating?.toFixed(1)}</span>
+                      <span className="text-sm text-muted-foreground">({profileReviews.total} отзывов)</span>
+                    </div>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {profileReviews.reviews.map(review => (
+                        <div key={review.id} className="border border-border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium">{review.reviewer_name}</span>
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map(star => (
+                                <Icon
+                                  key={star}
+                                  name="Star"
+                                  size={12}
+                                  className={star <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(review.created_at).toLocaleDateString('ru-RU')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Пока нет отзывов</p>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Footer hiddenOnMobile />
     </div>
