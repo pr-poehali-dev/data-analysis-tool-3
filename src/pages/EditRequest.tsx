@@ -203,7 +203,7 @@ export const EditRequest = () => {
       description: "Заявка обновлена",
     });
 
-    navigate("/dashboard");
+    navigate("/dashboard", { state: { activeSection: "requests" } });
   };
 
   return (
