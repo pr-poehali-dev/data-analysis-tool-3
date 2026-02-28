@@ -1,0 +1,1 @@
+{"tests": [{"name": "Register endpoint", "method": "POST", "path": "/?action=register", "body": {"email": "test@test.com", "password": "test123456"}, "expectedStatus": 200, "expectedBody": {"user": "object"}, "bodyMatcher": "partial"}]}
