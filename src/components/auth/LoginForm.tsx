@@ -136,11 +136,11 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         className="w-full"
       />
 
-      <VkLoginButton
+      {/* <VkLoginButton
         onClick={handleVkLogin}
         isLoading={vkLoading}
         className="w-full"
-      />
+      /> */}
 
       <TelegramLoginButton
         onClick={handleTelegramLogin}

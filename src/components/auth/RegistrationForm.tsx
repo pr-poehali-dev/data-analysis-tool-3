@@ -147,11 +147,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 isLoading={yandexLoading}
                 className="w-full"
               />
-              <VkLoginButton
+              {/* <VkLoginButton
                 onClick={handleVkLogin}
                 isLoading={vkLoading}
                 className="w-full"
-              />
+              /> */}
               <TelegramLoginButton
                 onClick={handleTelegramLogin}
                 className="w-full"
