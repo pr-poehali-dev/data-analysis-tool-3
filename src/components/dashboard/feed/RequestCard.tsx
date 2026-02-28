@@ -44,14 +44,14 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
       transition={{ duration: 0.3, delay: index * 0.1 }}
       className="bg-white border border-border rounded-xl p-4 sm:p-6 hover:shadow-2xl hover:border-primary/20 transition-all relative"
     >
-      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-1.5 sm:gap-2">
+      <div className="absolute top-2 right-3 sm:right-4 flex items-center gap-1 sm:gap-1.5">
         {(() => {
           const createdAt = new Date(request.createdAt);
           const now = new Date();
           const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
           return daysDiff <= 2 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary text-white text-xs font-semibold rounded-full">
-              <Icon name="Sparkles" size={12} />
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-primary text-white text-[10px] font-semibold rounded-full leading-none">
+              <Icon name="Sparkles" size={10} />
               Новая
             </span>
           );
@@ -84,7 +84,7 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
         </DropdownMenu>
       </div>
       <div 
-        className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 cursor-pointer pr-24 sm:pr-28"
+        className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 cursor-pointer pr-16 sm:pr-20"
         onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
       >
         <img
