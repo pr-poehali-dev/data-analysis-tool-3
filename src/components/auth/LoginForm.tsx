@@ -10,10 +10,12 @@ import { authStore } from "@/store/authStore";
 import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
 import { TelegramLoginButton } from "@/components/extensions/telegram-bot/TelegramLoginButton";
 import { VkLoginButton } from "@/components/extensions/vk-auth/VkLoginButton";
+import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLoginButton";
 import funcUrls from "../../../backend/func2url.json";
 
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
 const VK_AUTH_URL = funcUrls["vk-auth-vk-auth"];
+const GOOGLE_AUTH_URL = funcUrls["google-auth-google-auth"];
 const TG_BOT_USERNAME = "sovetpay_bot";
 
 const loginSchema = z.object({
@@ -31,6 +33,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const { toast } = useToast();
   const [yandexLoading, setYandexLoading] = useState(false);
   const [vkLoading, setVkLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -55,6 +58,34 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         description: "Неверный email или пароль",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const res = await fetch(`${GOOGLE_AUTH_URL}?action=auth-url`);
+      const data = await res.json();
+      if (data.auth_url) {
+        if (data.state) {
+          sessionStorage.setItem("google_auth_state", data.state);
+        }
+        window.location.href = data.auth_url;
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось начать авторизацию через Google",
+          variant: "destructive",
+        });
+        setGoogleLoading(false);
+      }
+    } catch {
+      toast({
+        title: "Ошибка сети",
+        description: "Попробуйте позже",
+        variant: "destructive",
+      });
+      setGoogleLoading(false);
     }
   };
 
@@ -135,6 +166,12 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         isLoading={yandexLoading}
         className="w-full"
       />
+
+      {/* <GoogleLoginButton
+        onClick={handleGoogleLogin}
+        isLoading={googleLoading}
+        className="w-full"
+      /> */}
 
       {/* <VkLoginButton
         onClick={handleVkLogin}

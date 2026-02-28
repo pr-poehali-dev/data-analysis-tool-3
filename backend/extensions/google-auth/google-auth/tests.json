@@ -1,0 +1,1 @@
+{"tests": [{"name": "Get auth URL", "method": "GET", "path": "/?action=auth-url", "expectedStatus": 500, "expectedBody": {"error": "string"}, "bodyMatcher": "partial"}]}
