@@ -119,7 +119,7 @@ export const CreateRequest = () => {
       moveInDate: formData.moveInDate,
     });
 
-    navigate("/feed");
+    navigate("/dashboard", { state: { activeSection: "feed" } });
   };
 
   return (
