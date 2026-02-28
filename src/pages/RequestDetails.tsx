@@ -21,7 +21,11 @@ export const RequestDetails = () => {
   const fromDashboard = location.state?.fromDashboard || false;
 
   const goBack = () => {
-    navigate("/feed");
+    if (fromDashboard) {
+      navigate("/dashboard", { state: { activeSection: "feed" } });
+    } else {
+      navigate("/feed");
+    }
   };
 
   useEffect(() => {
