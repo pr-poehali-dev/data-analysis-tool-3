@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import funcUrls from "../../backend/func2url.json";
 
 function PhotoLightbox({ photos, initialIndex, onClose }: { photos: string[]; initialIndex: number; onClose: () => void }) {
@@ -291,16 +291,18 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
     const emails = [...new Set(recommendations.map(r => r.userId))];
     const PROFILE_API = funcUrls["profile-update"];
     emails.forEach(async (email) => {
-      if (profiles[email]) return;
-      try {
-        const res = await fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`);
-        const data = await res.json();
-        if (data.user) {
-          setProfiles(prev => ({ ...prev, [email]: data.user }));
-        }
-      } catch (e) {
-        console.error(e);
-      }
+      setProfiles(prev => {
+        if (prev[email]) return prev;
+        fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.user) {
+              setProfiles(p => ({ ...p, [email]: data.user }));
+            }
+          })
+          .catch(console.error);
+        return prev;
+      });
     });
   }, [recommendations]);
 
@@ -390,7 +392,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
                     return (
                       <div 
                         className="flex items-center gap-3 mb-4 pb-4 border-b border-border cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
-                        onClick={() => profile && openProfile(profile)}
+                        onClick={() => openProfile(profile || { firstName: recommendation.userId.split('@')[0], lastName: '', avatar_url: '', city: '', vkLink: '', role: 'recommender', email: recommendation.userId })}
                       >
                         <img
                           src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${recommendation.userId}`}
@@ -573,6 +575,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
 
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
         <DialogContent className="sm:max-w-md">
+          <DialogTitle className="sr-only">Профиль пользователя</DialogTitle>
           {selectedProfile && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
