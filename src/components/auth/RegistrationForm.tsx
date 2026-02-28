@@ -10,10 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/store/authStore";
 import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
 import { TelegramLoginButton } from "@/components/extensions/telegram-bot/TelegramLoginButton";
+import { VkLoginButton } from "@/components/extensions/vk-auth/VkLoginButton";
 import { PhoneVerification } from "./PhoneVerification";
 import funcUrls from "../../../backend/func2url.json";
 
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
+const VK_AUTH_URL = funcUrls["vk-auth-vk-auth"];
 const TG_BOT_USERNAME = "sovetpay_bot";
 
 const registrationSchema = z.object({
@@ -34,6 +36,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   const [step, setStep] = useState<"form" | "phone-verify">("form");
   const [formData, setFormData] = useState<FormData | null>(null);
   const [yandexLoading, setYandexLoading] = useState(false);
+  const [vkLoading, setVkLoading] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -83,6 +86,37 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
     }
   };
 
+  const handleVkLogin = async () => {
+    setVkLoading(true);
+    try {
+      const res = await fetch(`${VK_AUTH_URL}?action=auth-url`);
+      const data = await res.json();
+      if (data.auth_url) {
+        if (data.state) {
+          sessionStorage.setItem("vk_auth_state", data.state);
+        }
+        if (data.code_verifier) {
+          sessionStorage.setItem("vk_auth_code_verifier", data.code_verifier);
+        }
+        window.location.href = data.auth_url;
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось начать авторизацию через ВК",
+          variant: "destructive",
+        });
+        setVkLoading(false);
+      }
+    } catch {
+      toast({
+        title: "Ошибка сети",
+        description: "Попробуйте позже",
+        variant: "destructive",
+      });
+      setVkLoading(false);
+    }
+  };
+
   const handleTelegramLogin = () => {
     window.open(`https://t.me/${TG_BOT_USERNAME}?start=web_auth`, "_blank");
   };
@@ -111,6 +145,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
               <YandexLoginButton
                 onClick={handleYandexLogin}
                 isLoading={yandexLoading}
+                className="w-full"
+              />
+              <VkLoginButton
+                onClick={handleVkLogin}
+                isLoading={vkLoading}
                 className="w-full"
               />
               <TelegramLoginButton

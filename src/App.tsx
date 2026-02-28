@@ -19,6 +19,7 @@ import { HowItWorks } from "./pages/HowItWorks";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import YandexCallback from "./pages/YandexCallback";
 import TelegramCallback from "./pages/TelegramCallback";
+import VkCallback from "./pages/VkCallback";
 import { authStore } from "./store/authStore";
 
 const queryClient = new QueryClient();
@@ -102,6 +103,7 @@ const AppContent = () => {
       <Route path="/request/:requestId" element={<RequestDetails />} />
       <Route path="/auth/yandex/callback" element={<YandexCallback />} />
       <Route path="/auth/telegram/callback" element={<TelegramCallback />} />
+      <Route path="/auth/vk/callback" element={<VkCallback />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
