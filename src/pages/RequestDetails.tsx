@@ -9,6 +9,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { authStore } from "@/store/authStore";
+import UserProfileDialog, { UserProfile, Review } from "@/components/offers/UserProfileDialog";
+import funcUrls from "../../backend/func2url.json";
 
 export const RequestDetails = () => {
   const navigate = useNavigate();
@@ -17,6 +19,9 @@ export const RequestDetails = () => {
   const [request, setRequest] = useState<Request | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [profileReviews, setProfileReviews] = useState<{ reviews: Review[]; avg_rating: number | null; total: number }>({ reviews: [], avg_rating: null, total: 0 });
   
   const fromDashboard = location.state?.fromDashboard || false;
 
@@ -47,6 +52,42 @@ export const RequestDetails = () => {
       }
     });
   }, [requestId]);
+
+  const openAuthorProfile = async () => {
+    if (!request) return;
+    const email = request.userEmail || request.userId;
+    const PROFILE_API = funcUrls["profile-update"];
+    const REVIEWS_API = funcUrls["reviews"];
+
+    const fallback: UserProfile = {
+      firstName: request.name.split(' ')[0] || '',
+      lastName: request.name.split(' ').slice(1).join(' ') || '',
+      avatar_url: request.avatar,
+      city: request.city || '',
+      vkLink: '',
+      role: 'tenant',
+      email,
+    };
+
+    setSelectedProfile(fallback);
+    setProfileDialogOpen(true);
+
+    try {
+      const [profileRes, reviewsRes] = await Promise.all([
+        fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`),
+        fetch(`${REVIEWS_API}?reviewee_email=${encodeURIComponent(email)}`),
+      ]);
+      const profileData = await profileRes.json();
+      const reviewsData = await reviewsRes.json();
+
+      if (profileData.user) {
+        setSelectedProfile({ ...profileData.user, avatar_url: profileData.user.avatar_url || request.avatar });
+      }
+      setProfileReviews({ reviews: reviewsData.reviews || [], avg_rating: reviewsData.avg_rating, total: reviewsData.total || 0 });
+    } catch {
+      setProfileReviews({ reviews: [], avg_rating: null, total: 0 });
+    }
+  };
 
   if (!request) return null;
 
@@ -92,10 +133,16 @@ export const RequestDetails = () => {
             <img
               src={request.avatar}
               alt={request.name}
-              className="w-14 h-14 sm:w-24 sm:h-24 rounded-full shrink-0"
+              className="w-14 h-14 sm:w-24 sm:h-24 rounded-full shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={openAuthorProfile}
             />
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2 break-words">{request.name}</h1>
+              <h1
+                className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2 break-words cursor-pointer hover:text-primary transition-colors"
+                onClick={openAuthorProfile}
+              >
+                {request.name}
+              </h1>
               <p className="text-sm sm:text-lg text-muted-foreground mb-2 sm:mb-4">{request.location}</p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Icon name="Calendar" size={16} />
@@ -201,6 +248,13 @@ export const RequestDetails = () => {
           </div>
         </motion.div>
       </main>
+
+      <UserProfileDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+        profile={selectedProfile}
+        reviews={profileReviews}
+      />
 
       <Footer hiddenOnMobile />
 
