@@ -53,7 +53,7 @@ export const EscrowModal = ({
     setIsProcessing(true);
     
     try {
-      escrowStore.createTransaction({
+      await escrowStore.createTransaction({
         chatId,
         recommendationId,
         requestName,

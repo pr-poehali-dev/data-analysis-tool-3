@@ -1,3 +1,7 @@
+import funcUrls from "../../backend/func2url.json";
+
+const API_URL = funcUrls["escrow-api"];
+
 export interface EscrowTransaction {
   id: string;
   chatId: string;
@@ -14,91 +18,88 @@ export interface EscrowTransaction {
   completedAt?: Date;
 }
 
-const STORAGE_KEY = 'sovietpay_escrow_transactions';
+export interface EscrowBalance {
+  frozen: number;
+  completed: number;
+  pending: number;
+  sent: number;
+}
 
 class EscrowStore {
   private listeners: Set<() => void> = new Set();
 
-  getTransactions(): EscrowTransaction[] {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    const transactions = JSON.parse(stored) as Array<Omit<EscrowTransaction, 'createdAt' | 'completedAt'> & {
-      createdAt: string;
-      completedAt?: string;
-    }>;
-    return transactions.map((t) => ({
-      ...t,
-      createdAt: new Date(t.createdAt),
-      completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
-    }));
-  }
-
-  createTransaction(data: Omit<EscrowTransaction, 'id' | 'createdAt' | 'status'>): EscrowTransaction {
-    const newTransaction: EscrowTransaction = {
-      ...data,
-      id: Date.now().toString(),
-      status: 'frozen',
-      createdAt: new Date(),
-    };
-
-    const transactions = this.getTransactions();
-    transactions.unshift(newTransaction);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-    this.notifyListeners();
-
-    return newTransaction;
-  }
-
-  getUserTransactions(userEmail: string): EscrowTransaction[] {
-    return this.getTransactions()
-      .filter(t => t.tenantEmail === userEmail || t.recommenderEmail === userEmail)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  updateTransactionStatus(
-    transactionId: string, 
-    status: EscrowTransaction['status'],
-    completedAt?: Date
-  ): void {
-    const transactions = this.getTransactions();
-    const index = transactions.findIndex(t => t.id === transactionId);
-    if (index !== -1) {
-      transactions[index].status = status;
-      if (completedAt) {
-        transactions[index].completedAt = completedAt;
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-      this.notifyListeners();
+  async fetchUserTransactions(userEmail: string): Promise<EscrowTransaction[]> {
+    try {
+      const res = await fetch(`${API_URL}?action=list&email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      if (!res.ok) return [];
+      return (data.transactions || []).map((t: Record<string, unknown>) => ({
+        ...t,
+        createdAt: t.createdAt ? new Date(t.createdAt as string) : new Date(),
+        completedAt: t.completedAt ? new Date(t.completedAt as string) : undefined,
+      }));
+    } catch {
+      return [];
     }
   }
 
-  getTransactionById(transactionId: string): EscrowTransaction | undefined {
-    return this.getTransactions().find(t => t.id === transactionId);
+  async fetchUserBalance(userEmail: string): Promise<EscrowBalance> {
+    try {
+      const res = await fetch(`${API_URL}?action=balance&email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      if (!res.ok) return { frozen: 0, completed: 0, pending: 0, sent: 0 };
+      return {
+        frozen: data.frozen || 0,
+        completed: data.completed || 0,
+        pending: data.pending || 0,
+        sent: data.sent || 0,
+      };
+    } catch {
+      return { frozen: 0, completed: 0, pending: 0, sent: 0 };
+    }
   }
 
-  getUserBalance(userEmail: string): {
-    frozen: number;
-    completed: number;
-    pending: number;
-    sent: number;
-  } {
-    const transactions = this.getUserTransactions(userEmail);
-    
-    return {
-      frozen: transactions
-        .filter(t => t.status === 'frozen' && t.recommenderEmail === userEmail)
-        .reduce((sum, t) => sum + t.commissionAmount, 0),
-      completed: transactions
-        .filter(t => t.status === 'completed' && t.recommenderEmail === userEmail)
-        .reduce((sum, t) => sum + t.commissionAmount, 0),
-      pending: transactions
-        .filter(t => t.status === 'frozen' && t.tenantEmail === userEmail)
-        .reduce((sum, t) => sum + t.commissionAmount, 0),
-      sent: transactions
-        .filter(t => t.status === 'completed' && t.tenantEmail === userEmail)
-        .reduce((sum, t) => sum + t.commissionAmount, 0),
+  async createTransaction(data: Omit<EscrowTransaction, 'id' | 'createdAt' | 'status'>): Promise<EscrowTransaction> {
+    const res = await fetch(`${API_URL}?action=create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Ошибка создания транзакции');
+
+    const transaction: EscrowTransaction = {
+      ...data,
+      id: result.id,
+      status: 'frozen',
+      createdAt: new Date(result.createdAt),
     };
+    this.notifyListeners();
+    return transaction;
+  }
+
+  async updateTransactionStatus(
+    transactionId: string,
+    status: EscrowTransaction['status'],
+  ): Promise<void> {
+    const res = await fetch(`${API_URL}?action=update-status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: transactionId, status }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Ошибка обновления статуса');
+    }
+    this.notifyListeners();
+  }
+
+  getUserTransactions(userEmail: string): EscrowTransaction[] {
+    return [];
+  }
+
+  getUserBalance(userEmail: string): EscrowBalance {
+    return { frozen: 0, completed: 0, pending: 0, sent: 0 };
   }
 
   subscribe(listener: () => void) {
@@ -106,7 +107,7 @@ class EscrowStore {
     return () => this.listeners.delete(listener);
   }
 
-  private notifyListeners() {
+  notifyListeners() {
     this.listeners.forEach(listener => listener());
   }
 }

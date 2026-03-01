@@ -54,14 +54,17 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
   const [filter, setFilter] = useState<'all' | EscrowTransaction['status']>('all');
 
   useEffect(() => {
-    const loadData = () => {
-      const userTransactions = escrowStore.getUserTransactions(userEmail);
+    const loadData = async () => {
+      const [userTransactions, userBalance] = await Promise.all([
+        escrowStore.fetchUserTransactions(userEmail),
+        escrowStore.fetchUserBalance(userEmail),
+      ]);
       setTransactions(userTransactions);
-      setBalance(escrowStore.getUserBalance(userEmail));
+      setBalance(userBalance);
     };
 
     loadData();
-    const unsubscribe = escrowStore.subscribe(loadData);
+    const unsubscribe = escrowStore.subscribe(() => { loadData(); });
     return unsubscribe;
   }, [userEmail]);
 

@@ -1,4 +1,5 @@
 {
+  "escrow-api": "https://functions.poehali.dev/4244a5d3-a6fd-4ea5-832c-1f2d745c41a6",
   "auth-email-auth": "https://functions.poehali.dev/0ff2e90f-4764-41db-bb75-c69a4dad3ec8",
   "google-auth-google-auth": "https://functions.poehali.dev/29bffb9b-a40c-4890-9ced-7560d39266f7",
   "vk-auth-vk-auth": "https://functions.poehali.dev/2c1c3546-76a3-47e1-95b3-d4319cf43fa6",
