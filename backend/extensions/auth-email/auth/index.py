@@ -1,5 +1,5 @@
 """
-Auth Email Extension - Single Function Router
+Auth Email Extension - Single Function Router (v2 - SMTP support)
 
 Routes (via ?action= query parameter):
   POST /auth?action=register       - Register new user
