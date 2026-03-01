@@ -99,7 +99,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                 Сумма вознаграждений, замороженных на эскроу-счёте по вашим рекомендациям до завершения сделки
               </TooltipContent>
             </Tooltip>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Lock" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">На эскроу</span>
             </div>
@@ -125,7 +125,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                 Общая сумма вознаграждений, полученных вами как рекомендателем по завершённым сделкам
               </TooltipContent>
             </Tooltip>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="CheckCircle2" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">Получено</span>
             </div>
@@ -151,7 +151,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                 Сумма, замороженная на эскроу по вашим заявкам как арендатора до подтверждения сделки
               </TooltipContent>
             </Tooltip>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Clock" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">К оплате</span>
             </div>
@@ -177,7 +177,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                 Общая сумма средств, отправленных вами как арендатором рекомендателям по завершённым сделкам
               </TooltipContent>
             </Tooltip>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Send" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">Отправлено</span>
             </div>
