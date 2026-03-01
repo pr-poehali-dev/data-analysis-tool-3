@@ -92,8 +92,8 @@ class EscrowStore {
         .filter(t => t.status === 'completed' && t.recommenderEmail === userEmail)
         .reduce((sum, t) => sum + t.commissionAmount, 0),
       pending: transactions
-        .filter(t => t.status === 'pending' && t.tenantEmail === userEmail)
-        .reduce((sum, t) => sum + t.rentAmount, 0),
+        .filter(t => t.status === 'frozen' && t.tenantEmail === userEmail)
+        .reduce((sum, t) => sum + t.commissionAmount, 0),
     };
   }
 
