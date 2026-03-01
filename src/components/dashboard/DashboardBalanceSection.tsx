@@ -4,6 +4,12 @@ import Icon from "@/components/ui/icon";
 import { escrowStore, EscrowTransaction } from "@/store/escrowStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DashboardBalanceSectionProps {
   userEmail: string;
@@ -76,70 +82,112 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Баланс</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <Icon name="Lock" size={24} className="opacity-80" />
-            <span className="text-sm opacity-80">На эскроу</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold mb-1">
-            {balance.frozen.toLocaleString('ru-RU')} ₽
-          </div>
-          <p className="text-xs opacity-80">Средства в процессе</p>
-        </motion.div>
+      <TooltipProvider delayDuration={200}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
+                  <Icon name="HelpCircle" size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                Сумма вознаграждений, замороженных на эскроу-счёте по вашим рекомендациям до завершения сделки
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex items-center justify-between mb-2">
+              <Icon name="Lock" size={24} className="opacity-80" />
+              <span className="text-sm opacity-80">На эскроу</span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold mb-1">
+              {balance.frozen.toLocaleString('ru-RU')} ₽
+            </div>
+            <p className="text-xs opacity-80">Средства в процессе</p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <Icon name="CheckCircle2" size={24} className="opacity-80" />
-            <span className="text-sm opacity-80">Получено</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold mb-1">
-            {balance.completed.toLocaleString('ru-RU')} ₽
-          </div>
-          <p className="text-xs opacity-80">Завершённые сделки</p>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
+                  <Icon name="HelpCircle" size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                Общая сумма вознаграждений, полученных вами как рекомендателем по завершённым сделкам
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex items-center justify-between mb-2">
+              <Icon name="CheckCircle2" size={24} className="opacity-80" />
+              <span className="text-sm opacity-80">Получено</span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold mb-1">
+              {balance.completed.toLocaleString('ru-RU')} ₽
+            </div>
+            <p className="text-xs opacity-80">Завершённые сделки</p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <Icon name="Clock" size={24} className="opacity-80" />
-            <span className="text-sm opacity-80">К оплате</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold mb-1">
-            {balance.pending.toLocaleString('ru-RU')} ₽
-          </div>
-          <p className="text-xs opacity-80">Ожидающие платежи</p>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
+                  <Icon name="HelpCircle" size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                Сумма, замороженная на эскроу по вашим заявкам как арендатора до подтверждения сделки
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex items-center justify-between mb-2">
+              <Icon name="Clock" size={24} className="opacity-80" />
+              <span className="text-sm opacity-80">К оплате</span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold mb-1">
+              {balance.pending.toLocaleString('ru-RU')} ₽
+            </div>
+            <p className="text-xs opacity-80">Ожидающие платежи</p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <Icon name="Send" size={24} className="opacity-80" />
-            <span className="text-sm opacity-80">Отправлено</span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold mb-1">
-            {balance.sent.toLocaleString('ru-RU')} ₽
-          </div>
-          <p className="text-xs opacity-80">Завершённые сделки</p>
-        </motion.div>
-      </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
+                  <Icon name="HelpCircle" size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                Общая сумма средств, отправленных вами как арендатором рекомендателям по завершённым сделкам
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex items-center justify-between mb-2">
+              <Icon name="Send" size={24} className="opacity-80" />
+              <span className="text-sm opacity-80">Отправлено</span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold mb-1">
+              {balance.sent.toLocaleString('ru-RU')} ₽
+            </div>
+            <p className="text-xs opacity-80">Завершённые сделки</p>
+          </motion.div>
+        </div>
+      </TooltipProvider>
 
       <div className="bg-white rounded-xl border border-border p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
