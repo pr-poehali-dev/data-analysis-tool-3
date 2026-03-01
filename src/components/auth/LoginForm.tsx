@@ -239,8 +239,8 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
           <Label htmlFor="password">Пароль</Label>
           <Input
             id="password"
-            type="password"
-            placeholder="••••••••"
+            type="text"
+            placeholder="Введите пароль"
             {...register("password")}
             className={errors.password ? "border-red-500" : ""}
           />
