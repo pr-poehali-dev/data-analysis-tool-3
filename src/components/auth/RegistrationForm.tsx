@@ -236,7 +236,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   error={errors.phone?.message}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Мы отправим SMS с кодом подтверждения
+                  Мы отправим код подтверждения на вашу почту
                 </p>
               </div>
 
