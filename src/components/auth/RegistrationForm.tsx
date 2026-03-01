@@ -96,10 +96,12 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
 
       if (res.ok && data.access_token) {
         localStorage.setItem("refresh_token", data.refresh_token);
-        authStore.login({
-          id: data.user?.id,
-          name: data.user?.name,
-          email: data.user?.email,
+        authStore.setUser({
+          firstName: data.user?.name?.split(' ')[0] || '',
+          lastName: data.user?.name?.split(' ').slice(1).join(' ') || '',
+          email: data.user?.email || '',
+          phone: '',
+          role: 'tenant',
         });
       }
     } catch { /* ignore */ }

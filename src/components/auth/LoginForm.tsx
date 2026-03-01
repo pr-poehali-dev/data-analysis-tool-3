@@ -66,10 +66,12 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         localStorage.setItem("refresh_token", result.refresh_token);
       }
 
-      authStore.login({
-        id: result.user?.id,
-        name: result.user?.name,
-        email: result.user?.email,
+      authStore.setUser({
+        firstName: result.user?.name?.split(' ')[0] || '',
+        lastName: result.user?.name?.split(' ').slice(1).join(' ') || '',
+        email: result.user?.email || '',
+        phone: '',
+        role: 'tenant',
       });
 
       toast({
