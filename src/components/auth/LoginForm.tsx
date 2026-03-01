@@ -13,6 +13,7 @@ import { VkLoginButton } from "@/components/extensions/vk-auth/VkLoginButton";
 import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLoginButton";
 import funcUrls from "../../../backend/func2url.json";
 
+const AUTH_EMAIL_URL = funcUrls["auth-email-auth"];
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
 const VK_AUTH_URL = funcUrls["vk-auth-vk-auth"];
 const GOOGLE_AUTH_URL = funcUrls["google-auth-google-auth"];
@@ -43,19 +44,43 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   });
 
   const onSubmit = async (data: LoginData) => {
-    const savedUser = authStore.getUser();
-    
-    if (savedUser && savedUser.email === data.email) {
-      authStore.setUser(savedUser);
+    try {
+      const res = await fetch(`${AUTH_EMAIL_URL}?action=login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast({
+          title: "Ошибка входа",
+          description: result.error || "Неверный email или пароль",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (result.access_token) {
+        localStorage.setItem("refresh_token", result.refresh_token);
+      }
+
+      authStore.login({
+        id: result.user?.id,
+        name: result.user?.name,
+        email: result.user?.email,
+      });
+
       toast({
         title: "Успешный вход",
-        description: `Добро пожаловать, ${savedUser.firstName}!`,
+        description: `Добро пожаловать!`,
       });
       onSuccess();
-    } else {
+    } catch {
       toast({
-        title: "Ошибка входа",
-        description: "Неверный email или пароль",
+        title: "Ошибка сети",
+        description: "Попробуйте позже",
         variant: "destructive",
       });
     }
