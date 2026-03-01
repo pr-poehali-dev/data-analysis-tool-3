@@ -283,7 +283,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
             transition={{ duration: 0.3 }}
           >
             <PhoneVerification
-              phone={formData.phone}
+              phone={formData.email}
               onVerified={handlePhoneVerified}
               onBack={() => setStep("form")}
             />
