@@ -23,7 +23,7 @@ export const PhoneVerification = ({
   const [expiresAt, setExpiresAt] = useState(0);
   const [timer, setTimer] = useState(0);
   const [canResend, setCanResend] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
+
 
   useEffect(() => {
     sendCode();
@@ -67,7 +67,6 @@ export const PhoneVerification = ({
 
       setCodeHash(data.codeHash);
       setExpiresAt(data.expiresAt);
-      setDevCode(data.devCode);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка отправки кода");
     } finally {
@@ -140,18 +139,6 @@ export const PhoneVerification = ({
           <span className="font-semibold text-foreground">{phone}</span>
         </p>
       </div>
-
-      {devCode && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center gap-2 text-yellow-800">
-            <Icon name="AlertTriangle" size={20} />
-            <div>
-              <p className="font-semibold">Режим разработки</p>
-              <p className="text-sm">Код для проверки: <span className="font-mono font-bold">{devCode}</span></p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-2">
         <Label htmlFor="code">Введите 6-значный код</Label>

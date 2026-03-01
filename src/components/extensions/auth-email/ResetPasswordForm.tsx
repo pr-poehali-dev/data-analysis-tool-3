@@ -27,7 +27,7 @@ import {
 
 interface ResetPasswordFormProps {
   /** Запрос сброса пароля (отправка кода на email) */
-  onRequestReset: (email: string) => Promise<{ code?: string }>;
+  onRequestReset: (email: string) => Promise<void>;
   /** Сброс пароля с кодом */
   onResetPassword: (
     email: string,
@@ -85,15 +85,8 @@ export function ResetPasswordForm({
     setLocalLoading(true);
 
     try {
-      const result = await onRequestReset(email);
-
-      // Если SMTP не настроен, код приходит в ответе
-      if (result.code) {
-        setCode(result.code);
-        setMessage("Код получен (SMTP не настроен)");
-      } else {
-        setMessage("Код отправлен на email");
-      }
+      await onRequestReset(email);
+      setMessage("Код отправлен на email");
       setStep("reset");
     } catch {
       setLocalError("Ошибка отправки");
@@ -147,13 +140,8 @@ export function ResetPasswordForm({
     setLocalLoading(true);
 
     try {
-      const result = await onRequestReset(email);
-      if (result.code) {
-        setCode(result.code);
-        setMessage("Код получен повторно");
-      } else {
-        setMessage("Код отправлен повторно");
-      }
+      await onRequestReset(email);
+      setMessage("Код отправлен повторно");
     } catch {
       setLocalError("Ошибка отправки");
     } finally {

@@ -50,19 +50,10 @@ def handle(event: dict, origin: str = '*') -> dict:
                 VALUES ({escape(user_id)}, {escape(reset_code)}, {escape(expires_at)}, {escape(now)})
             """)
 
-            # Send code via email if SMTP configured
             if is_email_enabled():
-                if send_password_reset_code(email, reset_code):
-                    return response(200, {'message': response_msg}, origin)
-                else:
-                    return response(200, {'message': 'Не удалось отправить код'}, origin)
-            else:
-                # Return code in response for development
-                return response(200, {
-                    'message': response_msg,
-                    'reset_code': reset_code,
-                    'expires_in_minutes': RESET_CODE_LIFETIME_HOURS * 60
-                }, origin)
+                send_password_reset_code(email, reset_code)
+
+            return response(200, {'message': response_msg}, origin)
 
         return response(200, {'message': response_msg}, origin)
 

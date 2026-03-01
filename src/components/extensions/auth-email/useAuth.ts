@@ -76,9 +76,9 @@ interface UseAuthReturn {
   verifyEmail: (email: string, code: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
-  requestPasswordReset: (email: string) => Promise<{ code?: string }>;
+  requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (email: string, code: string, newPassword: string) => Promise<boolean>;
-  getAuthHeader: () => { Authorization: string } | {};
+  getAuthHeader: () => { Authorization: string } | Record<string, never>;
 }
 
 // ============================================================================
@@ -344,7 +344,7 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
    * Request password reset code
    */
   const requestPasswordReset = useCallback(
-    async (email: string): Promise<{ code?: string }> => {
+    async (email: string): Promise<void> => {
       setError(null);
 
       try {
@@ -357,15 +357,13 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.error || "Ошибка");
-          return {};
+          const msg = data.error || "Ошибка";
+          setError(msg);
+          throw new Error(msg);
         }
-
-        // reset_code returned only in dev mode (no SMTP)
-        return { code: data.reset_code };
-      } catch {
-        setError("Ошибка сети");
-        return {};
+      } catch (err) {
+        if (err instanceof TypeError) setError("Ошибка сети");
+        throw err;
       }
     },
     [apiUrls.resetPassword]
