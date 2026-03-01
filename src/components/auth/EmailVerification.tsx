@@ -5,17 +5,17 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import funcUrls from "../../../backend/func2url.json";
 
-interface PhoneVerificationProps {
-  phone: string;
+interface EmailVerificationProps {
+  email: string;
   onVerified: () => void;
   onBack: () => void;
 }
 
-export const PhoneVerification = ({
-  phone,
+export const EmailVerification = ({
+  email,
   onVerified,
   onBack,
-}: PhoneVerificationProps) => {
+}: EmailVerificationProps) => {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +56,7 @@ export const PhoneVerification = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone: email }),
       });
 
       const data = await response.json();
@@ -90,7 +90,7 @@ export const PhoneVerification = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone,
+          phone: email,
           code,
           codeHash,
           expiresAt,
@@ -136,7 +136,7 @@ export const PhoneVerification = ({
         </h2>
         <p className="text-muted-foreground">
           Мы отправили код на почту <br />
-          <span className="font-semibold text-foreground">{phone}</span>
+          <span className="font-semibold text-foreground">{email}</span>
         </p>
       </div>
 
@@ -189,3 +189,5 @@ export const PhoneVerification = ({
     </div>
   );
 };
+
+export default EmailVerification;

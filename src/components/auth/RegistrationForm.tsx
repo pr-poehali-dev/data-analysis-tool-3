@@ -12,7 +12,7 @@ import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLog
 import { TelegramLoginButton } from "@/components/extensions/telegram-bot/TelegramLoginButton";
 import { VkLoginButton } from "@/components/extensions/vk-auth/VkLoginButton";
 import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLoginButton";
-import { PhoneVerification } from "./PhoneVerification";
+import { EmailVerification } from "./EmailVerification";
 import funcUrls from "../../../backend/func2url.json";
 
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
@@ -55,7 +55,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
     setStep("phone-verify");
   };
 
-  const handlePhoneVerified = () => {
+  const handleEmailVerified = () => {
     if (formData) {
       onSuccess(formData);
     }
@@ -282,9 +282,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <PhoneVerification
-              phone={formData.email}
-              onVerified={handlePhoneVerified}
+            <EmailVerification
+              email={formData.email}
+              onVerified={handleEmailVerified}
               onBack={() => setStep("form")}
             />
           </motion.div>
