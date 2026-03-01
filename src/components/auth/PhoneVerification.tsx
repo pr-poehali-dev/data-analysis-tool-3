@@ -129,13 +129,13 @@ export const PhoneVerification = ({
 
       <div className="text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Icon name="Smartphone" className="text-primary" size={32} />
+          <Icon name="Mail" className="text-primary" size={32} />
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          Подтверждение телефона
+          Подтверждение почты
         </h2>
         <p className="text-muted-foreground">
-          Мы отправили код на номер <br />
+          Мы отправили код на почту <br />
           <span className="font-semibold text-foreground">{phone}</span>
         </p>
       </div>
