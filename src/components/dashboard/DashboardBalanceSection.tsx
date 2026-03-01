@@ -73,7 +73,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6">Баланс</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -119,6 +119,22 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             {balance.pending.toLocaleString('ru-RU')} ₽
           </div>
           <p className="text-xs opacity-80">Ожидающие платежи</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 sm:p-6 text-white shadow-lg"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Icon name="Send" size={24} className="opacity-80" />
+            <span className="text-sm opacity-80">Отправлено</span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold mb-1">
+            {balance.sent.toLocaleString('ru-RU')} ₽
+          </div>
+          <p className="text-xs opacity-80">Завершённые сделки</p>
         </motion.div>
       </div>
 

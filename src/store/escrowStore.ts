@@ -81,6 +81,7 @@ class EscrowStore {
     frozen: number;
     completed: number;
     pending: number;
+    sent: number;
   } {
     const transactions = this.getUserTransactions(userEmail);
     
@@ -93,6 +94,9 @@ class EscrowStore {
         .reduce((sum, t) => sum + t.commissionAmount, 0),
       pending: transactions
         .filter(t => t.status === 'frozen' && t.tenantEmail === userEmail)
+        .reduce((sum, t) => sum + t.commissionAmount, 0),
+      sent: transactions
+        .filter(t => t.status === 'completed' && t.tenantEmail === userEmail)
         .reduce((sum, t) => sum + t.commissionAmount, 0),
     };
   }
