@@ -247,7 +247,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
               const config = statusConfig[transaction.status];
               const isRecommender = transaction.recommenderEmail === userEmail;
               const otherParty = isRecommender ? transaction.tenantName : transaction.recommenderName;
-              const amount = isRecommender ? transaction.commissionAmount : transaction.rentAmount;
+              const amount = transaction.commissionAmount;
 
               return (
                 <motion.div
