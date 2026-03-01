@@ -50,7 +50,7 @@ const statusConfig = {
 
 export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanceSectionProps) => {
   const [transactions, setTransactions] = useState<EscrowTransaction[]>([]);
-  const [balance, setBalance] = useState({ frozen: 0, completed: 0, pending: 0 });
+  const [balance, setBalance] = useState({ frozen: 0, completed: 0, pending: 0, sent: 0 });
   const [filter, setFilter] = useState<'all' | EscrowTransaction['status']>('all');
 
   useEffect(() => {
