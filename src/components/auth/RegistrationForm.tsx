@@ -15,6 +15,7 @@ import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLog
 import { EmailVerification } from "./EmailVerification";
 import funcUrls from "../../../backend/func2url.json";
 
+const AUTH_EMAIL_URL = funcUrls["auth-email-auth"];
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
 const VK_AUTH_URL = funcUrls["vk-auth-vk-auth"];
 const GOOGLE_AUTH_URL = funcUrls["google-auth-google-auth"];
@@ -35,8 +36,9 @@ interface RegistrationFormProps {
 }
 
 export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
-  const [step, setStep] = useState<"form" | "phone-verify">("form");
+  const [step, setStep] = useState<"form" | "email-verify">("form");
   const [formData, setFormData] = useState<FormData | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   const [yandexLoading, setYandexLoading] = useState(false);
   const [vkLoading, setVkLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -51,12 +53,64 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   });
 
   const onSubmit = async (data: FormData) => {
-    setFormData(data);
-    setStep("phone-verify");
+    setRegisterError(null);
+    try {
+      const res = await fetch(`${AUTH_EMAIL_URL}?action=register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          name: `${data.firstName} ${data.lastName}`.trim(),
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setRegisterError(result.error || "Ошибка регистрации");
+        return;
+      }
+
+      setFormData(data);
+
+      if (result.email_verification_required) {
+        setStep("email-verify");
+      } else {
+        await autoLogin(data.email, data.password);
+      }
+    } catch {
+      setRegisterError("Ошибка сети, попробуйте позже");
+    }
   };
 
-  const handleEmailVerified = () => {
+  const autoLogin = async (email: string, password: string) => {
+    try {
+      const res = await fetch(`${AUTH_EMAIL_URL}?action=login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.access_token) {
+        localStorage.setItem("refresh_token", data.refresh_token);
+        authStore.login({
+          id: data.user?.id,
+          name: data.user?.name,
+          email: data.user?.email,
+        });
+      }
+    } catch { /* ignore */ }
     if (formData) {
+      onSuccess(formData);
+    }
+  };
+
+  const handleEmailVerified = async () => {
+    if (formData) {
+      await autoLogin(formData.email, formData.password);
       onSuccess(formData);
     }
   };
@@ -204,6 +258,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {registerError && (
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                  {registerError}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Имя</Label>
@@ -274,7 +333,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
           </motion.div>
         )}
 
-        {step === "phone-verify" && formData && (
+        {step === "email-verify" && formData && (
           <motion.div
             key="phone-verification"
             initial={{ opacity: 0, y: 20 }}
@@ -284,6 +343,8 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
           >
             <EmailVerification
               email={formData.email}
+              password={formData.password}
+              name={`${formData.firstName} ${formData.lastName}`.trim()}
               onVerified={handleEmailVerified}
               onBack={() => setStep("form")}
             />

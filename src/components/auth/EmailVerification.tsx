@@ -5,29 +5,28 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import funcUrls from "../../../backend/func2url.json";
 
+const AUTH_URL = funcUrls["auth-email-auth"];
+
 interface EmailVerificationProps {
   email: string;
+  password: string;
+  name?: string;
   onVerified: () => void;
   onBack: () => void;
 }
 
 export const EmailVerification = ({
   email,
+  password,
+  name,
   onVerified,
   onBack,
 }: EmailVerificationProps) => {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [codeHash, setCodeHash] = useState("");
-  const [expiresAt, setExpiresAt] = useState(0);
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
-
-
-  useEffect(() => {
-    sendCode();
-  }, []);
 
   useEffect(() => {
     if (timer > 0) {
@@ -44,29 +43,23 @@ export const EmailVerification = ({
     }
   }, [timer]);
 
-  const sendCode = async () => {
+  const resendCode = async () => {
     setIsLoading(true);
     setError("");
     setCanResend(false);
     setTimer(60);
 
     try {
-      const response = await fetch(funcUrls["sms-send"], {
+      const response = await fetch(`${AUTH_URL}?action=register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone: email }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || "Ошибка отправки кода");
       }
-
-      setCodeHash(data.codeHash);
-      setExpiresAt(data.expiresAt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка отправки кода");
     } finally {
@@ -84,22 +77,15 @@ export const EmailVerification = ({
     setError("");
 
     try {
-      const response = await fetch(funcUrls["sms-verify"], {
+      const response = await fetch(`${AUTH_URL}?action=verify-email`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone: email,
-          code,
-          codeHash,
-          expiresAt,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
       });
 
       const data = await response.json();
 
-      if (!response.ok || !data.valid) {
+      if (!response.ok) {
         throw new Error(data.error || "Неверный код");
       }
 
@@ -178,7 +164,7 @@ export const EmailVerification = ({
           </p>
         ) : (
           <button
-            onClick={sendCode}
+            onClick={resendCode}
             disabled={!canResend || isLoading}
             className="text-sm text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
