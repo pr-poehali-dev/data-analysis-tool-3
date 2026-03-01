@@ -235,9 +235,6 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   {...register("phone")}
                   error={errors.phone?.message}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Мы отправим код подтверждения на вашу почту
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -249,6 +246,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   {...register("email")}
                   error={errors.email?.message}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Мы отправим код подтверждения на вашу почту
+                </p>
               </div>
 
               <div className="space-y-2">
