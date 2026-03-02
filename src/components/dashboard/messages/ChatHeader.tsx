@@ -56,6 +56,7 @@ export const ChatHeader = ({
   onShowEscrow,
 }: ChatHeaderProps) => {
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const statusInfo = escrowStatus ? escrowStatusConfig[escrowStatus] : null;
 
   const handleConfirmDeal = async () => {
@@ -77,6 +78,28 @@ export const ChatHeader = ({
       alert('Ошибка при подтверждении сделки');
     } finally {
       setIsConfirming(false);
+    }
+  };
+
+  const handleCancelDeal = async () => {
+    if (!escrowTransactionId) return;
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите отменить сделку? Средства будут возвращены.'
+    );
+    if (!confirmed) return;
+
+    setIsCancelling(true);
+    try {
+      await escrowStore.updateTransactionStatus(escrowTransactionId, 'cancelled');
+      await messagesStore.sendSystemMessage(
+        chat.id,
+        `❌ Сделка отменена. Средства ${escrowAmount?.toLocaleString('ru-RU')} ₽ возвращены арендатору.`
+      );
+    } catch (error) {
+      console.error('Error cancelling deal:', error);
+      alert('Ошибка при отмене сделки');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -154,21 +177,39 @@ export const ChatHeader = ({
             )}
           </div>
           {isTenant && escrowStatus === 'frozen' && (
-            <Button
-              size="sm"
-              disabled={isConfirming}
-              onClick={handleConfirmDeal}
-              className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white px-3"
-            >
-              {isConfirming ? (
-                <Icon name="Loader2" size={14} className="animate-spin" />
-              ) : (
-                <>
-                  <Icon name="Check" size={14} className="mr-1" />
-                  Подтвердить сделку
-                </>
-              )}
-            </Button>
+            <div className="flex gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isCancelling || isConfirming}
+                onClick={handleCancelDeal}
+                className="h-7 text-xs border-red-300 text-red-600 hover:bg-red-50 px-2.5"
+              >
+                {isCancelling ? (
+                  <Icon name="Loader2" size={14} className="animate-spin" />
+                ) : (
+                  <>
+                    <Icon name="X" size={14} className="mr-1" />
+                    Отменить
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                disabled={isConfirming || isCancelling}
+                onClick={handleConfirmDeal}
+                className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white px-2.5"
+              >
+                {isConfirming ? (
+                  <Icon name="Loader2" size={14} className="animate-spin" />
+                ) : (
+                  <>
+                    <Icon name="Check" size={14} className="mr-1" />
+                    Подтвердить
+                  </>
+                )}
+              </Button>
+            </div>
           )}
         </div>
       )}
