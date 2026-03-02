@@ -9,6 +9,7 @@ import { ChatInput } from "./ChatInput";
 import { recommendationsStore } from "@/store/recommendationsStore";
 import { requestsStore } from "@/store/requestsStore";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
+import { escrowStore } from "@/store/escrowStore";
 
 interface ChatWindowProps {
   chat: Chat;
@@ -26,6 +27,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showEscrowModal, setShowEscrowModal] = useState(false);
+  const [hasActiveEscrow, setHasActiveEscrow] = useState(false);
 
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const isTenant = chat.tenantEmail === currentUserEmail;
@@ -39,6 +41,16 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
       requestsStore.fetchRequestById(chat.requestId);
     }
   }, [chat.requestId]);
+
+  useEffect(() => {
+    const checkEscrow = async () => {
+      const active = await escrowStore.hasActiveTransactionForChat(chat.id);
+      setHasActiveEscrow(active);
+    };
+    checkEscrow();
+    const unsubscribe = escrowStore.subscribe(() => checkEscrow());
+    return () => unsubscribe();
+  }, [chat.id]);
 
   useEffect(() => {
     const loadMessages = () => {
@@ -86,6 +98,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         isTenant={isTenant}
         otherUserName={otherUserName}
         otherUserPhoto={otherUserPhoto}
+        hasActiveEscrow={hasActiveEscrow}
         onShowProfile={() => setShowProfileModal(true)}
         onShowReview={() => setShowReviewModal(true)}
         onShowEscrow={() => setShowEscrowModal(true)}

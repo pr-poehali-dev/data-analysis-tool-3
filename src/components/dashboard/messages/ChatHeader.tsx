@@ -7,6 +7,7 @@ interface ChatHeaderProps {
   isTenant: boolean;
   otherUserName: string;
   otherUserPhoto?: string;
+  hasActiveEscrow?: boolean;
   onShowProfile: () => void;
   onShowReview: () => void;
   onShowEscrow: () => void;
@@ -17,6 +18,7 @@ export const ChatHeader = ({
   isTenant,
   otherUserName,
   otherUserPhoto,
+  hasActiveEscrow,
   onShowProfile,
   onShowReview,
   onShowEscrow,
@@ -50,7 +52,7 @@ export const ChatHeader = ({
           </button>
         </div>
         <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 w-full sm:w-auto">
-          {isTenant && (
+          {isTenant && !hasActiveEscrow && (
             <Button
               variant="default"
               size="sm"

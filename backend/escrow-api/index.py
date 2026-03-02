@@ -98,6 +98,24 @@ def handler(event, context):
         finally:
             conn.close()
 
+    if method == 'GET' and action == 'check-chat':
+        chat_id = params.get('chatId', '')
+        if not chat_id:
+            return resp(400, {'error': 'chatId обязателен'})
+
+        conn = get_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(f"""
+                SELECT COUNT(*) FROM {S}escrow_transactions
+                WHERE chat_id = '{chat_id.replace("'", "''")}'
+                AND status IN ('frozen', 'completed', 'pending')
+            """)
+            count = cur.fetchone()[0]
+            return resp(200, {'hasActive': count > 0})
+        finally:
+            conn.close()
+
     if method == 'POST' and action == 'create':
         body = json.loads(event.get('body', '{}'))
         required = ['requestName', 'tenantEmail', 'tenantName', 'recommenderEmail', 'recommenderName']
