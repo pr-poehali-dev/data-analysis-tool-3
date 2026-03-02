@@ -4,6 +4,8 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { escrowStore, EscrowTransaction } from "@/store/escrowStore";
 import { messagesStore } from "@/store/messagesStore";
+import { UserProfileModal } from "@/components/dashboard/messages/UserProfileModal";
+import funcUrls from "../../../backend/func2url.json";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
@@ -61,6 +63,26 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
   const [balance, setBalance] = useState({ frozen: 0, completed: 0, pending: 0, sent: 0 });
   const [filter, setFilter] = useState<'all' | EscrowTransaction['status']>('all');
   const [actionLoading, setActionLoading] = useState<Record<string, 'confirm' | 'cancel' | null>>({});
+  const [profileModal, setProfileModal] = useState<{ isOpen: boolean; name: string; email: string; photo?: string; vkLink?: string }>({ isOpen: false, name: '', email: '' });
+
+  const openProfile = async (email: string, name: string) => {
+    setProfileModal({ isOpen: true, name, email });
+    try {
+      const res = await fetch(`${funcUrls["profile-update"]}?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setProfileModal({
+          isOpen: true,
+          name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim() || name,
+          email,
+          photo: data.user.avatar_url,
+          vkLink: data.user.vkLink,
+        });
+      }
+    } catch {
+      // keep initial data
+    }
+  };
 
   const handleConfirm = async (t: EscrowTransaction) => {
     const ok = window.confirm(
@@ -312,9 +334,23 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                           {isRecommender ? '+' : '-'}{amount.toLocaleString('ru-RU')} ₽
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 truncate">
-                        {isRecommender ? 'Вознаграждение от' : 'Оплата для'} {otherParty}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-2">
+                        <span
+                          onClick={() => openProfile(transaction.tenantEmail, transaction.tenantName)}
+                          className="inline-flex items-center gap-1 cursor-pointer text-primary hover:underline font-medium"
+                        >
+                          <Icon name="User" size={12} />
+                          {transaction.tenantName}
+                        </span>
+                        <Icon name="ArrowRight" size={12} className="text-muted-foreground/60" />
+                        <span
+                          onClick={() => openProfile(transaction.recommenderEmail, transaction.recommenderName)}
+                          className="inline-flex items-center gap-1 cursor-pointer text-primary hover:underline font-medium"
+                        >
+                          <Icon name="User" size={12} />
+                          {transaction.recommenderName}
+                        </span>
+                      </div>
                       <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Icon name="Calendar" size={12} className="sm:w-[14px] sm:h-[14px]" />
@@ -373,6 +409,17 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
           </div>
         )}
       </div>
+
+      <UserProfileModal
+        isOpen={profileModal.isOpen}
+        onClose={() => setProfileModal((p) => ({ ...p, isOpen: false }))}
+        user={{
+          name: profileModal.name,
+          email: profileModal.email,
+          photo: profileModal.photo,
+          vkLink: profileModal.vkLink,
+        }}
+      />
     </div>
   );
 };
