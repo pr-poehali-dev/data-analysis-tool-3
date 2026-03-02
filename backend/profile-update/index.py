@@ -159,6 +159,9 @@ def handle_update_profile(event: dict) -> dict:
             updates.append("last_name = %s")
             values.append(last_name)
         if email is not None:
+            cur.execute(f"SELECT id FROM {S}users WHERE email = %s AND id != %s", (email, user_id))
+            if cur.fetchone():
+                return response(400, {'error': 'Эта почта уже привязана к другому аккаунту'})
             updates.append("email = %s")
             values.append(email)
         if city is not None:
@@ -228,9 +231,18 @@ def handle_send_email_code(event: dict) -> dict:
     if not email or '@' not in email:
         return response(400, {'error': 'Укажите корректный email'})
 
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"SELECT id FROM {S}users WHERE email = %s AND id != %s", (email, user_id))
+        if cur.fetchone():
+            return response(400, {'error': 'Эта почта уже привязана к другому аккаунту'})
+    finally:
+        conn.close()
+
     code = str(secrets.randbelow(900000) + 100000)
 
-    S = get_schema()
     conn = get_connection()
     try:
         cur = conn.cursor()
