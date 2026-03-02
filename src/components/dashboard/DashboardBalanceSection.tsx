@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ const statusConfig = {
 };
 
 export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanceSectionProps) => {
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState<EscrowTransaction[]>([]);
   const [balance, setBalance] = useState({ frozen: 0, completed: 0, pending: 0, sent: 0 });
   const [filter, setFilter] = useState<'all' | EscrowTransaction['status']>('all');
@@ -360,6 +362,13 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                           <Icon name={config.icon} size={12} className="sm:w-[14px] sm:h-[14px]" />
                           {config.label}
                         </div>
+                        <button
+                          onClick={() => navigate('/dashboard', { state: { activeSection: 'messages', chatId: transaction.chatId } })}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 font-medium transition-colors"
+                        >
+                          <Icon name="MessageSquare" size={12} className="sm:w-[14px] sm:h-[14px]" />
+                          Чат
+                        </button>
                       </div>
                       {transaction.completedAt && (
                         <div className="text-xs text-muted-foreground mt-1">
