@@ -20,8 +20,16 @@ interface ProfileFieldsProps {
   userVkLink?: string;
   userFirstName: string;
   userLastName: string;
+  isOAuthUser?: boolean;
+  authProvider?: string;
   onFieldChange: (field: keyof ProfileFormData, value: string) => void;
 }
+
+const providerLabels: Record<string, string> = {
+  yandex: "Яндекс",
+  vk: "ВКонтакте",
+  google: "Google",
+};
 
 export const ProfileFields = ({
   formData,
@@ -34,6 +42,8 @@ export const ProfileFields = ({
   userVkLink,
   userFirstName,
   userLastName,
+  isOAuthUser,
+  authProvider,
   onFieldChange,
 }: ProfileFieldsProps) => {
   return (
@@ -91,7 +101,7 @@ export const ProfileFields = ({
           <Icon name="Mail" size={16} className="inline mr-2" />
           Email
         </label>
-        {isEditing ? (
+        {isEditing && !isOAuthUser ? (
           <Input
             type="email"
             value={isTelegramUser ? formData.email.replace(/^tg_\d+$/, '') : formData.email}
@@ -101,6 +111,12 @@ export const ProfileFields = ({
         ) : (
           <p className="font-medium text-foreground">
             {realEmail || <span className="text-muted-foreground">Не указан</span>}
+            {isEditing && isOAuthUser && authProvider && (
+              <span className="block text-xs text-muted-foreground mt-1">
+                <Icon name="Lock" size={12} className="inline mr-1" />
+                Привязан через {providerLabels[authProvider] || authProvider}, изменение недоступно
+              </span>
+            )}
           </p>
         )}
       </div>

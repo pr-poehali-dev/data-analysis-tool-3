@@ -36,6 +36,17 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
   const isTelegramUser = !!user.telegramUsername || /^tg_\d+/.test(user.email);
   const realEmail = /^tg_\d+/.test(user.email) ? '' : user.email;
 
+  const getAuthProvider = (): string => {
+    if (localStorage.getItem("yandex_auth_access_token")) return "yandex";
+    if (localStorage.getItem("vk_auth_access_token")) return "vk";
+    if (localStorage.getItem("google_auth_access_token")) return "google";
+    if (localStorage.getItem("telegram_auth_access_token")) return "telegram";
+    if (localStorage.getItem("email_auth_access_token")) return "email";
+    return "unknown";
+  };
+  const authProvider = getAuthProvider();
+  const isOAuthUser = ["yandex", "vk", "google"].includes(authProvider);
+
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
@@ -124,13 +135,15 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
   };
 
   const handleSaveProfile = async () => {
-    const emailChanged = formData.email !== user.email && formData.email !== realEmail;
-    const newEmailValid = formData.email && formData.email.includes("@") && !/^tg_\d+/.test(formData.email);
+    if (!isOAuthUser) {
+      const emailChanged = formData.email !== user.email && formData.email !== realEmail;
+      const newEmailValid = formData.email && formData.email.includes("@") && !/^tg_\d+/.test(formData.email);
 
-    if (emailChanged && newEmailValid) {
-      setPendingEmail(formData.email);
-      setShowEmailVerify(true);
-      return;
+      if (emailChanged && newEmailValid) {
+        setPendingEmail(formData.email);
+        setShowEmailVerify(true);
+        return;
+      }
     }
 
     await saveProfileWithoutEmail();
@@ -198,6 +211,8 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
               userVkLink={user.vkLink}
               userFirstName={user.firstName}
               userLastName={user.lastName}
+              isOAuthUser={isOAuthUser}
+              authProvider={authProvider}
               onFieldChange={handleFieldChange}
             />
 
