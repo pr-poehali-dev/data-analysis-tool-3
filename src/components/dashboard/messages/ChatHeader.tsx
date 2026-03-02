@@ -152,7 +152,12 @@ export const ChatHeader = ({
                 Мы договорились
               </Button>
             )}
-            {!hasReview && (
+            {hasReview ? (
+              <span className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs text-green-600 px-3 py-1.5">
+                <Icon name="CheckCircle" size={14} />
+                Отзыв оставлен
+              </span>
+            ) : (
               <Button
                 variant="outline"
                 size="sm"
