@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
@@ -21,6 +21,23 @@ export const EmailRequiredModal = ({ isOpen, onClose, onEmailAdded }: EmailRequi
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  const startResendTimer = () => {
+    setResendTimer(60);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) { clearInterval(timerRef.current!); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const getToken = () => {
     return (
@@ -55,6 +72,7 @@ export const EmailRequiredModal = ({ isOpen, onClose, onEmailAdded }: EmailRequi
         return;
       }
       setStep("enter_code");
+      startResendTimer();
     } catch {
       setError("Ошибка сети");
     } finally {
@@ -97,6 +115,8 @@ export const EmailRequiredModal = ({ isOpen, onClose, onEmailAdded }: EmailRequi
       setEmail("");
       setCode("");
       setError("");
+      setResendTimer(0);
+      if (timerRef.current) clearInterval(timerRef.current);
     }
     onClose();
   };
@@ -217,10 +237,10 @@ export const EmailRequiredModal = ({ isOpen, onClose, onEmailAdded }: EmailRequi
                 </Button>
                 <button
                   onClick={handleSendCode}
-                  disabled={loading}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2 mt-2"
+                  disabled={loading || resendTimer > 0}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Отправить код повторно
+                  {resendTimer > 0 ? `Отправить повторно (${resendTimer}с)` : "Отправить код повторно"}
                 </button>
               </div>
             )}
