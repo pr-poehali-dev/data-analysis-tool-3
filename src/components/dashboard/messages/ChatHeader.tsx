@@ -13,6 +13,7 @@ interface ChatHeaderProps {
   escrowStatus?: string;
   escrowAmount?: number;
   escrowTransactionId?: string;
+  hasReview?: boolean;
   onEscrowChanged?: () => void;
   onShowProfile: () => void;
   onShowReview: () => void;
@@ -52,6 +53,7 @@ export const ChatHeader = ({
   escrowStatus,
   escrowAmount,
   escrowTransactionId,
+  hasReview,
   onEscrowChanged,
   onShowProfile,
   onShowReview,
@@ -150,15 +152,17 @@ export const ChatHeader = ({
                 Мы договорились
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onShowReview}
-              className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-3"
-            >
-              <Icon name="Star" size={14} className="sm:w-4 sm:h-4" />
-              Оставить отзыв
-            </Button>
+            {!hasReview && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onShowReview}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-3"
+              >
+                <Icon name="Star" size={14} className="sm:w-4 sm:h-4" />
+                Оставить отзыв
+              </Button>
+            )}
           </div>
         </div>
       </div>

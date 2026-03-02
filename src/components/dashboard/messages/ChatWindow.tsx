@@ -10,6 +10,7 @@ import { recommendationsStore } from "@/store/recommendationsStore";
 import { requestsStore } from "@/store/requestsStore";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { escrowStore } from "@/store/escrowStore";
+import funcUrls from "../../../../backend/func2url.json";
 
 interface ChatWindowProps {
   chat: Chat;
@@ -31,6 +32,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const [escrowStatus, setEscrowStatus] = useState<string | undefined>();
   const [escrowAmount, setEscrowAmount] = useState<number | undefined>();
   const [escrowTransactionId, setEscrowTransactionId] = useState<string | undefined>();
+  const [hasReview, setHasReview] = useState(false);
 
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const isTenant = chat.tenantEmail === currentUserEmail;
@@ -44,6 +46,20 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
       requestsStore.fetchRequestById(chat.requestId);
     }
   }, [chat.requestId]);
+
+  useEffect(() => {
+    const checkReview = async () => {
+      try {
+        const res = await fetch(`${(funcUrls as Record<string, string>)['reviews']}?chat_id=${chat.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const reviews = data.reviews || [];
+          setHasReview(reviews.some((r: { reviewer_email: string }) => r.reviewer_email === currentUserEmail));
+        }
+      } catch { /* ignore */ }
+    };
+    checkReview();
+  }, [chat.id, currentUserEmail]);
 
   useEffect(() => {
     const checkEscrow = async () => {
@@ -115,6 +131,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           setEscrowAmount(data.commissionAmount);
           setEscrowTransactionId(data.transactionId);
         }}
+        hasReview={hasReview}
         onShowProfile={() => setShowProfileModal(true)}
         onShowReview={() => setShowReviewModal(true)}
         onShowEscrow={() => setShowEscrowModal(true)}
@@ -165,7 +182,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           revieweeName={otherUserName}
           onClose={() => setShowReviewModal(false)}
           onSuccess={() => {
-            console.log('Отзыв успешно отправлен');
+            setHasReview(true);
           }}
         />
       )}
