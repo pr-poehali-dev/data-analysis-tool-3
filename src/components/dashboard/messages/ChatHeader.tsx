@@ -168,53 +168,55 @@ export const ChatHeader = ({
       </div>
 
       {hasActiveEscrow && statusInfo && (
-        <div className={`px-3 sm:px-4 py-2.5 ${statusInfo.bg} border-t ${statusInfo.border} flex items-center justify-between gap-2`}>
-          <div className="flex items-center gap-2">
-            <Icon name={statusInfo.icon} size={16} className={statusInfo.text} />
-            <span className={`text-xs font-medium ${statusInfo.text}`}>
-              {statusInfo.label}
-            </span>
-            {escrowAmount && (
-              <span className={`text-xs font-bold ${statusInfo.text}`}>
-                {escrowAmount.toLocaleString('ru-RU')} ₽
+        <div className={`px-3 sm:px-4 py-2 sm:py-2.5 ${statusInfo.bg} border-t ${statusInfo.border}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Icon name={statusInfo.icon} size={16} className={`${statusInfo.text} flex-shrink-0`} />
+              <span className={`text-xs font-medium ${statusInfo.text}`}>
+                {statusInfo.label}
               </span>
+              {escrowAmount && (
+                <span className={`text-xs font-bold ${statusInfo.text}`}>
+                  {escrowAmount.toLocaleString('ru-RU')} ₽
+                </span>
+              )}
+            </div>
+            {isTenant && escrowStatus === 'frozen' && (
+              <div className="flex gap-1.5 w-full sm:w-auto">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isCancelling || isConfirming}
+                  onClick={handleCancelDeal}
+                  className="h-8 sm:h-7 text-xs border-red-300 text-red-600 hover:bg-red-50 px-2.5 flex-1 sm:flex-none"
+                >
+                  {isCancelling ? (
+                    <Icon name="Loader2" size={14} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Icon name="X" size={14} className="mr-1" />
+                      Отменить
+                    </>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={isConfirming || isCancelling}
+                  onClick={handleConfirmDeal}
+                  className="h-8 sm:h-7 text-xs bg-green-600 hover:bg-green-700 text-white px-2.5 flex-1 sm:flex-none"
+                >
+                  {isConfirming ? (
+                    <Icon name="Loader2" size={14} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Icon name="Check" size={14} className="mr-1" />
+                      Подтвердить
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
-          {isTenant && escrowStatus === 'frozen' && (
-            <div className="flex gap-1.5">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isCancelling || isConfirming}
-                onClick={handleCancelDeal}
-                className="h-7 text-xs border-red-300 text-red-600 hover:bg-red-50 px-2.5"
-              >
-                {isCancelling ? (
-                  <Icon name="Loader2" size={14} className="animate-spin" />
-                ) : (
-                  <>
-                    <Icon name="X" size={14} className="mr-1" />
-                    Отменить
-                  </>
-                )}
-              </Button>
-              <Button
-                size="sm"
-                disabled={isConfirming || isCancelling}
-                onClick={handleConfirmDeal}
-                className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white px-2.5"
-              >
-                {isConfirming ? (
-                  <Icon name="Loader2" size={14} className="animate-spin" />
-                ) : (
-                  <>
-                    <Icon name="Check" size={14} className="mr-1" />
-                    Подтвердить
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
         </div>
       )}
     </div>
