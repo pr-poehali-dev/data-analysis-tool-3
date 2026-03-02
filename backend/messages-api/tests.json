@@ -43,6 +43,13 @@
       "path": "/?action=mark_read",
       "body": {},
       "expectedStatus": 400
+    },
+    {
+      "name": "POST delete_chat requires chatId",
+      "method": "POST",
+      "path": "/?action=delete_chat",
+      "body": {},
+      "expectedStatus": 400
     }
   ]
 }

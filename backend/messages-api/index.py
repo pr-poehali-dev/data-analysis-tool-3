@@ -340,6 +340,39 @@ def handle_unread_count(event):
         conn.close()
 
 
+def handle_delete_chat(event):
+    body = parse_body(event)
+    chat_id = body.get('chatId')
+    if not chat_id:
+        return response(400, {'error': 'chat_id обязателен'})
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT COUNT(*) FROM {S}escrow_transactions
+            WHERE chat_id = %s AND status IN ('frozen', 'pending')
+        """, (chat_id,))
+        active_count = cur.fetchone()[0]
+        if active_count > 0:
+            return response(403, {'error': 'Нельзя удалить чат с активной эскроу-сделкой'})
+
+        cur.execute(f"DELETE FROM {S}messages WHERE chat_id = %s", (int(chat_id),))
+        cur.execute(f"DELETE FROM {S}chats WHERE id = %s RETURNING id", (int(chat_id),))
+        row = cur.fetchone()
+        conn.commit()
+        if not row:
+            return response(404, {'error': 'Чат не найден'})
+        return response(200, {'deleted': True})
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка удаления чата: {e}")
+        raise
+    finally:
+        conn.close()
+
+
 def handler(event, context):
     """API для чатов и сообщений между арендаторами и рекомендателями."""
     if event.get('httpMethod') == 'OPTIONS':
@@ -367,6 +400,8 @@ def handler(event, context):
             return handle_send_message(event)
         if action == 'mark_read':
             return handle_mark_read(event)
+        if action == 'delete_chat':
+            return handle_delete_chat(event)
         return handle_create_chat(event)
 
     return response(405, {'error': 'Метод не поддерживается'})

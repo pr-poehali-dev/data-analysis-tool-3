@@ -308,6 +308,27 @@ class MessagesStore {
       .reduce((total, chat) => total + (chat.unreadCount || 0), 0);
   }
 
+  async deleteChat(chatId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${API_URL}?action=delete_chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Ошибка удаления' };
+      }
+      this.chatsCache = this.chatsCache.filter(c => c.id !== chatId);
+      this.messagesCache.delete(chatId);
+      this.notifyListeners();
+      return { success: true };
+    } catch (e) {
+      console.error('deleteChat error:', e);
+      return { success: false, error: 'Ошибка сети' };
+    }
+  }
+
   async fetchUnreadCount(userEmail: string): Promise<number> {
     try {
       const res = await fetch(`${API_URL}?action=unread_count&user_email=${encodeURIComponent(userEmail)}`);

@@ -91,6 +91,12 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
             chats={chats}
             selectedChatId={selectedChat?.id}
             onChatSelect={handleChatSelect}
+            onChatDeleted={(chatId) => {
+              if (selectedChat?.id === chatId) {
+                selectedChatIdRef.current = undefined;
+                setSelectedChat(undefined);
+              }
+            }}
             currentUserEmail={user.email}
           />
         </div>
