@@ -219,25 +219,40 @@ export const RequestDetails = () => {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6 border-t border-border">
-            <Button
-              className="flex-1"
-              onClick={() => {
-                if (authStore.isAuthenticated()) {
-                  navigate("/suggest-property", {
-                    state: {
-                      requestId: request.id,
-                      requestName: request.name,
-                      fromDashboard: true
+            {(() => {
+              const user = authStore.getUser();
+              const ownerEmail = request.userEmail || request.userId;
+              const isOwn = user && ownerEmail && user.email.toLowerCase() === ownerEmail.toLowerCase();
+              if (isOwn) {
+                return (
+                  <div className="flex-1 flex items-center justify-center gap-1.5 text-sm text-muted-foreground bg-gray-50 py-3 px-4 rounded-lg border border-border">
+                    <Icon name="User" size={14} />
+                    <span className="font-medium">Это ваша заявка</span>
+                  </div>
+                );
+              }
+              return (
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    if (authStore.isAuthenticated()) {
+                      navigate("/suggest-property", {
+                        state: {
+                          requestId: request.id,
+                          requestName: request.name,
+                          fromDashboard: true
+                        }
+                      });
+                    } else {
+                      setIsRegistrationOpen(true);
                     }
-                  });
-                } else {
-                  setIsRegistrationOpen(true);
-                }
-              }}
-            >
-              <Icon name="Home" size={16} className="mr-2" />
-              Предложить объект
-            </Button>
+                  }}
+                >
+                  <Icon name="Home" size={16} className="mr-2" />
+                  Предложить объект
+                </Button>
+              );
+            })()}
             <Button
               variant="outline"
               onClick={goBack}
