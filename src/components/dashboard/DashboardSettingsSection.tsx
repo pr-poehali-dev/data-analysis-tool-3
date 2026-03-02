@@ -6,6 +6,7 @@ import { authStore } from "@/store/authStore";
 import { ProfilePhoto } from "./settings/ProfilePhoto";
 import { ProfileFields } from "./settings/ProfileFields";
 import { NotificationSettings } from "./settings/NotificationSettings";
+import { EmailVerifyModal } from "./EmailVerifyModal";
 import funcUrls from "../../../backend/func2url.json";
 
 const PROFILE_URL = funcUrls["profile-update"];
@@ -28,6 +29,8 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showEmailVerify, setShowEmailVerify] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const { toast } = useToast();
 
   const isTelegramUser = !!user.telegramUsername || /^tg_\d+/.test(user.email);
@@ -46,26 +49,41 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSaveProfile = async () => {
+  const getToken = () => {
+    return (
+      localStorage.getItem("yandex_auth_access_token") ||
+      localStorage.getItem("telegram_auth_access_token") ||
+      localStorage.getItem("vk_auth_access_token") ||
+      localStorage.getItem("google_auth_access_token") ||
+      localStorage.getItem("email_auth_access_token") ||
+      ""
+    );
+  };
+
+  const saveProfileWithoutEmail = async (emailToSave?: string) => {
     setSaving(true);
-    const token = localStorage.getItem("yandex_auth_access_token") || localStorage.getItem("telegram_auth_access_token");
+    const token = getToken();
 
     if (token) {
       try {
+        const body: Record<string, string> = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          city: formData.city,
+          vkLink: formData.vkLink,
+          avatar_url: formData.photo,
+        };
+        if (emailToSave) {
+          body.email = emailToSave;
+        }
+
         const res = await fetch(PROFILE_URL, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            city: formData.city,
-            vkLink: formData.vkLink,
-            avatar_url: formData.photo,
-          }),
+          body: JSON.stringify(body),
         });
 
         const data = await res.json();
@@ -79,7 +97,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
             vkLink: data.user.vkLink,
           });
         } else {
-          toast({ title: "Ошибка", description: "Не удалось сохранить профиль", variant: "destructive" });
+          toast({ title: "Ошибка", description: data.error || "Не удалось сохранить профиль", variant: "destructive" });
           setSaving(false);
           return;
         }
@@ -92,7 +110,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
       authStore.updateUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
+        email: emailToSave || formData.email,
         city: formData.city,
         photo: formData.photo,
         vkLink: formData.vkLink,
@@ -103,6 +121,30 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     setIsEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleSaveProfile = async () => {
+    const emailChanged = formData.email !== user.email && formData.email !== realEmail;
+    const newEmailValid = formData.email && formData.email.includes("@") && !/^tg_\d+/.test(formData.email);
+
+    if (emailChanged && newEmailValid) {
+      setPendingEmail(formData.email);
+      setShowEmailVerify(true);
+      return;
+    }
+
+    await saveProfileWithoutEmail();
+  };
+
+  const handleEmailVerified = (verifiedEmail: string) => {
+    setShowEmailVerify(false);
+    setPendingEmail("");
+    setFormData((prev) => ({ ...prev, email: verifiedEmail }));
+    authStore.updateUser({ email: verifiedEmail });
+    setIsEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    toast({ title: "Готово", description: "Почта подтверждена и сохранена" });
   };
 
   const handleCancel = () => {
@@ -171,6 +213,13 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
 
         <NotificationSettings />
       </div>
+
+      <EmailVerifyModal
+        isOpen={showEmailVerify}
+        email={pendingEmail}
+        onClose={() => setShowEmailVerify(false)}
+        onVerified={handleEmailVerified}
+      />
     </div>
   );
 };
