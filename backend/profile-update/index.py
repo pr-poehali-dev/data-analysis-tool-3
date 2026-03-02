@@ -194,7 +194,6 @@ def handle_update_profile(event: dict) -> dict:
             f"UPDATE {S}users SET {', '.join(updates)} WHERE id = %s",
             tuple(values)
         )
-        conn.commit()
 
         cur.execute(f"""
             SELECT id, email, name, avatar_url, first_name, last_name,
@@ -202,19 +201,48 @@ def handle_update_profile(event: dict) -> dict:
             FROM {S}users WHERE id = %s
         """, (user_id,))
         row = cur.fetchone()
+        user_email = row[1] or ''
+        new_name = row[2] or ''
+        new_photo = row[3] or ''
+        new_vk = row[9] or ''
+
+        if user_email and (first_name is not None or last_name is not None or avatar_url is not None or vk_link is not None):
+            if first_name is not None or last_name is not None:
+                cur.execute(f"""
+                    UPDATE {S}chats SET recommender_name = %s WHERE recommender_email = %s
+                """, (new_name, user_email))
+                cur.execute(f"""
+                    UPDATE {S}chats SET tenant_name = %s WHERE tenant_email = %s
+                """, (new_name, user_email))
+            if avatar_url is not None:
+                cur.execute(f"""
+                    UPDATE {S}chats SET recommender_photo = %s WHERE recommender_email = %s
+                """, (new_photo, user_email))
+                cur.execute(f"""
+                    UPDATE {S}chats SET tenant_photo = %s WHERE tenant_email = %s
+                """, (new_photo, user_email))
+            if vk_link is not None:
+                cur.execute(f"""
+                    UPDATE {S}chats SET recommender_vk_link = %s WHERE recommender_email = %s
+                """, (new_vk, user_email))
+                cur.execute(f"""
+                    UPDATE {S}chats SET tenant_vk_link = %s WHERE tenant_email = %s
+                """, (new_vk, user_email))
+
+        conn.commit()
 
         return response(200, {
             'user': {
                 'id': row[0],
-                'email': row[1] or '',
-                'name': row[2] or '',
-                'avatar_url': row[3] or '',
+                'email': user_email,
+                'name': new_name,
+                'avatar_url': new_photo,
                 'firstName': row[4] or '',
                 'lastName': row[5] or '',
                 'role': row[6] or 'tenant',
                 'phone': row[7] or '',
                 'city': row[8] or '',
-                'vkLink': row[9] or '',
+                'vkLink': new_vk,
             }
         })
     except Exception:
