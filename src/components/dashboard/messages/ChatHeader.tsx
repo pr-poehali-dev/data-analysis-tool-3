@@ -13,6 +13,7 @@ interface ChatHeaderProps {
   escrowStatus?: string;
   escrowAmount?: number;
   escrowTransactionId?: string;
+  onEscrowChanged?: () => void;
   onShowProfile: () => void;
   onShowReview: () => void;
   onShowEscrow: () => void;
@@ -51,6 +52,7 @@ export const ChatHeader = ({
   escrowStatus,
   escrowAmount,
   escrowTransactionId,
+  onEscrowChanged,
   onShowProfile,
   onShowReview,
   onShowEscrow,
@@ -73,6 +75,7 @@ export const ChatHeader = ({
         chat.id,
         `✅ Сделка подтверждена! Вознаграждение ${escrowAmount?.toLocaleString('ru-RU')} ₽ переведено рекомендателю.`
       );
+      onEscrowChanged?.();
     } catch (error) {
       console.error('Error confirming deal:', error);
       alert('Ошибка при подтверждении сделки');
@@ -95,6 +98,7 @@ export const ChatHeader = ({
         chat.id,
         `❌ Сделка отменена. Средства ${escrowAmount?.toLocaleString('ru-RU')} ₽ возвращены арендатору.`
       );
+      onEscrowChanged?.();
     } catch (error) {
       console.error('Error cancelling deal:', error);
       alert('Ошибка при отмене сделки');

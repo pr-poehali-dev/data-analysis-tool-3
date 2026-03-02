@@ -108,6 +108,13 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         escrowStatus={escrowStatus}
         escrowAmount={escrowAmount}
         escrowTransactionId={escrowTransactionId}
+        onEscrowChanged={async () => {
+          const data = await escrowStore.getEscrowStatusForChat(chat.id);
+          setHasActiveEscrow(data.hasActive);
+          setEscrowStatus(data.status);
+          setEscrowAmount(data.commissionAmount);
+          setEscrowTransactionId(data.transactionId);
+        }}
         onShowProfile={() => setShowProfileModal(true)}
         onShowReview={() => setShowReviewModal(true)}
         onShowEscrow={() => setShowEscrowModal(true)}
