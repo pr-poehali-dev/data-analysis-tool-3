@@ -94,13 +94,10 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         msg.attach(MIMEText(email_body, 'plain', 'utf-8'))
         
         # Прикрепляем файл
-        part = MIMEBase('application', 'octet-stream')
+        part = MIMEBase('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document')
         part.set_payload(file_content)
         encoders.encode_base64(part)
-        part.add_header(
-            'Content-Disposition',
-            f'attachment; filename= {file_name}'
-        )
+        part.add_header('Content-Disposition', 'attachment', filename=file_name)
         msg.attach(part)
         
         # Отправляем email
