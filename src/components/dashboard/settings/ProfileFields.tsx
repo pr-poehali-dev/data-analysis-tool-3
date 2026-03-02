@@ -46,6 +46,9 @@ export const ProfileFields = ({
   authProvider,
   onFieldChange,
 }: ProfileFieldsProps) => {
+  const firstNameLocked = isOAuthUser && !!userFirstName;
+  const lastNameLocked = isOAuthUser && !!userLastName;
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -54,14 +57,22 @@ export const ProfileFields = ({
             <Icon name="User" size={16} className="inline mr-2" />
             Имя
           </label>
-          {isEditing ? (
+          {isEditing && !firstNameLocked ? (
             <Input
               value={formData.firstName}
               onChange={(e) => onFieldChange("firstName", e.target.value)}
               placeholder="Введите имя"
             />
           ) : (
-            <p className="font-medium text-foreground">{userFirstName}</p>
+            <p className="font-medium text-foreground">
+              {userFirstName || <span className="text-muted-foreground">Не указано</span>}
+              {isEditing && firstNameLocked && authProvider && (
+                <span className="block text-xs text-muted-foreground mt-1">
+                  <Icon name="Lock" size={12} className="inline mr-1" />
+                  Получено из {providerLabels[authProvider] || authProvider}
+                </span>
+              )}
+            </p>
           )}
         </div>
 
@@ -70,14 +81,22 @@ export const ProfileFields = ({
             <Icon name="User" size={16} className="inline mr-2" />
             Фамилия
           </label>
-          {isEditing ? (
+          {isEditing && !lastNameLocked ? (
             <Input
               value={formData.lastName}
               onChange={(e) => onFieldChange("lastName", e.target.value)}
               placeholder="Введите фамилию"
             />
           ) : (
-            <p className="font-medium text-foreground">{userLastName}</p>
+            <p className="font-medium text-foreground">
+              {userLastName || <span className="text-muted-foreground">Не указана</span>}
+              {isEditing && lastNameLocked && authProvider && (
+                <span className="block text-xs text-muted-foreground mt-1">
+                  <Icon name="Lock" size={12} className="inline mr-1" />
+                  Получено из {providerLabels[authProvider] || authProvider}
+                </span>
+              )}
+            </p>
           )}
         </div>
       </div>
