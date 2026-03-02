@@ -94,7 +94,7 @@ class EscrowStore {
     this.notifyListeners();
   }
 
-  async getEscrowStatusForChat(chatId: string): Promise<{ hasActive: boolean; status?: string; commissionAmount?: number }> {
+  async getEscrowStatusForChat(chatId: string): Promise<{ hasActive: boolean; transactionId?: string; status?: string; commissionAmount?: number }> {
     try {
       const res = await fetch(`${API_URL}?action=check-chat&chatId=${encodeURIComponent(chatId)}`);
       const data = await res.json();

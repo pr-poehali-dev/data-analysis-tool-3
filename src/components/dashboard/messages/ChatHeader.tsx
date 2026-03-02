@@ -1,6 +1,8 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Chat, messagesStore } from "@/store/messagesStore";
+import { escrowStore } from "@/store/escrowStore";
 
 interface ChatHeaderProps {
   chat: Chat;
@@ -10,6 +12,7 @@ interface ChatHeaderProps {
   hasActiveEscrow?: boolean;
   escrowStatus?: string;
   escrowAmount?: number;
+  escrowTransactionId?: string;
   onShowProfile: () => void;
   onShowReview: () => void;
   onShowEscrow: () => void;
@@ -47,11 +50,35 @@ export const ChatHeader = ({
   hasActiveEscrow,
   escrowStatus,
   escrowAmount,
+  escrowTransactionId,
   onShowProfile,
   onShowReview,
   onShowEscrow,
 }: ChatHeaderProps) => {
+  const [isConfirming, setIsConfirming] = useState(false);
   const statusInfo = escrowStatus ? escrowStatusConfig[escrowStatus] : null;
+
+  const handleConfirmDeal = async () => {
+    if (!escrowTransactionId) return;
+    const confirmed = window.confirm(
+      `Вы подтверждаете сделку? Вознаграждение ${escrowAmount?.toLocaleString('ru-RU')} ₽ будет переведено рекомендателю.`
+    );
+    if (!confirmed) return;
+
+    setIsConfirming(true);
+    try {
+      await escrowStore.updateTransactionStatus(escrowTransactionId, 'completed');
+      await messagesStore.sendSystemMessage(
+        chat.id,
+        `✅ Сделка подтверждена! Вознаграждение ${escrowAmount?.toLocaleString('ru-RU')} ₽ переведено рекомендателю.`
+      );
+    } catch (error) {
+      console.error('Error confirming deal:', error);
+      alert('Ошибка при подтверждении сделки');
+    } finally {
+      setIsConfirming(false);
+    }
+  };
 
   return (
     <div className="bg-white border-b border-border">
@@ -114,17 +141,34 @@ export const ChatHeader = ({
       </div>
 
       {hasActiveEscrow && statusInfo && (
-        <div className={`px-3 sm:px-4 py-2 ${statusInfo.bg} border-t ${statusInfo.border} flex items-center justify-between gap-2`}>
+        <div className={`px-3 sm:px-4 py-2.5 ${statusInfo.bg} border-t ${statusInfo.border} flex items-center justify-between gap-2`}>
           <div className="flex items-center gap-2">
             <Icon name={statusInfo.icon} size={16} className={statusInfo.text} />
             <span className={`text-xs font-medium ${statusInfo.text}`}>
               {statusInfo.label}
             </span>
+            {escrowAmount && (
+              <span className={`text-xs font-bold ${statusInfo.text}`}>
+                {escrowAmount.toLocaleString('ru-RU')} ₽
+              </span>
+            )}
           </div>
-          {escrowAmount && (
-            <span className={`text-xs font-bold ${statusInfo.text}`}>
-              {escrowAmount.toLocaleString('ru-RU')} ₽
-            </span>
+          {isTenant && escrowStatus === 'frozen' && (
+            <Button
+              size="sm"
+              disabled={isConfirming}
+              onClick={handleConfirmDeal}
+              className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white px-3"
+            >
+              {isConfirming ? (
+                <Icon name="Loader2" size={14} className="animate-spin" />
+              ) : (
+                <>
+                  <Icon name="Check" size={14} className="mr-1" />
+                  Подтвердить сделку
+                </>
+              )}
+            </Button>
           )}
         </div>
       )}
