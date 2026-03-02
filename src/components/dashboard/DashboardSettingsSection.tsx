@@ -136,15 +136,20 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     await saveProfileWithoutEmail();
   };
 
-  const handleEmailVerified = (verifiedEmail: string) => {
+  const handleEmailVerified = async (verifiedEmail: string) => {
     setShowEmailVerify(false);
     setPendingEmail("");
     setFormData((prev) => ({ ...prev, email: verifiedEmail }));
+    await saveProfileWithoutEmail();
     authStore.updateUser({ email: verifiedEmail });
-    setIsEditing(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    toast({ title: "Готово", description: "Почта подтверждена и сохранена" });
+
+    const isEmailAuthUser = !!localStorage.getItem("email_auth_access_token");
+    toast({
+      title: "Готово",
+      description: isEmailAuthUser
+        ? "Почта подтверждена. Теперь для входа используйте новый email и прежний пароль"
+        : "Почта подтверждена и сохранена",
+    });
   };
 
   const handleCancel = () => {
