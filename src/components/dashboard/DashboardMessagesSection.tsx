@@ -71,7 +71,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+      <div className="flex items-center gap-3 mb-2">
         {selectedChat && (
           <button 
             onClick={handleBackToList}
@@ -80,10 +80,10 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
             <Icon name="ArrowLeft" size={20} className="text-foreground" />
           </button>
         )}
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Сообщения</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Сообщения</h2>
       </div>
       
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 h-[calc(100vh-200px)]">
+      <div className="grid lg:grid-cols-[1fr_2.5fr] gap-3 sm:gap-4 h-[calc(100vh-120px)]">
         <div className={`lg:col-span-1 bg-gray-50 rounded-lg p-3 sm:p-4 overflow-y-auto ${
           selectedChat ? 'hidden lg:block' : 'block'
         }`}>
