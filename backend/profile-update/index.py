@@ -2,6 +2,10 @@
 import json
 import os
 import hashlib
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 import psycopg2
 import jwt
@@ -217,16 +221,155 @@ def handle_update_profile(event: dict) -> dict:
         conn.close()
 
 
+def handle_send_email_code(event: dict) -> dict:
+    user_id = get_user_id_from_event(event)
+    body = json.loads(event.get('body', '{}'))
+    email = body.get('email', '').strip().lower()
+    if not email or '@' not in email:
+        return response(400, {'error': 'Укажите корректный email'})
+
+    code = str(secrets.randbelow(900000) + 100000)
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {S}email_verification_codes (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                code VARCHAR(6) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                used BOOLEAN DEFAULT FALSE
+            )
+        """)
+        cur.execute(f"DELETE FROM {S}email_verification_codes WHERE user_id = %s", (user_id,))
+        cur.execute(f"""
+            INSERT INTO {S}email_verification_codes (user_id, email, code)
+            VALUES (%s, %s, %s)
+        """, (user_id, email, code))
+        conn.commit()
+    finally:
+        conn.close()
+
+    smtp_host = os.environ.get('SMTP_HOST', os.environ.get('SMTP_SERVER', 'smtp.gmail.com'))
+    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    smtp_user = os.environ.get('SMTP_USER', os.environ.get('SENDER_EMAIL', ''))
+    smtp_password = os.environ.get('SMTP_PASSWORD', os.environ.get('SENDER_PASSWORD', ''))
+    smtp_from = os.environ.get('SMTP_FROM', smtp_user)
+
+    if not smtp_user or not smtp_password:
+        return response(500, {'error': 'SMTP не настроен'})
+
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #333;">Подтверждение email</h2>
+        <p>Ваш код подтверждения:</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px;
+                  background: #f5f5f5; padding: 20px; text-align: center;
+                  border-radius: 8px; margin: 20px 0;">{code}</p>
+        <p style="color: #666; font-size: 14px;">Код действителен 30 минут.</p>
+    </div>
+    """
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Код подтверждения email'
+    msg['From'] = smtp_from
+    msg['To'] = email
+    msg.attach(MIMEText(f"Ваш код подтверждения: {code}", 'plain', 'utf-8'))
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_from, email, msg.as_string())
+    except Exception as e:
+        print(f"SMTP error: {e}")
+        return response(500, {'error': 'Не удалось отправить код'})
+
+    return response(200, {'sent': True})
+
+
+def handle_verify_email_code(event: dict) -> dict:
+    user_id = get_user_id_from_event(event)
+    body = json.loads(event.get('body', '{}'))
+    code = body.get('code', '').strip()
+    if not code:
+        return response(400, {'error': 'Укажите код'})
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT email, code, created_at FROM {S}email_verification_codes
+            WHERE user_id = %s AND used = FALSE
+            ORDER BY created_at DESC LIMIT 1
+        """, (user_id,))
+        row = cur.fetchone()
+        if not row:
+            return response(400, {'error': 'Код не найден. Запросите новый'})
+
+        stored_email, stored_code, created_at = row
+        age_minutes = (datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)).total_seconds() / 60
+        if age_minutes > 30:
+            return response(400, {'error': 'Код истёк. Запросите новый'})
+
+        if stored_code != code:
+            return response(400, {'error': 'Неверный код'})
+
+        cur.execute(f"UPDATE {S}email_verification_codes SET used = TRUE WHERE user_id = %s", (user_id,))
+        cur.execute(f"UPDATE {S}users SET email = %s, email_verified = TRUE, updated_at = %s WHERE id = %s",
+                    (stored_email, datetime.now(timezone.utc).isoformat(), user_id))
+        conn.commit()
+
+        cur.execute(f"""
+            SELECT id, email, name, avatar_url, first_name, last_name,
+                   role, phone, city, vk_link
+            FROM {S}users WHERE id = %s
+        """, (user_id,))
+        row = cur.fetchone()
+
+        return response(200, {
+            'verified': True,
+            'user': {
+                'id': row[0],
+                'email': row[1] or '',
+                'name': row[2] or '',
+                'avatar_url': row[3] or '',
+                'firstName': row[4] or '',
+                'lastName': row[5] or '',
+                'role': row[6] or 'tenant',
+                'phone': row[7] or '',
+                'city': row[8] or '',
+                'vkLink': row[9] or '',
+            }
+        })
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def handler(event: dict, context) -> dict:
     """Обновление и получение профиля пользователя."""
     if event.get('httpMethod') == 'OPTIONS':
         return response(200, {})
 
     method = event.get('httpMethod', 'GET')
+    params = event.get('queryStringParameters') or {}
+    action = params.get('action', '')
     try:
         if method == 'GET':
             return handle_get_profile(event)
         elif method in ('POST', 'PUT'):
+            if action == 'send_email_code':
+                return handle_send_email_code(event)
+            if action == 'verify_email_code':
+                return handle_verify_email_code(event)
             return handle_update_profile(event)
         else:
             return response(405, {'error': 'Method not allowed'})

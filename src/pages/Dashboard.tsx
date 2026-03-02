@@ -13,6 +13,8 @@ import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
 import { messagesStore } from "@/store/messagesStore";
+import { authStore } from "@/store/authStore";
+import { EmailRequiredModal } from "@/components/dashboard/EmailRequiredModal";
 
 interface DashboardProps {
   user: {
@@ -52,6 +54,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [userRecommendations, setUserRecommendations] = useState<Recommendation[]>([]);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const hasRealEmail = !!user.email && !/^tg_\d+/.test(user.email) && user.email.includes("@");
+  const [showEmailModal, setShowEmailModal] = useState(!hasRealEmail);
 
   useEffect(() => {
     if (location.state?.activeSection) {
@@ -186,6 +190,15 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </div>
 
       <Footer hiddenOnMobile />
+
+      <EmailRequiredModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onEmailAdded={(newEmail) => {
+          authStore.updateUser({ email: newEmail });
+          setShowEmailModal(false);
+        }}
+      />
     </div>
   );
 };
