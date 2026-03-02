@@ -141,11 +141,7 @@ export const ChatHeader = ({
               <Button
                 variant="default"
                 size="sm"
-                onClick={async () => {
-                  await messagesStore.sendSystemMessage(
-                    chat.id,
-                    '🤝 Стороны договорились о сделке и переходят к оформлению через эскроу'
-                  );
+                onClick={() => {
                   onShowEscrow();
                 }}
                 className="w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-green-600 hover:bg-green-700 px-3 py-2 sm:py-1.5"
