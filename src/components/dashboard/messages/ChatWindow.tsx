@@ -28,6 +28,8 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showEscrowModal, setShowEscrowModal] = useState(false);
   const [hasActiveEscrow, setHasActiveEscrow] = useState(false);
+  const [escrowStatus, setEscrowStatus] = useState<string | undefined>();
+  const [escrowAmount, setEscrowAmount] = useState<number | undefined>();
 
   const isRecommender = chat.recommenderEmail === currentUserEmail;
   const isTenant = chat.tenantEmail === currentUserEmail;
@@ -44,8 +46,10 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
 
   useEffect(() => {
     const checkEscrow = async () => {
-      const active = await escrowStore.hasActiveTransactionForChat(chat.id);
-      setHasActiveEscrow(active);
+      const data = await escrowStore.getEscrowStatusForChat(chat.id);
+      setHasActiveEscrow(data.hasActive);
+      setEscrowStatus(data.status);
+      setEscrowAmount(data.commissionAmount);
     };
     checkEscrow();
     const unsubscribe = escrowStore.subscribe(() => checkEscrow());
@@ -99,6 +103,8 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
         otherUserName={otherUserName}
         otherUserPhoto={otherUserPhoto}
         hasActiveEscrow={hasActiveEscrow}
+        escrowStatus={escrowStatus}
+        escrowAmount={escrowAmount}
         onShowProfile={() => setShowProfileModal(true)}
         onShowReview={() => setShowReviewModal(true)}
         onShowEscrow={() => setShowEscrowModal(true)}

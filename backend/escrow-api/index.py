@@ -107,12 +107,15 @@ def handler(event, context):
         try:
             cur = conn.cursor()
             cur.execute(f"""
-                SELECT COUNT(*) FROM {S}escrow_transactions
+                SELECT status, commission_amount FROM {S}escrow_transactions
                 WHERE chat_id = '{chat_id.replace("'", "''")}'
                 AND status IN ('frozen', 'completed', 'pending')
+                ORDER BY created_at DESC LIMIT 1
             """)
-            count = cur.fetchone()[0]
-            return resp(200, {'hasActive': count > 0})
+            row = cur.fetchone()
+            if row:
+                return resp(200, {'hasActive': True, 'status': row[0], 'commissionAmount': float(row[1])})
+            return resp(200, {'hasActive': False})
         finally:
             conn.close()
 

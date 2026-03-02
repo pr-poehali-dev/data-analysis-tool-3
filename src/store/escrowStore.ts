@@ -94,14 +94,19 @@ class EscrowStore {
     this.notifyListeners();
   }
 
-  async hasActiveTransactionForChat(chatId: string): Promise<boolean> {
+  async getEscrowStatusForChat(chatId: string): Promise<{ hasActive: boolean; status?: string; commissionAmount?: number }> {
     try {
       const res = await fetch(`${API_URL}?action=check-chat&chatId=${encodeURIComponent(chatId)}`);
       const data = await res.json();
-      return data.hasActive === true;
+      return data;
     } catch {
-      return false;
+      return { hasActive: false };
     }
+  }
+
+  async hasActiveTransactionForChat(chatId: string): Promise<boolean> {
+    const data = await this.getEscrowStatusForChat(chatId);
+    return data.hasActive === true;
   }
 
   getUserTransactions(userEmail: string): EscrowTransaction[] {
