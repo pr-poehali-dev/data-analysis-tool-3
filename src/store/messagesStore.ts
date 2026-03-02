@@ -187,14 +187,15 @@ class MessagesStore {
 
   async fetchMessages(chatId: string, afterId?: string): Promise<Message[]> {
     try {
+      const safeAfterId = afterId && !afterId.startsWith('temp_') ? afterId : undefined;
       let url = `${API_URL}?action=messages&chat_id=${chatId}`;
-      if (afterId) url += `&after_id=${afterId}`;
+      if (safeAfterId) url += `&after_id=${safeAfterId}`;
       const res = await fetch(url);
       if (!res.ok) return this.messagesCache.get(chatId) || [];
       const data = await res.json();
       const messages = (data.messages || []).map(parseMessage);
 
-      if (afterId) {
+      if (safeAfterId) {
         const existing = this.messagesCache.get(chatId) || [];
         const existingIds = new Set(existing.map(m => m.id));
         const newMsgs = messages.filter((m: Message) => !existingIds.has(m.id));
@@ -224,9 +225,11 @@ class MessagesStore {
   }
 
   async sendMessage(data: Omit<Message, 'id' | 'createdAt' | 'read'>): Promise<Message> {
+    const hasPhotos = data.photos && data.photos.length > 0;
     const optimisticMsg: Message = {
       ...data,
       id: `temp_${Date.now()}`,
+      photos: hasPhotos ? data.photos : undefined,
       createdAt: new Date(),
       read: false,
       isSystemMessage: data.isSystemMessage || false,
@@ -239,43 +242,46 @@ class MessagesStore {
     if (chatIdx >= 0) {
       this.chatsCache[chatIdx] = {
         ...this.chatsCache[chatIdx],
-        lastMessage: data.text || 'Фото',
+        lastMessage: data.text || (hasPhotos ? 'Фото' : ''),
         lastMessageTime: optimisticMsg.createdAt,
       };
     }
     this.notifyListeners();
 
-    try {
-      const res = await fetch(`${API_URL}?action=send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chatId: data.chatId,
-          senderId: data.senderId,
-          senderName: data.senderName,
-          senderPhoto: data.senderPhoto || '',
-          text: data.text || '',
-          photos: data.photos || [],
-          isSystemMessage: data.isSystemMessage || false,
-        }),
-      });
-      const result = await res.json();
-      const serverMsg = parseMessage(result.message);
+    const res = await fetch(`${API_URL}?action=send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chatId: data.chatId,
+        senderId: data.senderId,
+        senderName: data.senderName,
+        senderPhoto: data.senderPhoto || '',
+        text: data.text || '',
+        photos: data.photos || [],
+        isSystemMessage: data.isSystemMessage || false,
+      }),
+    });
 
+    if (!res.ok) {
       const msgs = this.messagesCache.get(data.chatId) || [];
-      const idx = msgs.findIndex(m => m.id === optimisticMsg.id);
-      if (idx >= 0) {
-        msgs[idx] = serverMsg;
-      } else {
-        msgs.push(serverMsg);
-      }
-      this.messagesCache.set(data.chatId, msgs);
+      this.messagesCache.set(data.chatId, msgs.filter(m => m.id !== optimisticMsg.id));
       this.notifyListeners();
-      return serverMsg;
-    } catch (e) {
-      console.error('sendMessage error:', e);
-      return optimisticMsg;
+      throw new Error(`Ошибка отправки: ${res.status}`);
     }
+
+    const result = await res.json();
+    const serverMsg = parseMessage(result.message);
+
+    const msgs = this.messagesCache.get(data.chatId) || [];
+    const idx = msgs.findIndex(m => m.id === optimisticMsg.id);
+    if (idx >= 0) {
+      msgs[idx] = serverMsg;
+    } else {
+      msgs.push(serverMsg);
+    }
+    this.messagesCache.set(data.chatId, msgs);
+    this.notifyListeners();
+    return serverMsg;
   }
 
   async markChatAsRead(chatId: string, userEmail: string): Promise<void> {

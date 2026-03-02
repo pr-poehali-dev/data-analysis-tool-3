@@ -252,7 +252,10 @@ def handle_get_messages(event):
     if not chat_id:
         return response(400, {'error': 'chat_id обязателен'})
 
-    after_id = params.get('after_id')
+    raw_after = params.get('after_id', '')
+    after_id = None
+    if raw_after and raw_after.isdigit():
+        after_id = int(raw_after)
     limit = min(int(params.get('limit', '100')), 500)
 
     S = get_schema()
