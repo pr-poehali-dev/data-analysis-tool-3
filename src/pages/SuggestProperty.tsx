@@ -103,6 +103,19 @@ export const SuggestProperty = () => {
       return;
     }
 
+    if (requestData?.requestId) {
+      const request = requestsStore.getRequestById(requestData.requestId);
+      const requestOwnerEmail = request?.userEmail || request?.userId;
+      if (requestOwnerEmail && requestOwnerEmail.toLowerCase() === user.email.toLowerCase()) {
+        toast({
+          title: "Нельзя отправить предложение",
+          description: "Вы не можете предложить вариант на свою же заявку",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     let photoUrls: string[] = [];
     try {
       photoUrls = await Promise.all(photos.map(fileToDataUrl));
