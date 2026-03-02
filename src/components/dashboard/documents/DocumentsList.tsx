@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
 import { generateDOCXLazy } from "./rental-agreement/DOCXGeneratorLazy";
 import { generateDOCXBase64Lazy } from "./rental-agreement/DOCXGeneratorBase64Lazy";
+import funcUrls from "../../../../backend/func2url.json";
 
 interface DocumentsListProps {
   onEdit: (doc: SavedDocument) => void;
@@ -67,7 +68,7 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
       const fileName = `Договор_аренды_${doc.data.propertyAddress.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.docx`;
       
       console.log('Отправка на email:', email);
-      const response = await fetch('https://functions.poehali.dev/ef87cab5-dd87-4cb9-b8bd-a4fa837976a4', {
+      const response = await fetch(funcUrls["send-contract-email"], {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

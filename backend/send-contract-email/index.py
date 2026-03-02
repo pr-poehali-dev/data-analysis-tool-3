@@ -59,11 +59,10 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         import base64
         file_content = base64.b64decode(file_content_base64)
         
-        # Настройки SMTP (используем Gmail)
         smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
         smtp_port = int(os.environ.get('SMTP_PORT', '587'))
-        sender_email = os.environ.get('SENDER_EMAIL')
-        sender_password = os.environ.get('SENDER_PASSWORD')
+        sender_email = os.environ.get('SMTP_USER')
+        sender_password = os.environ.get('SMTP_PASSWORD')
         
         if not sender_email or not sender_password:
             return {
