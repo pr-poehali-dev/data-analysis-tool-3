@@ -42,30 +42,48 @@ export const ChatInput = ({
     setPreviewUrls(previewUrls.filter((_, i) => i !== index));
   };
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() && attachedPhotos.length === 0) return;
+  const [isSending, setIsSending] = useState(false);
 
-    const photoUrls = attachedPhotos.map(photo => URL.createObjectURL(photo));
-
-    messagesStore.sendMessage({
-      chatId,
-      senderId: currentUserEmail,
-      senderName: currentUserName,
-      senderPhoto: currentUserPhoto,
-      text: newMessage.trim() || '',
-      photos: photoUrls.length > 0 ? photoUrls : undefined,
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+  };
 
-    messagesStore.clearTyping(chatId, currentUserEmail);
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
+  const handleSendMessage = async () => {
+    if ((!newMessage.trim() && attachedPhotos.length === 0) || isSending) return;
+
+    setIsSending(true);
+    try {
+      const photoDataUrls = await Promise.all(attachedPhotos.map(fileToBase64));
+
+      await messagesStore.sendMessage({
+        chatId,
+        senderId: currentUserEmail,
+        senderName: currentUserName,
+        senderPhoto: currentUserPhoto,
+        text: newMessage.trim() || '',
+        photos: photoDataUrls.length > 0 ? photoDataUrls : undefined,
+      });
+
+      messagesStore.clearTyping(chatId, currentUserEmail);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
+      setNewMessage("");
+      setAttachedPhotos([]);
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+      setPreviewUrls([]);
+    } catch {
+      alert("Ошибка при отправке сообщения");
+    } finally {
+      setIsSending(false);
     }
-
-    setNewMessage("");
-    setAttachedPhotos([]);
-    previewUrls.forEach(url => URL.revokeObjectURL(url));
-    setPreviewUrls([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -143,10 +161,10 @@ export const ChatInput = ({
         
         <Button
           onClick={handleSendMessage}
-          disabled={!newMessage.trim() && attachedPhotos.length === 0}
+          disabled={(!newMessage.trim() && attachedPhotos.length === 0) || isSending}
           className="self-end flex-shrink-0"
         >
-          <Icon name="Send" size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <Icon name={isSending ? "Loader2" : "Send"} size={16} className={`sm:w-[18px] sm:h-[18px] ${isSending ? "animate-spin" : ""}`} />
         </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-1.5 sm:mt-2">
