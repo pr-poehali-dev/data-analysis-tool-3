@@ -3,6 +3,7 @@ import funcUrls from "../../backend/func2url.json";
 export interface Recommendation {
   id: string;
   userId: string;
+  userName?: string;
   requestId?: string;
   requestName?: string;
   ownerEmail: string;

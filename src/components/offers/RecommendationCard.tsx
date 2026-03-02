@@ -32,9 +32,10 @@ interface RecommendationCardProps {
 export default function RecommendationCard({ recommendation, profile, request, currentUser, onOpenProfile }: RecommendationCardProps) {
   const navigate = useNavigate();
 
+  const nameParts = (recommendation.userName || '').split(' ');
   const fallbackProfile: UserProfile = {
-    firstName: recommendation.userId.split('@')[0],
-    lastName: '',
+    firstName: nameParts[0] || recommendation.userId.split('@')[0],
+    lastName: nameParts.slice(1).join(' ') || '',
     avatar_url: '',
     city: '',
     vkLink: '',
@@ -55,12 +56,12 @@ export default function RecommendationCard({ recommendation, profile, request, c
       >
         <img
           src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${recommendation.userId}`}
-          alt={profile ? `${profile.firstName} ${profile.lastName}` : recommendation.userId}
+          alt={profile ? `${profile.firstName} ${profile.lastName}` : fallbackProfile.firstName}
           className="w-10 h-10 rounded-full flex-shrink-0"
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground truncate">
-            {profile ? `${profile.firstName} ${profile.lastName}` : recommendation.userId.split('@')[0]}
+            {profile ? `${profile.firstName} ${profile.lastName}` : `${fallbackProfile.firstName} ${fallbackProfile.lastName}`.trim()}
           </p>
           <p className="text-xs text-muted-foreground truncate">
             {profile?.city || 'Рекомендатель'}
@@ -156,7 +157,7 @@ export default function RecommendationCard({ recommendation, profile, request, c
                         requestId: request?.id || '',
                         requestName: request?.name || '',
                         recommenderEmail: recommendation.userId,
-                        recommenderName: recommendation.userId.split('@')[0],
+                        recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
                         tenantEmail: currentUser.email,
                         tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
                         tenantPhoto: currentUser.photo,

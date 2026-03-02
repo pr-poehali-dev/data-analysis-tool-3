@@ -40,18 +40,23 @@ def parse_body(event):
     return json.loads(body_str)
 
 
-COLUMNS = """id, user_id, request_id, request_name, owner_email, invite_message,
+COLUMNS = """r.id, r.user_id, r.request_id, r.request_name, r.owner_email, r.invite_message,
+             r.address, r.coordinates_lat, r.coordinates_lng, r.area, r.floor, r.total_floors,
+             r.rooms, r.has_furniture, r.has_appliances, r.rent, r.property_comments,
+             r.photos, r.status, r.created_at, r.updated_at"""
+
+COLUMNS_SHORT = """r.id, r.user_id, r.request_id, r.request_name, r.owner_email, r.invite_message,
+             r.address, r.coordinates_lat, r.coordinates_lng, r.area, r.floor, r.total_floors,
+             r.rooms, r.has_furniture, r.has_appliances, r.rent, r.property_comments,
+             array_length(r.photos, 1) as photo_count, r.status, r.created_at, r.updated_at"""
+
+COLUMNS_PLAIN = """id, user_id, request_id, request_name, owner_email, invite_message,
              address, coordinates_lat, coordinates_lng, area, floor, total_floors,
              rooms, has_furniture, has_appliances, rent, property_comments,
              photos, status, created_at, updated_at"""
 
-COLUMNS_SHORT = """id, user_id, request_id, request_name, owner_email, invite_message,
-             address, coordinates_lat, coordinates_lng, area, floor, total_floors,
-             rooms, has_furniture, has_appliances, rent, property_comments,
-             array_length(photos, 1) as photo_count, status, created_at, updated_at"""
 
-
-def row_to_dict(row, include_photos=True):
+def row_to_dict(row, include_photos=True, has_user_name=False):
     result = {
         'id': str(row[0]),
         'userId': row[1] or '',
@@ -80,6 +85,10 @@ def row_to_dict(row, include_photos=True):
     else:
         result['photos'] = []
         result['photoCount'] = row[17] or 0
+    if has_user_name and len(row) > 21:
+        first = row[21] or ''
+        last = row[22] or ''
+        result['userName'] = f"{first} {last}".strip() or ''
     return result
 
 
@@ -95,27 +104,37 @@ def handle_list(event):
         cur = conn.cursor()
 
         if rec_id:
-            cur.execute(f"SELECT {COLUMNS} FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+            cur.execute(f"""
+                SELECT {COLUMNS}, u.first_name, u.last_name
+                FROM {S}recommendations r
+                LEFT JOIN {S}users u ON u.email = r.user_id
+                WHERE r.id = %s
+            """, (int(rec_id),))
             row = cur.fetchone()
             if not row:
                 return response(404, {'error': 'Рекомендация не найдена'})
-            return response(200, {'recommendation': row_to_dict(row, include_photos=True)})
+            return response(200, {'recommendation': row_to_dict(row, include_photos=True, has_user_name=True)})
 
         conditions = []
         values = []
 
         if user_id:
-            conditions.append("user_id = %s")
+            conditions.append("r.user_id = %s")
             values.append(user_id)
         if request_id:
-            conditions.append("request_id = %s")
+            conditions.append("r.request_id = %s")
             values.append(request_id)
 
         where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
         limit = " LIMIT 50" if not conditions else ""
-        cur.execute(f"SELECT {COLUMNS_SHORT} FROM {S}recommendations{where} ORDER BY created_at DESC{limit}", tuple(values))
+        cur.execute(f"""
+            SELECT {COLUMNS_SHORT}, u.first_name, u.last_name
+            FROM {S}recommendations r
+            LEFT JOIN {S}users u ON u.email = r.user_id
+            {where} ORDER BY r.created_at DESC{limit}
+        """, tuple(values))
         rows = cur.fetchall()
-        return response(200, {'recommendations': [row_to_dict(r, include_photos=False) for r in rows]})
+        return response(200, {'recommendations': [row_to_dict(r, include_photos=False, has_user_name=True) for r in rows]})
     finally:
         conn.close()
 
@@ -150,7 +169,7 @@ def handle_create(event):
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, %s
             )
-            RETURNING {COLUMNS}
+            RETURNING {COLUMNS_PLAIN}
         """, (
             body['userId'],
             request_id,
@@ -248,7 +267,7 @@ def handle_update(event):
         values.append(int(rec_id))
 
         cur.execute(
-            f"UPDATE {S}recommendations SET {', '.join(updates)} WHERE id = %s RETURNING {COLUMNS}",
+            f"UPDATE {S}recommendations SET {', '.join(updates)} WHERE id = %s RETURNING {COLUMNS_PLAIN}",
             tuple(values)
         )
 
