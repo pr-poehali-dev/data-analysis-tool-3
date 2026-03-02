@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
+import { Button } from "@/components/ui/button";
 import { escrowStore, EscrowTransaction } from "@/store/escrowStore";
+import { messagesStore } from "@/store/messagesStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
@@ -58,6 +60,43 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
   const [transactions, setTransactions] = useState<EscrowTransaction[]>([]);
   const [balance, setBalance] = useState({ frozen: 0, completed: 0, pending: 0, sent: 0 });
   const [filter, setFilter] = useState<'all' | EscrowTransaction['status']>('all');
+  const [actionLoading, setActionLoading] = useState<Record<string, 'confirm' | 'cancel' | null>>({});
+
+  const handleConfirm = async (t: EscrowTransaction) => {
+    const ok = window.confirm(
+      `Вы подтверждаете сделку? Вознаграждение ${t.commissionAmount.toLocaleString('ru-RU')} ₽ будет переведено рекомендателю.`
+    );
+    if (!ok) return;
+    setActionLoading((prev) => ({ ...prev, [t.id]: 'confirm' }));
+    try {
+      await escrowStore.updateTransactionStatus(t.id, 'completed');
+      await messagesStore.sendSystemMessage(
+        t.chatId,
+        `✅ Сделка подтверждена! Вознаграждение ${t.commissionAmount.toLocaleString('ru-RU')} ₽ переведено рекомендателю.`
+      );
+    } catch {
+      alert('Ошибка при подтверждении сделки');
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [t.id]: null }));
+    }
+  };
+
+  const handleCancel = async (t: EscrowTransaction) => {
+    const ok = window.confirm('Вы уверены, что хотите отменить сделку? Средства будут возвращены.');
+    if (!ok) return;
+    setActionLoading((prev) => ({ ...prev, [t.id]: 'cancel' }));
+    try {
+      await escrowStore.updateTransactionStatus(t.id, 'cancelled');
+      await messagesStore.sendSystemMessage(
+        t.chatId,
+        `❌ Сделка отменена. Средства ${t.commissionAmount.toLocaleString('ru-RU')} ₽ возвращены арендатору.`
+      );
+    } catch {
+      alert('Ошибка при отмене сделки');
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [t.id]: null }));
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -246,8 +285,11 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             {filteredTransactions.map((transaction, index) => {
               const config = statusConfig[transaction.status];
               const isRecommender = transaction.recommenderEmail === userEmail;
+              const isTenant = transaction.tenantEmail === userEmail;
               const otherParty = isRecommender ? transaction.tenantName : transaction.recommenderName;
               const amount = transaction.commissionAmount;
+              const loading = actionLoading[transaction.id];
+              const canManage = isTenant && transaction.status === 'frozen';
 
               return (
                 <motion.div
@@ -286,6 +328,41 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
                       {transaction.completedAt && (
                         <div className="text-xs text-muted-foreground mt-1">
                           Завершено: {format(transaction.completedAt, "d MMM yyyy, HH:mm", { locale: ru })}
+                        </div>
+                      )}
+                      {canManage && (
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!!loading}
+                            onClick={() => handleCancel(transaction)}
+                            className="h-8 text-xs border-red-300 text-red-600 hover:bg-red-50 px-3"
+                          >
+                            {loading === 'cancel' ? (
+                              <Icon name="Loader2" size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <Icon name="X" size={14} className="mr-1" />
+                                Отменить
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={!!loading}
+                            onClick={() => handleConfirm(transaction)}
+                            className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white px-3"
+                          >
+                            {loading === 'confirm' ? (
+                              <Icon name="Loader2" size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <Icon name="Check" size={14} className="mr-1" />
+                                Подтвердить сделку
+                              </>
+                            )}
+                          </Button>
                         </div>
                       )}
                     </div>
