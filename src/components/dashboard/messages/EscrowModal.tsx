@@ -71,7 +71,7 @@ export const EscrowModal = ({
       );
       await messagesStore.sendSystemMessage(
         chatId,
-        `🔒 Средства вознаграждения (${commission.toLocaleString('ru-RU')} ₽) заморожены на счёте эскроу до подтверждения сделки\n\nРекомендатель, напишите номер владельца жилья, для связи с ним.`
+        `🔒 Средства вознаграждения (${commission.toLocaleString('ru-RU')} ₽) заморожены на счёте эскроу до подтверждения сделки!\n\nРекомендатель, напишите номер владельца жилья, для связи с ним.`
       );
       
       setTimeout(() => {
