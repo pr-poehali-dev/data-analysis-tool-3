@@ -78,6 +78,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
             handleSuggestClick={handleSuggestClick}
             suggestionsCount={getSuggestionsCount(request.id)}
             fromDashboard={isAuthenticated}
+            currentUserEmail={currentUserEmail}
           />
         ))}
       </div>

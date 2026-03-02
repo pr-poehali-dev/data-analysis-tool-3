@@ -17,9 +17,10 @@ interface RequestCardProps {
   handleSuggestClick: (request?: Request) => void;
   suggestionsCount?: number;
   fromDashboard?: boolean;
+  currentUserEmail?: string;
 }
 
-export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCount = 0, fromDashboard = false }: RequestCardProps) => {
+export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCount = 0, fromDashboard = false, currentUserEmail }: RequestCardProps) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
@@ -138,28 +139,41 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
         </div>
       </div>
 
-      <div className="relative z-10 space-y-2">
-        <div className="min-h-[32px] sm:min-h-[36px] flex items-center justify-center">
-          {suggestionsCount > 0 && (
-            <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-green-600 bg-green-50 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg border border-green-200">
-              <Icon name="Check" size={12} className="sm:w-[14px] sm:h-[14px]" />
-              <span className="font-medium">Уже предложено: {suggestionsCount}</span>
+      {(() => {
+        const ownerEmail = request.userEmail || request.userId;
+        const isOwnRequest = currentUserEmail && ownerEmail && currentUserEmail.toLowerCase() === ownerEmail.toLowerCase();
+        return (
+          <div className="relative z-10 space-y-2">
+            <div className="min-h-[32px] sm:min-h-[36px] flex items-center justify-center">
+              {isOwnRequest ? (
+                <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground bg-gray-50 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg border border-border">
+                  <Icon name="User" size={12} className="sm:w-[14px] sm:h-[14px]" />
+                  <span className="font-medium">Ваша заявка</span>
+                </div>
+              ) : suggestionsCount > 0 ? (
+                <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-green-600 bg-green-50 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg border border-green-200">
+                  <Icon name="Check" size={12} className="sm:w-[14px] sm:h-[14px]" />
+                  <span className="font-medium">Уже предложено: {suggestionsCount}</span>
+                </div>
+              ) : null}
             </div>
-          )}
-        </div>
-        <Button 
-          className="w-full text-sm sm:text-base" 
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleSuggestClick(request);
-          }}
-          type="button"
-        >
-          <Icon name="Send" size={14} className="sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-          <span className="truncate">{suggestionsCount > 0 ? "Предложить ещё" : "Предложить вариант"}</span>
-        </Button>
-      </div>
+            {!isOwnRequest && (
+              <Button 
+                className="w-full text-sm sm:text-base" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleSuggestClick(request);
+                }}
+                type="button"
+              >
+                <Icon name="Send" size={14} className="sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                <span className="truncate">{suggestionsCount > 0 ? "Предложить ещё" : "Предложить вариант"}</span>
+              </Button>
+            )}
+          </div>
+        );
+      })()}
     </motion.div>
   );
 };
