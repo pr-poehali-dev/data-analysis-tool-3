@@ -1,0 +1,161 @@
+"""Обработчики эскроу-транзакций."""
+import json
+from utils import get_conn, get_schema, resp, tx_row_to_dict, TX_COLUMNS
+from email_service import notify_escrow_status
+
+
+def handle_list(params):
+    email = params.get('email', '')
+    if not email:
+        return resp(400, {'error': 'email обязателен'})
+
+    S = get_schema()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT {TX_COLUMNS}
+            FROM {S}escrow_transactions
+            WHERE tenant_email = '{email}' OR recommender_email = '{email}'
+            ORDER BY created_at DESC
+        """)
+        rows = cur.fetchall()
+        return resp(200, {'transactions': [tx_row_to_dict(r) for r in rows]})
+    finally:
+        conn.close()
+
+
+def handle_balance(params):
+    email = params.get('email', '')
+    if not email:
+        return resp(400, {'error': 'email обязателен'})
+
+    S = get_schema()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT
+                COALESCE(SUM(CASE WHEN status = 'frozen' AND recommender_email = '{email}' THEN commission_amount ELSE 0 END), 0) as frozen,
+                COALESCE(SUM(CASE WHEN status = 'completed' AND recommender_email = '{email}' THEN commission_amount ELSE 0 END), 0) as completed,
+                COALESCE(SUM(CASE WHEN status = 'frozen' AND tenant_email = '{email}' THEN commission_amount ELSE 0 END), 0) as pending,
+                COALESCE(SUM(CASE WHEN status = 'completed' AND tenant_email = '{email}' THEN commission_amount ELSE 0 END), 0) as sent
+            FROM {S}escrow_transactions
+            WHERE tenant_email = '{email}' OR recommender_email = '{email}'
+        """)
+        row = cur.fetchone()
+        return resp(200, {
+            'frozen': float(row[0]),
+            'completed': float(row[1]),
+            'pending': float(row[2]),
+            'sent': float(row[3]),
+        })
+    finally:
+        conn.close()
+
+
+def handle_check_chat(params):
+    chat_id = params.get('chatId', '')
+    if not chat_id:
+        return resp(400, {'error': 'chatId обязателен'})
+
+    S = get_schema()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT id, status, commission_amount FROM {S}escrow_transactions
+            WHERE chat_id = '{chat_id.replace("'", "''")}'
+            AND status IN ('frozen', 'completed', 'pending')
+            ORDER BY created_at DESC LIMIT 1
+        """)
+        row = cur.fetchone()
+        if row:
+            return resp(200, {'hasActive': True, 'transactionId': str(row[0]), 'status': row[1], 'commissionAmount': float(row[2])})
+        return resp(200, {'hasActive': False})
+    finally:
+        conn.close()
+
+
+def handle_create(event):
+    body = json.loads(event.get('body', '{}'))
+    required = ['requestName', 'tenantEmail', 'tenantName', 'recommenderEmail', 'recommenderName']
+    for field in required:
+        if not body.get(field):
+            return resp(400, {'error': f'{field} обязателен'})
+
+    S = get_schema()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            INSERT INTO {S}escrow_transactions
+                (chat_id, recommendation_id, request_name, tenant_email, tenant_name,
+                 recommender_email, recommender_name, rent_amount, commission_amount, status)
+            VALUES ('{body.get('chatId', '')}', '{body.get('recommendationId', '')}',
+                    '{body['requestName'].replace("'", "''")}',
+                    '{body['tenantEmail']}', '{body['tenantName'].replace("'", "''")}',
+                    '{body['recommenderEmail']}', '{body['recommenderName'].replace("'", "''")}',
+                    {float(body.get('rentAmount', 0))}, {float(body.get('commissionAmount', 0))},
+                    'frozen')
+            RETURNING id, created_at
+        """)
+        row = cur.fetchone()
+        conn.commit()
+        return resp(201, {
+            'id': str(row[0]),
+            'createdAt': row[1].isoformat(),
+            'status': 'frozen'
+        })
+    finally:
+        conn.close()
+
+
+def handle_update_status(event):
+    body = json.loads(event.get('body', '{}'))
+    tx_id = body.get('id')
+    new_status = body.get('status')
+    if not tx_id or not new_status:
+        return resp(400, {'error': 'id и status обязательны'})
+
+    allowed = ['pending', 'frozen', 'completed', 'cancelled', 'refunded']
+    if new_status not in allowed:
+        return resp(400, {'error': f'Недопустимый статус. Допустимые: {", ".join(allowed)}'})
+
+    completed_sql = ", completed_at = CURRENT_TIMESTAMP" if new_status == 'completed' else ""
+
+    S = get_schema()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            UPDATE {S}escrow_transactions
+            SET status = '{new_status}'{completed_sql}
+            WHERE id = {int(tx_id)}
+            RETURNING id, status, completed_at, recommender_email, recommender_name, tenant_name, request_name, commission_amount
+        """)
+        row = cur.fetchone()
+        conn.commit()
+        if not row:
+            return resp(404, {'error': 'Транзакция не найдена'})
+
+        if new_status in ('completed', 'cancelled'):
+            try:
+                notify_escrow_status(
+                    recommender_email=row[3],
+                    recommender_name=row[4],
+                    tenant_name=row[5],
+                    request_name=row[6],
+                    commission=float(row[7]),
+                    new_status=new_status
+                )
+            except Exception as e:
+                print(f"Failed to send notification: {e}")
+
+        return resp(200, {
+            'id': str(row[0]),
+            'status': row[1],
+            'completedAt': row[2].isoformat() if row[2] else None,
+        })
+    finally:
+        conn.close()
