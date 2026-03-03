@@ -1,6 +1,15 @@
 """Проверка JWT-токена для авторизации запросов."""
+import json
 import os
 import jwt
+
+
+CORS_HEADERS = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization, X-User-Email',
+}
 
 
 def get_jwt_secret() -> str:
@@ -32,3 +41,16 @@ def require_auth(event: dict) -> str:
     if not email:
         raise PermissionError('Требуется авторизация')
     return email
+
+
+def check_ownership(auth_email: str, target_email: str):
+    if auth_email.lower() != target_email.lower():
+        raise PermissionError('Нет доступа к данным другого пользователя')
+
+
+def auth_error_response(status: int = 401, message: str = 'Требуется авторизация') -> dict:
+    return {
+        'statusCode': status,
+        'headers': CORS_HEADERS,
+        'body': json.dumps({'error': message}),
+    }
