@@ -2,6 +2,7 @@
 import json
 from utils import response
 from handlers import handle_list, handle_create, handle_update, handle_delete
+from auth_utils import auth_error_response
 
 
 def handler(event, context):
@@ -24,6 +25,8 @@ def handler(event, context):
             return response(405, {'error': 'Метод не поддерживается'})
     except json.JSONDecodeError:
         return response(400, {'error': 'Некорректный JSON'})
+    except PermissionError as e:
+        return auth_error_response(401, str(e))
     except Exception as e:
         print(f"Ошибка: {e}")
         return response(500, {'error': 'Внутренняя ошибка сервера'})

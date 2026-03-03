@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, timezone
 import psycopg2
-from auth_utils import get_auth_email, require_auth
+from auth_utils import get_auth_email, require_auth, auth_error_response
 
 
 def get_connection():
@@ -94,6 +94,7 @@ def row_to_dict(row, include_photos=True, has_user_name=False):
 
 
 def handle_list(event):
+    """Публичный эндпоинт — список рекомендаций видят все."""
     params = event.get('queryStringParameters') or {}
     user_id = params.get('user_id')
     request_id = params.get('request_id')
@@ -141,12 +142,14 @@ def handle_list(event):
 
 
 def handle_create(event):
+    auth_email = require_auth(event)
     body = parse_body(event)
     print(f"POST body keys: {list(body.keys())}, userId='{body.get('userId', '')}'")
 
-    auth_email = get_auth_email(event)
-    if auth_email and auth_email != body.get('userId'):
+    if body.get('userId') and auth_email != body.get('userId'):
         return response(403, {'error': 'Нет доступа'})
+
+    body['userId'] = auth_email
 
     if not body.get('userId'):
         print(f"Ошибка: userId пустой или отсутствует. body={json.dumps(body, default=str)[:500]}")
@@ -176,7 +179,7 @@ def handle_create(event):
             )
             RETURNING {COLUMNS_PLAIN}
         """, (
-            body['userId'],
+            auth_email,
             request_id,
             body.get('requestName', ''),
             body.get('ownerEmail', ''),
@@ -210,6 +213,7 @@ def handle_create(event):
 
 
 def handle_update(event):
+    auth_email = require_auth(event)
     body = parse_body(event)
     rec_id = body.get('id')
     if not rec_id:
@@ -223,12 +227,12 @@ def handle_update(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
-            owner = cur.fetchone()
-            if not owner or auth_email != owner[0]:
-                return response(403, {'error': 'Нет доступа к этой рекомендации'})
+        cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+        owner = cur.fetchone()
+        if not owner:
+            return response(404, {'error': 'Рекомендация не найдена'})
+        if auth_email != owner[0]:
+            return response(403, {'error': 'Нет доступа к этой рекомендации'})
 
         now = datetime.now(timezone.utc)
 
@@ -298,6 +302,8 @@ def handle_update(event):
 
 
 def handle_delete(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     rec_id = params.get('id')
     if not rec_id:
@@ -311,12 +317,12 @@ def handle_delete(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
-            owner = cur.fetchone()
-            if not owner or auth_email != owner[0]:
-                return response(403, {'error': 'Нет доступа к этой рекомендации'})
+        cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+        owner = cur.fetchone()
+        if not owner:
+            return response(404, {'error': 'Рекомендация не найдена'})
+        if auth_email != owner[0]:
+            return response(403, {'error': 'Нет доступа к этой рекомендации'})
 
         now = datetime.now(timezone.utc)
         cur.execute(
@@ -324,8 +330,6 @@ def handle_delete(event):
             (now, int(rec_id))
         )
         row = cur.fetchone()
-        if not row:
-            return response(404, {'error': 'Рекомендация не найдена'})
         conn.commit()
         return response(200, {'success': True, 'id': str(row[0])})
     except Exception:
@@ -355,6 +359,8 @@ def handler(event, context):
             return response(405, {'error': 'Метод не поддерживается'})
     except json.JSONDecodeError:
         return response(400, {'error': 'Некорректный JSON'})
+    except PermissionError as e:
+        return auth_error_response(401, str(e))
     except Exception as e:
         print(f"Ошибка: {e}")
         return response(500, {'error': 'Внутренняя ошибка сервера'})

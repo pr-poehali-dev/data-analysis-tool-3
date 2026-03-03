@@ -1,1 +1,47 @@
-{"tests": [{"name": "OPTIONS запрос", "method": "OPTIONS", "path": "/", "expectedStatus": 200}, {"name": "Получить все заявки", "method": "GET", "path": "/", "expectedStatus": 200}, {"name": "Получить активные заявки", "method": "GET", "path": "/?status=active", "expectedStatus": 200}]}
+{
+  "tests": [
+    {
+      "name": "OPTIONS запрос",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Получить все заявки (публичный)",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Получить активные заявки (публичный)",
+      "method": "GET",
+      "path": "/?status=active",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Фильтр по user_email без токена возвращает 401",
+      "method": "GET",
+      "path": "/?user_email=test@example.com",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST создание без токена возвращает 401",
+      "method": "POST",
+      "path": "/",
+      "body": {"userEmail": "test@test.com", "name": "Тест"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "DELETE без токена возвращает 401",
+      "method": "DELETE",
+      "path": "/?id=999999",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

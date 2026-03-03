@@ -5,7 +5,8 @@ from auth_utils import get_auth_email, require_auth
 
 
 def handle_list(event):
-    """Получить список заявок. Фильтры: user_email, status."""
+    """Получить список заявок. Публичный эндпоинт (биржа).
+    Фильтр по user_email доступен только с токеном (свои заявки)."""
     params = event.get('queryStringParameters') or {}
     user_email = params.get('user_email')
     status_filter = params.get('status')
@@ -25,9 +26,16 @@ def handle_list(event):
 
         conditions = []
         values = []
+
         if user_email:
+            auth_email = get_auth_email(event)
+            if not auth_email:
+                return response(401, {'error': 'Требуется авторизация для просмотра своих заявок'})
+            if auth_email != user_email:
+                return response(403, {'error': 'Нет доступа к заявкам другого пользователя'})
             conditions.append("user_email = %s")
             values.append(user_email)
+
         if status_filter:
             conditions.append("status = %s")
             values.append(status_filter)
@@ -42,11 +50,13 @@ def handle_list(event):
 
 def handle_create(event):
     """Создать новую заявку."""
+    auth_email = require_auth(event)
     body = parse_body(event)
 
-    auth_email = get_auth_email(event)
-    if auth_email and auth_email != body.get('userEmail'):
+    if body.get('userEmail') and auth_email != body.get('userEmail'):
         return response(403, {'error': 'Нет доступа'})
+
+    body['userEmail'] = auth_email
 
     for field in ['userEmail', 'name']:
         if not body.get(field):
@@ -73,7 +83,7 @@ def handle_create(event):
             RETURNING {COLUMNS}
         """, (
             body.get('userId'),
-            body['userEmail'],
+            auth_email,
             body['name'],
             body.get('avatar', ''),
             body.get('location', ''),
@@ -108,6 +118,7 @@ def handle_create(event):
 
 def handle_update(event):
     """Обновить заявку."""
+    auth_email = require_auth(event)
     body = parse_body(event)
     request_id = body.get('id')
     if not request_id:
@@ -122,12 +133,12 @@ def handle_update(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
-            owner_row = cur.fetchone()
-            if not owner_row or auth_email != owner_row[0]:
-                return response(403, {'error': 'Нет доступа к этой заявке'})
+        cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
+        owner_row = cur.fetchone()
+        if not owner_row:
+            return response(404, {'error': 'Заявка не найдена'})
+        if auth_email != owner_row[0]:
+            return response(403, {'error': 'Нет доступа к этой заявке'})
 
         now = datetime.now(timezone.utc)
 
@@ -176,6 +187,8 @@ def handle_update(event):
 
 def handle_delete(event):
     """Удалить заявку (мягкое удаление — статус archived)."""
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     request_id = params.get('id')
 
@@ -191,12 +204,12 @@ def handle_delete(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
-            owner_row = cur.fetchone()
-            if not owner_row or auth_email != owner_row[0]:
-                return response(403, {'error': 'Нет доступа к этой заявке'})
+        cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
+        owner_row = cur.fetchone()
+        if not owner_row:
+            return response(404, {'error': 'Заявка не найдена'})
+        if auth_email != owner_row[0]:
+            return response(403, {'error': 'Нет доступа к этой заявке'})
 
         now = datetime.now(timezone.utc)
         cur.execute(
@@ -204,8 +217,6 @@ def handle_delete(event):
             (now, int(request_id))
         )
         row = cur.fetchone()
-        if not row:
-            return response(404, {'error': 'Заявка не найдена'})
         conn.commit()
         return response(200, {'success': True, 'id': str(row[0])})
     except Exception:
