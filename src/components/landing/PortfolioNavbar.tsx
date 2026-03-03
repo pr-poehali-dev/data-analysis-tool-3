@@ -108,7 +108,7 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
     const update = () => setUnreadCount(messagesStore.getTotalUnreadCount(user.email));
 
     const init = async () => {
-      await messagesStore.fetchUserChats(user.email);
+      await messagesStore.fetchUserChats();
       update();
     };
     init();

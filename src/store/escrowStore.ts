@@ -33,9 +33,9 @@ export interface EscrowBalance {
 class EscrowStore {
   private listeners: Set<() => void> = new Set();
 
-  async fetchUserTransactions(userEmail: string): Promise<EscrowTransaction[]> {
+  async fetchUserTransactions(): Promise<EscrowTransaction[]> {
     try {
-      const res = await fetch(`${API_URL}?action=list&email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
+      const res = await fetch(`${API_URL}?action=list`, { headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) return [];
       return (data.transactions || []).map((t: Record<string, unknown>) => ({
@@ -48,9 +48,9 @@ class EscrowStore {
     }
   }
 
-  async fetchUserBalance(userEmail: string): Promise<EscrowBalance> {
+  async fetchUserBalance(): Promise<EscrowBalance> {
     try {
-      const res = await fetch(`${API_URL}?action=balance&email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
+      const res = await fetch(`${API_URL}?action=balance`, { headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) return { frozen: 0, completed: 0, pending: 0, sent: 0 };
       return {

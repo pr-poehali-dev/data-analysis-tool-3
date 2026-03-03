@@ -11,7 +11,7 @@ type User = {
 } | null;
 
 let currentUser: User = null;
-let currentAccessToken: string | null = null;
+let currentAccessToken: string | null = localStorage.getItem("sovetpay_token");
 const listeners: (() => void)[] = [];
 
 export const authStore = {
@@ -45,6 +45,11 @@ export const authStore = {
 
   setAccessToken: (token: string | null) => {
     currentAccessToken = token;
+    if (token) {
+      localStorage.setItem("sovetpay_token", token);
+    } else {
+      localStorage.removeItem("sovetpay_token");
+    }
   },
 
   getAuthHeaders: (): Record<string, string> => {
@@ -72,7 +77,17 @@ export const authStore = {
 
   logout: () => {
     currentAccessToken = null;
+    localStorage.removeItem("sovetpay_token");
     authStore.setUser(null);
+  },
+
+  handleUnauthorized: (response: Response): boolean => {
+    if (response.status === 401) {
+      authStore.logout();
+      window.location.href = "/";
+      return true;
+    }
+    return false;
   },
 
   subscribe: (listener: () => void) => {

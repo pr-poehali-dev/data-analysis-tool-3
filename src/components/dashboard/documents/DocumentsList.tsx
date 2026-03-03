@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
+import { authStore } from "@/store/authStore";
 import { generateDOCXLazy } from "./rental-agreement/DOCXGeneratorLazy";
 import { generateDOCXBase64Lazy } from "./rental-agreement/DOCXGeneratorBase64Lazy";
 import funcUrls from "../../../../backend/func2url.json";
@@ -71,7 +72,8 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
       const response = await fetch(funcUrls["send-contract-email"], {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...authStore.getAuthHeaders(),
         },
         body: JSON.stringify({
           email: email,

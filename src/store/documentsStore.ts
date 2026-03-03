@@ -67,10 +67,7 @@ class DocumentsStore {
     if (!email) return this.cache;
 
     try {
-      const res = await fetch(
-        `${API_URL}?user_email=${encodeURIComponent(email)}`,
-        { headers: authHeaders() }
-      );
+      const res = await fetch(API_URL, { headers: authHeaders() });
       const data = await res.json();
       const docs: SavedDocument[] = (data.documents || []).map(parseDocument);
       this.cache = docs;

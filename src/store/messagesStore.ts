@@ -23,10 +23,13 @@ class MessagesStore {
     this.typing = new TypingManager(() => this.notifyListeners());
   }
 
-  async fetchUserChats(userEmail: string): Promise<Chat[]> {
+  async fetchUserChats(): Promise<Chat[]> {
     try {
-      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
-      if (!res.ok) return this.chatsCache;
+      const res = await fetch(API_URL, { headers: authHeaders() });
+      if (!res.ok) {
+        authStore.handleUnauthorized(res);
+        return this.chatsCache;
+      }
       const data = await res.json();
       this.chatsCache = (data.chats || []).map(parseChat);
       this.notifyListeners();
@@ -272,9 +275,9 @@ class MessagesStore {
     }
   }
 
-  async fetchUnreadCount(userEmail: string): Promise<number> {
+  async fetchUnreadCount(): Promise<number> {
     try {
-      const res = await fetch(`${API_URL}?action=unread_count&user_email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
+      const res = await fetch(`${API_URL}?action=unread_count`, { headers: authHeaders() });
       if (!res.ok) return 0;
       const data = await res.json();
       return data.unreadCount || 0;

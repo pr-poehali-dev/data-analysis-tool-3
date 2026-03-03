@@ -7,6 +7,7 @@ import { escrowStore, EscrowTransaction } from "@/store/escrowStore";
 import { messagesStore } from "@/store/messagesStore";
 import { UserProfileModal } from "@/components/dashboard/messages/UserProfileModal";
 import funcUrls from "../../../backend/func2url.json";
+import { authStore } from "@/store/authStore";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
@@ -91,7 +92,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
   const openProfile = async (email: string, name: string) => {
     setProfileModal({ isOpen: true, name, email });
     try {
-      const res = await fetch(`${funcUrls["profile-update"]}?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${funcUrls["profile-update"]}?email=${encodeURIComponent(email)}`, { headers: authStore.getAuthHeaders() });
       const data = await res.json();
       if (res.ok && data.user) {
         setProfileModal({
@@ -146,8 +147,8 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
   useEffect(() => {
     const loadData = async () => {
       const [userTransactions, userBalance] = await Promise.all([
-        escrowStore.fetchUserTransactions(userEmail),
-        escrowStore.fetchUserBalance(userEmail),
+        escrowStore.fetchUserTransactions(),
+        escrowStore.fetchUserBalance(),
       ]);
       setTransactions(userTransactions);
       setBalance(userBalance);

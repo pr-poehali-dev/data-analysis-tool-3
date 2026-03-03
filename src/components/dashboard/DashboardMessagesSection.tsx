@@ -35,7 +35,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     };
 
     const init = async () => {
-      await messagesStore.fetchUserChats(user.email);
+      await messagesStore.fetchUserChats();
       loadChats();
     };
     init();
