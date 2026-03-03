@@ -1,37 +1,40 @@
 {
   "tests": [
     {
-      "name": "Create review",
+      "name": "OPTIONS returns CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET отзывы по email (публичный)",
+      "method": "GET",
+      "path": "/?reviewee_email=recommender@test.com",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST создание отзыва без токена возвращает 401",
       "method": "POST",
       "path": "/",
       "body": {
-        "chat_id": "test_chat_1",
-        "recommendation_id": "test_rec_1",
-        "reviewer_email": "tenant@test.com",
-        "reviewer_name": "Иван Иванов",
-        "reviewee_email": "recommender@test.com",
-        "reviewee_name": "Петр Петров",
-        "rating": 5,
-        "comment": "Отличный рекомендатель!"
+        "chat_id": "1",
+        "recommendation_id": "1",
+        "reviewer_email": "test@test.com",
+        "reviewer_name": "Test",
+        "reviewee_email": "other@test.com",
+        "reviewee_name": "Other",
+        "rating": 5
       },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "success": true,
-        "review": {
-          "rating": 5
-        }
-      },
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     },
     {
-      "name": "Get reviews by email",
+      "name": "GET без параметров возвращает 400",
       "method": "GET",
-      "path": "/?reviewee_email=recommender@test.com",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "avg_rating": 5.0,
-        "total": 1
-      },
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     }
   ]

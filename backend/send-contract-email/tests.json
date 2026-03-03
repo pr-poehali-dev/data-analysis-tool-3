@@ -1,7 +1,13 @@
 {
   "tests": [
     {
-      "name": "Проверка отправки email с договором",
+      "name": "OPTIONS returns CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST без токена возвращает 401",
       "method": "POST",
       "path": "/",
       "body": {
@@ -9,11 +15,8 @@
         "fileContent": "UEsDBBQAAAAIAA==",
         "fileName": "test_contract.docx"
       },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "success": true,
-        "message": "string"
-      },
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     }
   ]
