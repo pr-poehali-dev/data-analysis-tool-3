@@ -40,11 +40,6 @@ const AppContent = () => {
   const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    const savedUser = authStore.getUser();
-    if (savedUser) {
-      setUser(savedUser);
-    }
-
     authStore.restoreSession().then(() => {
       const restoredUser = authStore.getUser();
       setUser(restoredUser);
@@ -78,7 +73,7 @@ const AppContent = () => {
     navigate("/");
   };
 
-  if (!sessionReady && authStore.getUser()) {
+  if (!sessionReady) {
     return null;
   }
 
