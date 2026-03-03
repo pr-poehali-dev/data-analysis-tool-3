@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime, timezone
 import psycopg2
+from auth_utils import get_auth_email, require_auth
 
 
 def get_connection():
@@ -63,7 +64,8 @@ COLUMNS = "id, user_email, type, file_name, data, created_at, updated_at"
 
 def handle_get_documents(event):
     params = event.get('queryStringParameters') or {}
-    user_email = params.get('user_email') or get_user_email(event)
+    auth_email = get_auth_email(event)
+    user_email = auth_email or params.get('user_email') or get_user_email(event)
     if not user_email:
         return response(400, {'error': 'user_email обязателен'})
 
@@ -96,6 +98,9 @@ def handle_get_document(event):
         row = cur.fetchone()
         if not row:
             return response(404, {'error': 'Документ не найден'})
+        auth_email = get_auth_email(event)
+        if auth_email and row[1] != auth_email:
+            return response(403, {'error': 'Нет доступа к этому документу'})
         return response(200, {'document': row_to_dict(row)})
     finally:
         conn.close()
@@ -103,7 +108,8 @@ def handle_get_document(event):
 
 def handle_save_document(event):
     body = parse_body(event)
-    user_email = body.get('userEmail') or get_user_email(event)
+    auth_email = get_auth_email(event)
+    user_email = auth_email or body.get('userEmail') or get_user_email(event)
     if not user_email:
         return response(400, {'error': 'userEmail обязателен'})
 
@@ -117,6 +123,12 @@ def handle_save_document(event):
     now = datetime.now(timezone.utc)
     try:
         cur = conn.cursor()
+
+        if existing_id and auth_email:
+            cur.execute(f"SELECT user_email FROM {S}documents WHERE id = %s", (existing_id,))
+            owner = cur.fetchone()
+            if owner and owner[0] != auth_email:
+                return response(403, {'error': 'Нет доступа к этому документу'})
 
         if existing_id:
             cur.execute(f"SELECT id FROM {S}documents WHERE id = %s", (existing_id,))
@@ -160,6 +172,14 @@ def handle_delete_document(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT user_email FROM {S}documents WHERE id = %s", (doc_id,))
+            owner = cur.fetchone()
+            if not owner or owner[0] != auth_email:
+                return response(403, {'error': 'Нет доступа к этому документу'})
+
         cur.execute(f"DELETE FROM {S}documents WHERE id = %s", (doc_id,))
         conn.commit()
         if cur.rowcount == 0:

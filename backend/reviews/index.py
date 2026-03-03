@@ -2,6 +2,7 @@ import json
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from auth_utils import get_auth_email
 
 def handler(event: dict, context) -> dict:
     """API для работы с отзывами между участниками сделок"""
@@ -107,7 +108,15 @@ def get_reviews(event: dict, conn) -> dict:
 
 def create_review(event: dict, conn) -> dict:
     data = json.loads(event.get('body', '{}'))
-    
+
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email != data.get('reviewer_email'):
+        return {
+            'statusCode': 403,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': 'Нельзя оставлять отзыв от чужого имени'})
+        }
+
     required = ['chat_id', 'recommendation_id', 'reviewer_email', 'reviewer_name',
                 'reviewee_email', 'reviewee_name', 'rating']
     

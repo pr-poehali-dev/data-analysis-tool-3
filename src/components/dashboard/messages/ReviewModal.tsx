@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { authStore } from "@/store/authStore";
 
 interface ReviewModalProps {
   chatId: string;
@@ -42,7 +43,8 @@ export const ReviewModal = ({
       const response = await fetch("https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          ...authStore.getAuthHeaders(),
         },
         body: JSON.stringify({
           chat_id: chatId,

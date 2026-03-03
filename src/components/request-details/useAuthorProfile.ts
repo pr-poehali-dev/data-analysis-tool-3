@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { UserProfile, Review } from "@/components/offers/UserProfileDialog";
+import { authStore } from "@/store/authStore";
 import funcUrls from "../../../backend/func2url.json";
 
 interface ReviewsData {
@@ -39,9 +40,10 @@ export function useAuthorProfile() {
     setProfileDialogOpen(true);
 
     try {
+      const hdrs = authStore.getAuthHeaders();
       const [profileRes, reviewsRes] = await Promise.all([
-        fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`),
-        fetch(`${REVIEWS_API}?reviewee_email=${encodeURIComponent(email)}`),
+        fetch(`${PROFILE_API}?email=${encodeURIComponent(email)}`, { headers: hdrs }),
+        fetch(`${REVIEWS_API}?reviewee_email=${encodeURIComponent(email)}`, { headers: hdrs }),
       ]);
       const profileData = await profileRes.json();
       const reviewsData = await reviewsRes.json();

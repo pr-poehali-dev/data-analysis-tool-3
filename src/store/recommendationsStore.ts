@@ -1,4 +1,9 @@
 import funcUrls from "../../backend/func2url.json";
+import { authStore } from "./authStore";
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...authStore.getAuthHeaders(), ...extra };
+}
 
 export interface Recommendation {
   id: string;
@@ -59,7 +64,7 @@ class RecommendationsStore {
 
   async fetchRecommendations(): Promise<Recommendation[]> {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
       this.mergeCache(fetched);
@@ -73,7 +78,7 @@ class RecommendationsStore {
 
   async fetchUserRecommendations(userId: string): Promise<Recommendation[]> {
     try {
-      const res = await fetch(`${API_URL}?user_id=${encodeURIComponent(userId)}`);
+      const res = await fetch(`${API_URL}?user_id=${encodeURIComponent(userId)}`, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
       this.mergeCache(fetched);
@@ -88,7 +93,7 @@ class RecommendationsStore {
 
   async fetchRecommendationsByRequestId(requestId: string): Promise<Recommendation[]> {
     try {
-      const res = await fetch(`${API_URL}?request_id=${encodeURIComponent(requestId)}`);
+      const res = await fetch(`${API_URL}?request_id=${encodeURIComponent(requestId)}`, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Recommendation[] = (data.recommendations || []).map(parseRecommendation);
       this.mergeCache(fetched);
@@ -103,7 +108,7 @@ class RecommendationsStore {
 
   async fetchRecommendationById(id: string): Promise<Recommendation | undefined> {
     try {
-      const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { headers: authHeaders() });
       const data = await res.json();
       if (data.recommendation) {
         const parsed = parseRecommendation(data.recommendation);
@@ -121,7 +126,7 @@ class RecommendationsStore {
   async addRecommendation(recommendation: Omit<Recommendation, 'id' | 'createdAt' | 'status'>): Promise<Recommendation> {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         userId: recommendation.userId,
         requestId: recommendation.requestId || undefined,
@@ -145,7 +150,7 @@ class RecommendationsStore {
   async updateRecommendation(recommendationId: string, updates: Partial<Omit<Recommendation, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
     const res = await fetch(API_URL, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ id: recommendationId, ...updates }),
     });
     const data = await res.json();
@@ -163,6 +168,7 @@ class RecommendationsStore {
   async deleteRecommendation(recommendationId: string): Promise<void> {
     await fetch(`${API_URL}?id=${encodeURIComponent(recommendationId)}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     this.cache = this.cache.filter(r => r.id !== recommendationId);
     this.notifyListeners();

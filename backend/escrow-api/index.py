@@ -15,11 +15,11 @@ def handler(event, context):
 
     if method == 'GET':
         if action == 'list':
-            return handle_list(params)
+            return handle_list(event)
         if action == 'balance':
-            return handle_balance(params)
+            return handle_balance(event)
         if action == 'check-chat':
-            return handle_check_chat(params)
+            return handle_check_chat(event)
 
     if method == 'POST' and action == 'create':
         return handle_create(event)

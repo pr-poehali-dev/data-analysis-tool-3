@@ -5,6 +5,7 @@ from utils import (
     MSG_COLUMNS, message_row_to_dict,
 )
 from s3_upload import upload_photos_to_s3
+from auth_utils import get_auth_email, require_auth
 
 
 def handle_get_messages(event):
@@ -23,6 +24,13 @@ def handle_get_messages(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
+            chat_owner = cur.fetchone()
+            if not chat_owner or auth_email not in (chat_owner[0], chat_owner[1]):
+                return response(403, {'error': 'Нет доступа к этому чату'})
 
         if after_id:
             cur.execute(f"""
@@ -59,6 +67,10 @@ def handle_send_message(event):
         return response(400, {'error': 'senderId обязателен'})
     if not text and not raw_photos:
         return response(400, {'error': 'Сообщение не может быть пустым'})
+
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email != sender_id:
+        return response(403, {'error': 'Нельзя отправлять от чужого имени'})
 
     photos = upload_photos_to_s3(raw_photos)
 
@@ -108,6 +120,10 @@ def handle_mark_read(event):
     user_email = body.get('userEmail')
     if not chat_id or not user_email:
         return response(400, {'error': 'chatId и userEmail обязательны'})
+
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email != user_email:
+        return response(403, {'error': 'Нет доступа'})
 
     S = get_schema()
     conn = get_connection()

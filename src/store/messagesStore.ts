@@ -1,11 +1,16 @@
 import funcUrls from "../../backend/func2url.json";
 import { parseChat, parseMessage } from "./messages/types";
 import { TypingManager } from "./messages/typingManager";
+import { authStore } from "./authStore";
 import type { Chat, Message } from "./messages/types";
 
 export type { Chat, Message } from "./messages/types";
 
 const API_URL = (funcUrls as Record<string, string>)["messages-api"];
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...authStore.getAuthHeaders(), ...extra };
+}
 
 class MessagesStore {
   private listeners: Set<() => void> = new Set();
@@ -20,7 +25,7 @@ class MessagesStore {
 
   async fetchUserChats(userEmail: string): Promise<Chat[]> {
     try {
-      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(userEmail)}`);
+      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
       if (!res.ok) return this.chatsCache;
       const data = await res.json();
       this.chatsCache = (data.chats || []).map(parseChat);
@@ -52,7 +57,7 @@ class MessagesStore {
 
   async fetchChatByRecommendation(recommendationId: string): Promise<Chat | undefined> {
     try {
-      const res = await fetch(`${API_URL}?action=chat_by_recommendation&recommendation_id=${encodeURIComponent(recommendationId)}`);
+      const res = await fetch(`${API_URL}?action=chat_by_recommendation&recommendation_id=${encodeURIComponent(recommendationId)}`, { headers: authHeaders() });
       if (!res.ok) return undefined;
       const data = await res.json();
       if (data.chat) {
@@ -77,7 +82,7 @@ class MessagesStore {
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           recommendationId: data.recommendationId,
           requestId: data.requestId,
@@ -122,7 +127,7 @@ class MessagesStore {
       const safeAfterId = afterId && !afterId.startsWith('temp_') ? afterId : undefined;
       let url = `${API_URL}?action=messages&chat_id=${chatId}`;
       if (safeAfterId) url += `&after_id=${safeAfterId}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: authHeaders() });
       if (!res.ok) return this.messagesCache.get(chatId) || [];
       const data = await res.json();
       const messages = (data.messages || []).map(parseMessage);
@@ -182,7 +187,7 @@ class MessagesStore {
 
     const res = await fetch(`${API_URL}?action=send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         chatId: data.chatId,
         senderId: data.senderId,
@@ -232,7 +237,7 @@ class MessagesStore {
     try {
       await fetch(`${API_URL}?action=mark_read`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ chatId, userEmail }),
       });
     } catch (e) {
@@ -250,7 +255,7 @@ class MessagesStore {
     try {
       const res = await fetch(`${API_URL}?action=delete_chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ chatId }),
       });
       const data = await res.json();
@@ -269,7 +274,7 @@ class MessagesStore {
 
   async fetchUnreadCount(userEmail: string): Promise<number> {
     try {
-      const res = await fetch(`${API_URL}?action=unread_count&user_email=${encodeURIComponent(userEmail)}`);
+      const res = await fetch(`${API_URL}?action=unread_count&user_email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
       if (!res.ok) return 0;
       const data = await res.json();
       return data.unreadCount || 0;

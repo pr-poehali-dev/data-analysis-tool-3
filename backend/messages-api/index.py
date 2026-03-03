@@ -8,11 +8,12 @@ from message_handlers import (
     handle_get_messages, handle_send_message,
     handle_mark_read, handle_unread_count,
 )
+from auth_utils import get_auth_email, require_auth
 
 
 def handle_get_chats(event):
     params = event.get('queryStringParameters') or {}
-    user_email = params.get('user_email') or get_user_email(event)
+    user_email = get_auth_email(event) or params.get('user_email') or get_user_email(event)
     if not user_email:
         return response(400, {'error': 'user_email обязателен'})
 
@@ -65,6 +66,13 @@ def handle_get_chat_by_recommendation(event):
 
 def handle_create_chat(event):
     body = parse_body(event)
+    auth_email = get_auth_email(event)
+    if auth_email:
+        tenant = body.get('tenantEmail', '')
+        recommender = body.get('recommenderEmail', '')
+        if auth_email not in (tenant, recommender):
+            return response(403, {'error': 'Нет доступа'})
+
     recommendation_id = body.get('recommendationId')
 
     S = get_schema()
@@ -123,6 +131,7 @@ def handle_create_chat(event):
 
 def handle_delete_chat(event):
     body = parse_body(event)
+    auth_email = get_auth_email(event)
     chat_id = body.get('chatId')
     if not chat_id:
         return response(400, {'error': 'chat_id обязателен'})
@@ -131,6 +140,15 @@ def handle_delete_chat(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        if auth_email:
+            cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
+            chat_row = cur.fetchone()
+            if not chat_row:
+                return response(404, {'error': 'Чат не найден'})
+            if auth_email not in (chat_row[0], chat_row[1]):
+                return response(403, {'error': 'Нет доступа к этому чату'})
+
         cur.execute(f"""
             SELECT COUNT(*) FROM {S}escrow_transactions
             WHERE chat_id = %s AND status IN ('frozen', 'pending')

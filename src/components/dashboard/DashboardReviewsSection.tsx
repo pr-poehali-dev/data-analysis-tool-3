@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon from "@/components/ui/icon";
+import { authStore } from "@/store/authStore";
 
 interface Review {
   id: number;
@@ -32,7 +33,8 @@ export const DashboardReviewsSection = ({ userEmail }: DashboardReviewsSectionPr
     setIsLoading(true);
     try {
       const response = await fetch(
-        `https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f?reviewee_email=${encodeURIComponent(userEmail)}`
+        `https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f?reviewee_email=${encodeURIComponent(userEmail)}`,
+        { headers: authStore.getAuthHeaders() }
       );
       const data = await response.json();
       if (response.ok) {

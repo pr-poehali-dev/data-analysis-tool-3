@@ -1,6 +1,7 @@
 """CRUD-обработчики для заявок на аренду."""
 from datetime import datetime, timezone
 from utils import get_connection, get_schema, response, parse_body, COLUMNS, row_to_dict
+from auth_utils import get_auth_email, require_auth
 
 
 def handle_list(event):
@@ -42,6 +43,10 @@ def handle_list(event):
 def handle_create(event):
     """Создать новую заявку."""
     body = parse_body(event)
+
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email != body.get('userEmail'):
+        return response(403, {'error': 'Нет доступа'})
 
     for field in ['userEmail', 'name']:
         if not body.get(field):
@@ -116,6 +121,14 @@ def handle_update(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
+            owner_row = cur.fetchone()
+            if not owner_row or auth_email != owner_row[0]:
+                return response(403, {'error': 'Нет доступа к этой заявке'})
+
         now = datetime.now(timezone.utc)
 
         field_map = {
@@ -177,6 +190,14 @@ def handle_delete(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT user_email FROM {S}requests WHERE id = %s", (int(request_id),))
+            owner_row = cur.fetchone()
+            if not owner_row or auth_email != owner_row[0]:
+                return response(403, {'error': 'Нет доступа к этой заявке'})
+
         now = datetime.now(timezone.utc)
         cur.execute(
             f"UPDATE {S}requests SET status = 'archived', updated_at = %s WHERE id = %s RETURNING id",

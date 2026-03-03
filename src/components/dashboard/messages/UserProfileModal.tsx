@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { authStore } from "@/store/authStore";
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -30,7 +31,8 @@ export const UserProfileModal = ({ isOpen, onClose, user }: UserProfileModalProp
     setIsLoading(true);
     try {
       const response = await fetch(
-        `https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f?reviewee_email=${encodeURIComponent(user.email)}`
+        `https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f?reviewee_email=${encodeURIComponent(user.email)}`,
+        { headers: authStore.getAuthHeaders() }
       );
       const data = await response.json();
       if (response.ok) {

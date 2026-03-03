@@ -2,10 +2,13 @@
 import json
 from utils import get_conn, get_schema, resp, tx_row_to_dict, TX_COLUMNS
 from email_service import notify_escrow_status
+from auth_utils import get_auth_email, require_auth
 
 
-def handle_list(params):
-    email = params.get('email', '')
+def handle_list(event):
+    params = event.get('queryStringParameters') or {}
+    auth_email = get_auth_email(event)
+    email = auth_email or params.get('email', '')
     if not email:
         return resp(400, {'error': 'email обязателен'})
 
@@ -25,8 +28,10 @@ def handle_list(params):
         conn.close()
 
 
-def handle_balance(params):
-    email = params.get('email', '')
+def handle_balance(event):
+    params = event.get('queryStringParameters') or {}
+    auth_email = get_auth_email(event)
+    email = auth_email or params.get('email', '')
     if not email:
         return resp(400, {'error': 'email обязателен'})
 
@@ -54,7 +59,8 @@ def handle_balance(params):
         conn.close()
 
 
-def handle_check_chat(params):
+def handle_check_chat(event):
+    params = event.get('queryStringParameters') or {}
     chat_id = params.get('chatId', '')
     if not chat_id:
         return resp(400, {'error': 'chatId обязателен'})
@@ -79,6 +85,11 @@ def handle_check_chat(params):
 
 def handle_create(event):
     body = json.loads(event.get('body', '{}'))
+
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email not in (body.get('tenantEmail'), body.get('recommenderEmail')):
+        return resp(403, {'error': 'Нет доступа'})
+
     required = ['requestName', 'tenantEmail', 'tenantName', 'recommenderEmail', 'recommenderName']
     for field in required:
         if not body.get(field):
@@ -127,12 +138,25 @@ def handle_update_status(event):
     if new_status not in allowed:
         return resp(400, {'error': f'Недопустимый статус. Допустимые: {", ".join(allowed)}'})
 
+    auth_email = get_auth_email(event)
+
     completed_sql = ", completed_at = CURRENT_TIMESTAMP" if new_status == 'completed' else ""
 
     S = get_schema()
     conn = get_conn()
     try:
         cur = conn.cursor()
+
+        if auth_email:
+            cur.execute(f"""
+                SELECT tenant_email, recommender_email FROM {S}escrow_transactions WHERE id = %s
+            """, (int(tx_id),))
+            tx_row = cur.fetchone()
+            if not tx_row:
+                return resp(404, {'error': 'Транзакция не найдена'})
+            if auth_email not in (tx_row[0], tx_row[1]):
+                return resp(403, {'error': 'Нет доступа к этой транзакции'})
+
         cur.execute(f"""
             UPDATE {S}escrow_transactions
             SET status = %s{completed_sql}

@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime, timezone
 import psycopg2
+from auth_utils import get_auth_email, require_auth
 
 
 def get_connection():
@@ -143,6 +144,10 @@ def handle_create(event):
     body = parse_body(event)
     print(f"POST body keys: {list(body.keys())}, userId='{body.get('userId', '')}'")
 
+    auth_email = get_auth_email(event)
+    if auth_email and auth_email != body.get('userId'):
+        return response(403, {'error': 'Нет доступа'})
+
     if not body.get('userId'):
         print(f"Ошибка: userId пустой или отсутствует. body={json.dumps(body, default=str)[:500]}")
         return response(400, {'error': 'Поле userId обязательно'})
@@ -217,6 +222,14 @@ def handle_update(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+            owner = cur.fetchone()
+            if not owner or auth_email != owner[0]:
+                return response(403, {'error': 'Нет доступа к этой рекомендации'})
+
         now = datetime.now(timezone.utc)
 
         updates = []
@@ -297,6 +310,14 @@ def handle_delete(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+        auth_email = get_auth_email(event)
+        if auth_email:
+            cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+            owner = cur.fetchone()
+            if not owner or auth_email != owner[0]:
+                return response(403, {'error': 'Нет доступа к этой рекомендации'})
+
         now = datetime.now(timezone.utc)
         cur.execute(
             f"UPDATE {S}recommendations SET status = 'deleted', updated_at = %s WHERE id = %s RETURNING id",

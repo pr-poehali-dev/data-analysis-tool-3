@@ -4,6 +4,10 @@ import funcUrls from "../../backend/func2url.json";
 
 const API_URL = funcUrls["documents-api"];
 
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...authStore.getAuthHeaders(), ...extra };
+}
+
 export interface SavedDocument {
   id: string;
   type: "rental-agreement";
@@ -64,7 +68,8 @@ class DocumentsStore {
 
     try {
       const res = await fetch(
-        `${API_URL}?user_email=${encodeURIComponent(email)}`
+        `${API_URL}?user_email=${encodeURIComponent(email)}`,
+        { headers: authHeaders() }
       );
       const data = await res.json();
       const docs: SavedDocument[] = (data.documents || []).map(parseDocument);
@@ -89,7 +94,7 @@ class DocumentsStore {
     try {
       const res = await fetch(API_URL, {
         method: existingId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           id: existingId || undefined,
           userEmail: email,
@@ -154,6 +159,7 @@ class DocumentsStore {
     try {
       await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
+        headers: authHeaders(),
       });
     } catch (e) {
       console.error("Ошибка удаления документа:", e);

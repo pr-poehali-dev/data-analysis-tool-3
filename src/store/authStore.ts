@@ -11,6 +11,7 @@ type User = {
 } | null;
 
 let currentUser: User = null;
+let currentAccessToken: string | null = null;
 const listeners: (() => void)[] = [];
 
 export const authStore = {
@@ -38,6 +39,20 @@ export const authStore = {
     listeners.forEach((listener) => listener());
   },
 
+  getAccessToken: (): string | null => {
+    return currentAccessToken;
+  },
+
+  setAccessToken: (token: string | null) => {
+    currentAccessToken = token;
+  },
+
+  getAuthHeaders: (): Record<string, string> => {
+    const token = currentAccessToken;
+    if (!token) return {};
+    return { Authorization: `Bearer ${token}` };
+  },
+
   isAuthenticated: (): boolean => {
     return authStore.getUser() !== null;
   },
@@ -56,6 +71,7 @@ export const authStore = {
   },
 
   logout: () => {
+    currentAccessToken = null;
     authStore.setUser(null);
   },
 

@@ -10,6 +10,7 @@ import { recommendationsStore } from "@/store/recommendationsStore";
 import { requestsStore } from "@/store/requestsStore";
 import { Chat, Message, messagesStore } from "@/store/messagesStore";
 import { escrowStore } from "@/store/escrowStore";
+import { authStore } from "@/store/authStore";
 import funcUrls from "../../../../backend/func2url.json";
 
 interface ChatWindowProps {
@@ -50,7 +51,7 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
   useEffect(() => {
     const checkReview = async () => {
       try {
-        const res = await fetch(`${(funcUrls as Record<string, string>)['reviews']}?chat_id=${chat.id}`);
+        const res = await fetch(`${(funcUrls as Record<string, string>)['reviews']}?chat_id=${chat.id}`, { headers: authStore.getAuthHeaders() });
         if (res.ok) {
           const data = await res.json();
           const reviews = data.reviews || [];

@@ -1,6 +1,11 @@
 import funcUrls from "../../backend/func2url.json";
+import { authStore } from "./authStore";
 
 export type RequestStatus = 'active' | 'in_progress' | 'archived';
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...authStore.getAuthHeaders(), ...extra };
+}
 
 export interface Request {
   id: string;
@@ -57,7 +62,7 @@ class RequestsStore {
 
   async fetchRequests(): Promise<Request[]> {
     try {
-      const res = await fetch(`${API_URL}?status=active`);
+      const res = await fetch(`${API_URL}?status=active`, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Request[] = (data.requests || []).map(parseRequest);
       this.mergeCache(fetched);
@@ -72,7 +77,7 @@ class RequestsStore {
 
   async fetchAllRequests(): Promise<Request[]> {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Request[] = (data.requests || []).map(parseRequest);
       this.mergeCache(fetched);
@@ -87,7 +92,7 @@ class RequestsStore {
 
   async fetchUserRequests(email: string): Promise<Request[]> {
     try {
-      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${API_URL}?user_email=${encodeURIComponent(email)}`, { headers: authHeaders() });
       const data = await res.json();
       const fetched: Request[] = (data.requests || []).map(parseRequest);
       this.mergeCache(fetched);
@@ -102,7 +107,7 @@ class RequestsStore {
 
   async fetchRequestById(requestId: string): Promise<Request | undefined> {
     try {
-      const res = await fetch(`${API_URL}?id=${encodeURIComponent(requestId)}`);
+      const res = await fetch(`${API_URL}?id=${encodeURIComponent(requestId)}`, { headers: authHeaders() });
       const data = await res.json();
       if (data.request) {
         const parsed = parseRequest(data.request);
@@ -120,7 +125,7 @@ class RequestsStore {
   async addRequest(request: Omit<Request, 'id' | 'createdAt' | 'status'>): Promise<Request> {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         userEmail: request.userId,
         name: request.name,
@@ -152,7 +157,7 @@ class RequestsStore {
   async updateRequest(requestId: string, updates: Partial<Omit<Request, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
     const res = await fetch(API_URL, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ id: requestId, ...updates }),
     });
     const data = await res.json();
@@ -170,6 +175,7 @@ class RequestsStore {
   async deleteRequest(requestId: string): Promise<void> {
     await fetch(`${API_URL}?id=${encodeURIComponent(requestId)}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     this.cache = this.cache.filter(r => r.id !== requestId);
     this.notifyListeners();

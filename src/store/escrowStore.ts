@@ -1,6 +1,11 @@
 import funcUrls from "../../backend/func2url.json";
+import { authStore } from "./authStore";
 
 const API_URL = funcUrls["escrow-api"];
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...authStore.getAuthHeaders(), ...extra };
+}
 
 export interface EscrowTransaction {
   id: string;
@@ -30,7 +35,7 @@ class EscrowStore {
 
   async fetchUserTransactions(userEmail: string): Promise<EscrowTransaction[]> {
     try {
-      const res = await fetch(`${API_URL}?action=list&email=${encodeURIComponent(userEmail)}`);
+      const res = await fetch(`${API_URL}?action=list&email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) return [];
       return (data.transactions || []).map((t: Record<string, unknown>) => ({
@@ -45,7 +50,7 @@ class EscrowStore {
 
   async fetchUserBalance(userEmail: string): Promise<EscrowBalance> {
     try {
-      const res = await fetch(`${API_URL}?action=balance&email=${encodeURIComponent(userEmail)}`);
+      const res = await fetch(`${API_URL}?action=balance&email=${encodeURIComponent(userEmail)}`, { headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) return { frozen: 0, completed: 0, pending: 0, sent: 0 };
       return {
@@ -62,7 +67,7 @@ class EscrowStore {
   async createTransaction(data: Omit<EscrowTransaction, 'id' | 'createdAt' | 'status'>): Promise<EscrowTransaction> {
     const res = await fetch(`${API_URL}?action=create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(data),
     });
     const result = await res.json();
@@ -84,7 +89,7 @@ class EscrowStore {
   ): Promise<void> {
     const res = await fetch(`${API_URL}?action=update-status`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ id: transactionId, status }),
     });
     if (!res.ok) {
@@ -96,7 +101,7 @@ class EscrowStore {
 
   async getEscrowStatusForChat(chatId: string): Promise<{ hasActive: boolean; transactionId?: string; status?: string; commissionAmount?: number }> {
     try {
-      const res = await fetch(`${API_URL}?action=check-chat&chatId=${encodeURIComponent(chatId)}`);
+      const res = await fetch(`${API_URL}?action=check-chat&chatId=${encodeURIComponent(chatId)}`, { headers: authHeaders() });
       const data = await res.json();
       return data;
     } catch {
