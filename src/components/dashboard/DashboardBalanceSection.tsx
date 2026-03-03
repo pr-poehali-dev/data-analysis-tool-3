@@ -16,6 +16,27 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const MobileTooltip = ({ text }: { text: string }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+      <Tooltip open={open} onOpenChange={setOpen}>
+        <TooltipTrigger asChild>
+          <button
+            className="opacity-60 hover:opacity-100 transition-opacity"
+            onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+          >
+            <Icon name="HelpCircle" size={18} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-[220px] text-center">
+          {text}
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+};
+
 interface DashboardBalanceSectionProps {
   userEmail: string;
   userName: string;
@@ -152,16 +173,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
-                  <Icon name="HelpCircle" size={18} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                Сумма вознаграждений, замороженных на эскроу-счёте по вашим рекомендациям до завершения сделки
-              </TooltipContent>
-            </Tooltip>
+            <MobileTooltip text="Сумма вознаграждений, замороженных на эскроу-счёте по вашим рекомендациям до завершения сделки" />
             <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Lock" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">На эскроу</span>
@@ -178,16 +190,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             transition={{ delay: 0.1 }}
             className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
-                  <Icon name="HelpCircle" size={18} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                Общая сумма вознаграждений, полученных вами как рекомендателем по завершённым сделкам
-              </TooltipContent>
-            </Tooltip>
+            <MobileTooltip text="Общая сумма вознаграждений, полученных вами как рекомендателем по завершённым сделкам" />
             <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="CheckCircle2" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">Получено</span>
