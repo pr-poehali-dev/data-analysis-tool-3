@@ -45,9 +45,9 @@ export default function YandexCallback() {
           localStorage.setItem("yandex_auth_refresh_token", data.refresh_token);
         }
         if (data.access_token) {
-          localStorage.setItem("yandex_auth_access_token", data.access_token);
           authStore.setAccessToken(data.access_token);
         }
+        authStore.setProvider("yandex");
 
         const user = data.user;
         authStore.setUser({

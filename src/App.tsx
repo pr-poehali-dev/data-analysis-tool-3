@@ -37,12 +37,19 @@ const AppContent = () => {
     photo?: string;
     vkLink?: string;
   } | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
     const savedUser = authStore.getUser();
     if (savedUser) {
       setUser(savedUser);
     }
+
+    authStore.restoreSession().then(() => {
+      const restoredUser = authStore.getUser();
+      setUser(restoredUser);
+      setSessionReady(true);
+    });
 
     const unsubscribe = authStore.subscribe(() => {
       setUser(authStore.getUser());
@@ -70,6 +77,10 @@ const AppContent = () => {
     setUser(userData);
     navigate("/");
   };
+
+  if (!sessionReady && authStore.getUser()) {
+    return null;
+  }
 
   return (
     <Routes>

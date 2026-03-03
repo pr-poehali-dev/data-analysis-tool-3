@@ -37,9 +37,9 @@ export default function TelegramCallback() {
           localStorage.setItem("telegram_auth_refresh_token", data.refresh_token);
         }
         if (data.access_token) {
-          localStorage.setItem("telegram_auth_access_token", data.access_token);
           authStore.setAccessToken(data.access_token);
         }
+        authStore.setProvider("telegram");
 
         const user = data.user;
         const telegramUsername = user.telegramUsername || "";

@@ -36,15 +36,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
   const isTelegramUser = !!user.telegramUsername || /^tg_\d+/.test(user.email);
   const realEmail = /^tg_\d+/.test(user.email) ? '' : user.email;
 
-  const getAuthProvider = (): string => {
-    if (localStorage.getItem("yandex_auth_access_token")) return "yandex";
-    if (localStorage.getItem("vk_auth_access_token")) return "vk";
-    if (localStorage.getItem("google_auth_access_token")) return "google";
-    if (localStorage.getItem("telegram_auth_access_token")) return "telegram";
-    if (localStorage.getItem("email_auth_access_token")) return "email";
-    return "unknown";
-  };
-  const authProvider = getAuthProvider();
+  const authProvider = authStore.getProvider() || "unknown";
   const isOAuthUser = ["yandex", "vk", "google"].includes(authProvider);
 
   const [formData, setFormData] = useState({
@@ -60,20 +52,9 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     setFormData({ ...formData, [field]: value });
   };
 
-  const getToken = () => {
-    return (
-      localStorage.getItem("yandex_auth_access_token") ||
-      localStorage.getItem("telegram_auth_access_token") ||
-      localStorage.getItem("vk_auth_access_token") ||
-      localStorage.getItem("google_auth_access_token") ||
-      localStorage.getItem("email_auth_access_token") ||
-      ""
-    );
-  };
-
   const saveProfileWithoutEmail = async (emailToSave?: string) => {
     setSaving(true);
-    const token = getToken();
+    const token = authStore.getAccessToken() || "";
 
     if (token) {
       try {
@@ -156,7 +137,7 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
     await saveProfileWithoutEmail();
     authStore.updateUser({ email: verifiedEmail });
 
-    const isEmailAuthUser = !!localStorage.getItem("email_auth_access_token");
+    const isEmailAuthUser = authStore.getProvider() === "email";
     toast({
       title: "Готово",
       description: isEmailAuthUser

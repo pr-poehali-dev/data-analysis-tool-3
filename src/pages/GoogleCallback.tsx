@@ -45,9 +45,9 @@ export default function GoogleCallback() {
           localStorage.setItem("google_auth_refresh_token", data.refresh_token);
         }
         if (data.access_token) {
-          localStorage.setItem("google_auth_access_token", data.access_token);
           authStore.setAccessToken(data.access_token);
         }
+        authStore.setProvider("google");
 
         const user = data.user;
         authStore.setUser({

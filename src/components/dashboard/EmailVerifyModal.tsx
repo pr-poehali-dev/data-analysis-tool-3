@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { authStore } from "@/store/authStore";
 import funcUrls from "../../../backend/func2url.json";
 
 const PROFILE_URL = (funcUrls as Record<string, string>)["profile-update"];
@@ -38,16 +39,7 @@ export const EmailVerifyModal = ({ isOpen, email, onClose, onVerified }: EmailVe
     }, 1000);
   };
 
-  const getToken = () => {
-    return (
-      localStorage.getItem("yandex_auth_access_token") ||
-      localStorage.getItem("telegram_auth_access_token") ||
-      localStorage.getItem("vk_auth_access_token") ||
-      localStorage.getItem("google_auth_access_token") ||
-      localStorage.getItem("email_auth_access_token") ||
-      ""
-    );
-  };
+  const getToken = () => authStore.getAccessToken() || "";
 
   useEffect(() => {
     if (isOpen && email) {
