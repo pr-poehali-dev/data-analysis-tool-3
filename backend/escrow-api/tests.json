@@ -1,1 +1,43 @@
-{"tests": [{"name": "Get balance", "method": "GET", "path": "/?action=balance&email=test@test.com", "expectedStatus": 200, "expectedBody": {"frozen": "number"}, "bodyMatcher": "partial"}, {"name": "Get transactions list", "method": "GET", "path": "/?action=list&email=test@test.com", "expectedStatus": 200, "expectedBody": {"transactions": "array"}, "bodyMatcher": "partial"}, {"name": "Check chat escrow", "method": "GET", "path": "/?action=check-chat&chatId=test-chat-123", "expectedStatus": 200, "expectedBody": {"hasActive": "boolean"}, "bodyMatcher": "partial"}, {"name": "OPTIONS preflight", "method": "OPTIONS", "path": "/", "expectedStatus": 200}]}
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET balance without token returns 401",
+      "method": "GET",
+      "path": "/?action=balance",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET transactions list without token returns 401",
+      "method": "GET",
+      "path": "/?action=list",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET check-chat without token returns 401",
+      "method": "GET",
+      "path": "/?action=check-chat&chatId=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST create without token returns 401",
+      "method": "POST",
+      "path": "/?action=create",
+      "body": {"tenantEmail": "a@b.com", "recommenderEmail": "c@d.com"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

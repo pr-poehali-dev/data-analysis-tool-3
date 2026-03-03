@@ -2,15 +2,11 @@
 import json
 from utils import get_conn, get_schema, resp, tx_row_to_dict, TX_COLUMNS
 from email_service import notify_escrow_status
-from auth_utils import get_auth_email, require_auth
+from auth_utils import require_auth
 
 
 def handle_list(event):
-    params = event.get('queryStringParameters') or {}
-    auth_email = get_auth_email(event)
-    email = auth_email or params.get('email', '')
-    if not email:
-        return resp(400, {'error': 'email обязателен'})
+    auth_email = require_auth(event)
 
     S = get_schema()
     conn = get_conn()
@@ -21,7 +17,7 @@ def handle_list(event):
             FROM {S}escrow_transactions
             WHERE tenant_email = %s OR recommender_email = %s
             ORDER BY created_at DESC
-        """, (email, email))
+        """, (auth_email, auth_email))
         rows = cur.fetchall()
         return resp(200, {'transactions': [tx_row_to_dict(r) for r in rows]})
     finally:
@@ -29,11 +25,7 @@ def handle_list(event):
 
 
 def handle_balance(event):
-    params = event.get('queryStringParameters') or {}
-    auth_email = get_auth_email(event)
-    email = auth_email or params.get('email', '')
-    if not email:
-        return resp(400, {'error': 'email обязателен'})
+    auth_email = require_auth(event)
 
     S = get_schema()
     conn = get_conn()
@@ -47,7 +39,7 @@ def handle_balance(event):
                 COALESCE(SUM(CASE WHEN status = 'completed' AND tenant_email = %s THEN commission_amount ELSE 0 END), 0) as sent
             FROM {S}escrow_transactions
             WHERE tenant_email = %s OR recommender_email = %s
-        """, (email, email, email, email, email, email))
+        """, (auth_email, auth_email, auth_email, auth_email, auth_email, auth_email))
         row = cur.fetchone()
         return resp(200, {
             'frozen': float(row[0]),
@@ -60,6 +52,8 @@ def handle_balance(event):
 
 
 def handle_check_chat(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     chat_id = params.get('chatId', '')
     if not chat_id:
@@ -69,6 +63,12 @@ def handle_check_chat(event):
     conn = get_conn()
     try:
         cur = conn.cursor()
+
+        cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
+        chat_row = cur.fetchone()
+        if not chat_row or auth_email not in (chat_row[0], chat_row[1]):
+            return resp(403, {'error': 'Нет доступа к этому чату'})
+
         cur.execute(f"""
             SELECT id, status, commission_amount FROM {S}escrow_transactions
             WHERE chat_id = %s
@@ -84,10 +84,10 @@ def handle_check_chat(event):
 
 
 def handle_create(event):
+    auth_email = require_auth(event)
     body = json.loads(event.get('body', '{}'))
 
-    auth_email = get_auth_email(event)
-    if auth_email and auth_email not in (body.get('tenantEmail'), body.get('recommenderEmail')):
+    if auth_email not in (body.get('tenantEmail'), body.get('recommenderEmail')):
         return resp(403, {'error': 'Нет доступа'})
 
     required = ['requestName', 'tenantEmail', 'tenantName', 'recommenderEmail', 'recommenderName']
@@ -128,6 +128,7 @@ def handle_create(event):
 
 
 def handle_update_status(event):
+    auth_email = require_auth(event)
     body = json.loads(event.get('body', '{}'))
     tx_id = body.get('id')
     new_status = body.get('status')
@@ -138,8 +139,6 @@ def handle_update_status(event):
     if new_status not in allowed:
         return resp(400, {'error': f'Недопустимый статус. Допустимые: {", ".join(allowed)}'})
 
-    auth_email = get_auth_email(event)
-
     completed_sql = ", completed_at = CURRENT_TIMESTAMP" if new_status == 'completed' else ""
 
     S = get_schema()
@@ -147,15 +146,14 @@ def handle_update_status(event):
     try:
         cur = conn.cursor()
 
-        if auth_email:
-            cur.execute(f"""
-                SELECT tenant_email, recommender_email FROM {S}escrow_transactions WHERE id = %s
-            """, (int(tx_id),))
-            tx_row = cur.fetchone()
-            if not tx_row:
-                return resp(404, {'error': 'Транзакция не найдена'})
-            if auth_email not in (tx_row[0], tx_row[1]):
-                return resp(403, {'error': 'Нет доступа к этой транзакции'})
+        cur.execute(f"""
+            SELECT tenant_email, recommender_email FROM {S}escrow_transactions WHERE id = %s
+        """, (int(tx_id),))
+        tx_row = cur.fetchone()
+        if not tx_row:
+            return resp(404, {'error': 'Транзакция не найдена'})
+        if auth_email not in (tx_row[0], tx_row[1]):
+            return resp(403, {'error': 'Нет доступа к этой транзакции'})
 
         cur.execute(f"""
             UPDATE {S}escrow_transactions
