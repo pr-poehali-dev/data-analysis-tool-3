@@ -7,49 +7,63 @@
       "expectedStatus": 200
     },
     {
-      "name": "GET chats requires user_email",
+      "name": "GET chats without token returns 401",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 400
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     },
     {
-      "name": "GET chats with user_email",
+      "name": "GET messages without token returns 401",
       "method": "GET",
-      "path": "/?user_email=test@example.com",
-      "expectedStatus": 200
+      "path": "/?action=messages&chat_id=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     },
     {
-      "name": "GET messages requires chat_id",
+      "name": "GET unread count without token returns 401",
       "method": "GET",
-      "path": "/?action=messages",
-      "expectedStatus": 400
+      "path": "/?action=unread_count",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     },
     {
-      "name": "GET unread count",
+      "name": "GET chat_by_recommendation without token returns 401",
       "method": "GET",
-      "path": "/?action=unread_count&user_email=test@example.com",
-      "expectedStatus": 200
+      "path": "/?action=chat_by_recommendation&recommendation_id=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     },
     {
-      "name": "POST send requires chatId",
+      "name": "POST create chat without token returns 401",
+      "method": "POST",
+      "path": "/",
+      "body": {"tenantEmail": "a@b.com", "recommenderEmail": "c@d.com"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST send message without token returns 401",
       "method": "POST",
       "path": "/?action=send",
-      "body": {"senderId": "test@test.com", "text": "hello"},
-      "expectedStatus": 400
+      "body": {"chatId": "1", "senderId": "test@test.com", "text": "hello"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     },
     {
-      "name": "POST mark_read requires params",
-      "method": "POST",
-      "path": "/?action=mark_read",
-      "body": {},
-      "expectedStatus": 400
-    },
-    {
-      "name": "POST delete_chat requires chatId",
+      "name": "POST delete_chat without token returns 401",
       "method": "POST",
       "path": "/?action=delete_chat",
-      "body": {},
-      "expectedStatus": 400
+      "body": {"chatId": "1"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     }
   ]
 }

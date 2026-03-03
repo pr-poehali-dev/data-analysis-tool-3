@@ -5,10 +5,12 @@ from utils import (
     MSG_COLUMNS, message_row_to_dict,
 )
 from s3_upload import upload_photos_to_s3
-from auth_utils import get_auth_email, require_auth
+from auth_utils import require_auth
 
 
 def handle_get_messages(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     chat_id = params.get('chat_id')
     if not chat_id:
@@ -25,12 +27,10 @@ def handle_get_messages(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
-            chat_owner = cur.fetchone()
-            if not chat_owner or auth_email not in (chat_owner[0], chat_owner[1]):
-                return response(403, {'error': 'Нет доступа к этому чату'})
+        cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
+        chat_owner = cur.fetchone()
+        if not chat_owner or auth_email not in (chat_owner[0], chat_owner[1]):
+            return response(403, {'error': 'Нет доступа к этому чату'})
 
         if after_id:
             cur.execute(f"""
@@ -54,6 +54,8 @@ def handle_get_messages(event):
 
 
 def handle_send_message(event):
+    auth_email = require_auth(event)
+
     body = parse_body(event)
     chat_id = body.get('chatId')
     sender_id = body.get('senderId')
@@ -68,8 +70,7 @@ def handle_send_message(event):
     if not text and not raw_photos:
         return response(400, {'error': 'Сообщение не может быть пустым'})
 
-    auth_email = get_auth_email(event)
-    if auth_email and auth_email != sender_id:
+    if auth_email != sender_id:
         return response(403, {'error': 'Нельзя отправлять от чужого имени'})
 
     photos = upload_photos_to_s3(raw_photos)
@@ -115,14 +116,15 @@ def handle_send_message(event):
 
 
 def handle_mark_read(event):
+    auth_email = require_auth(event)
+
     body = parse_body(event)
     chat_id = body.get('chatId')
     user_email = body.get('userEmail')
     if not chat_id or not user_email:
         return response(400, {'error': 'chatId и userEmail обязательны'})
 
-    auth_email = get_auth_email(event)
-    if auth_email and auth_email != user_email:
+    if auth_email != user_email:
         return response(403, {'error': 'Нет доступа'})
 
     S = get_schema()
@@ -144,11 +146,7 @@ def handle_mark_read(event):
 
 
 def handle_unread_count(event):
-    params = event.get('queryStringParameters') or {}
-    from utils import get_user_email
-    user_email = params.get('user_email') or get_user_email(event)
-    if not user_email:
-        return response(400, {'error': 'user_email обязателен'})
+    auth_email = require_auth(event)
 
     S = get_schema()
     conn = get_connection()
@@ -159,7 +157,7 @@ def handle_unread_count(event):
             JOIN {S}chats c ON c.id = m.chat_id
             WHERE (c.recommender_email = %s OR c.tenant_email = %s)
             AND m.sender_id != %s AND m.is_read = FALSE
-        """, (user_email, user_email, user_email))
+        """, (auth_email, auth_email, auth_email))
         row = cur.fetchone()
         return response(200, {'unreadCount': row[0] if row else 0})
     finally:

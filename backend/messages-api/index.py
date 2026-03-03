@@ -1,21 +1,18 @@
 """API для чатов и сообщений между пользователями."""
 from datetime import datetime, timezone
 from utils import (
-    get_connection, get_schema, response, parse_body, get_user_email,
+    get_connection, get_schema, response, parse_body,
     CORS_HEADERS, CHAT_COLUMNS, chat_row_to_dict,
 )
 from message_handlers import (
     handle_get_messages, handle_send_message,
     handle_mark_read, handle_unread_count,
 )
-from auth_utils import get_auth_email, require_auth
+from auth_utils import require_auth, auth_error_response
 
 
 def handle_get_chats(event):
-    params = event.get('queryStringParameters') or {}
-    user_email = get_auth_email(event) or params.get('user_email') or get_user_email(event)
-    if not user_email:
-        return response(400, {'error': 'user_email обязателен'})
+    auth_email = require_auth(event)
 
     S = get_schema()
     conn = get_connection()
@@ -29,7 +26,7 @@ def handle_get_chats(event):
             FROM {S}chats c
             WHERE c.recommender_email = %s OR c.tenant_email = %s
             ORDER BY COALESCE(c.last_message_time, c.created_at) DESC
-        """, (user_email, user_email, user_email))
+        """, (auth_email, auth_email, auth_email))
         rows = cur.fetchall()
         return response(200, {'chats': [chat_row_to_dict(r) for r in rows]})
     finally:
@@ -37,6 +34,8 @@ def handle_get_chats(event):
 
 
 def handle_get_chat_by_recommendation(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     recommendation_id = params.get('recommendation_id')
     if not recommendation_id:
@@ -46,7 +45,6 @@ def handle_get_chat_by_recommendation(event):
     conn = get_connection()
     try:
         cur = conn.cursor()
-        user_email = params.get('user_email') or get_user_email(event)
         cur.execute(f"""
             SELECT {CHAT_COLUMNS},
                 (SELECT COUNT(*) FROM {S}messages m
@@ -54,8 +52,9 @@ def handle_get_chat_by_recommendation(event):
                 c.created_at
             FROM {S}chats c
             WHERE c.recommendation_id = %s
+              AND (c.recommender_email = %s OR c.tenant_email = %s)
             LIMIT 1
-        """, (user_email or '', recommendation_id))
+        """, (auth_email, recommendation_id, auth_email, auth_email))
         row = cur.fetchone()
         if not row:
             return response(404, {'error': 'Чат не найден'})
@@ -65,13 +64,13 @@ def handle_get_chat_by_recommendation(event):
 
 
 def handle_create_chat(event):
+    auth_email = require_auth(event)
     body = parse_body(event)
-    auth_email = get_auth_email(event)
-    if auth_email:
-        tenant = body.get('tenantEmail', '')
-        recommender = body.get('recommenderEmail', '')
-        if auth_email not in (tenant, recommender):
-            return response(403, {'error': 'Нет доступа'})
+
+    tenant = body.get('tenantEmail', '')
+    recommender = body.get('recommenderEmail', '')
+    if auth_email not in (tenant, recommender):
+        return response(403, {'error': 'Нет доступа'})
 
     recommendation_id = body.get('recommendationId')
 
@@ -81,7 +80,6 @@ def handle_create_chat(event):
         cur = conn.cursor()
 
         if recommendation_id:
-            user_email = body.get('tenantEmail') or get_user_email(event) or ''
             cur.execute(f"""
                 SELECT {CHAT_COLUMNS},
                     (SELECT COUNT(*) FROM {S}messages m
@@ -90,7 +88,7 @@ def handle_create_chat(event):
                 FROM {S}chats c
                 WHERE c.recommendation_id = %s
                 LIMIT 1
-            """, (user_email, recommendation_id))
+            """, (auth_email, recommendation_id))
             existing = cur.fetchone()
             if existing:
                 return response(200, {'chat': chat_row_to_dict(existing), 'existing': True})
@@ -130,8 +128,8 @@ def handle_create_chat(event):
 
 
 def handle_delete_chat(event):
+    auth_email = require_auth(event)
     body = parse_body(event)
-    auth_email = get_auth_email(event)
     chat_id = body.get('chatId')
     if not chat_id:
         return response(400, {'error': 'chat_id обязателен'})
@@ -141,13 +139,12 @@ def handle_delete_chat(event):
     try:
         cur = conn.cursor()
 
-        if auth_email:
-            cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
-            chat_row = cur.fetchone()
-            if not chat_row:
-                return response(404, {'error': 'Чат не найден'})
-            if auth_email not in (chat_row[0], chat_row[1]):
-                return response(403, {'error': 'Нет доступа к этому чату'})
+        cur.execute(f"SELECT recommender_email, tenant_email FROM {S}chats WHERE id = %s", (int(chat_id),))
+        chat_row = cur.fetchone()
+        if not chat_row:
+            return response(404, {'error': 'Чат не найден'})
+        if auth_email not in (chat_row[0], chat_row[1]):
+            return response(403, {'error': 'Нет доступа к этому чату'})
 
         cur.execute(f"""
             SELECT COUNT(*) FROM {S}escrow_transactions
@@ -185,22 +182,25 @@ def handler(event, context):
     params = event.get('queryStringParameters') or {}
     action = params.get('action', '')
 
-    if method == 'GET':
-        if action == 'messages':
-            return handle_get_messages(event)
-        if action == 'chat_by_recommendation':
-            return handle_get_chat_by_recommendation(event)
-        if action == 'unread_count':
-            return handle_unread_count(event)
-        return handle_get_chats(event)
+    try:
+        if method == 'GET':
+            if action == 'messages':
+                return handle_get_messages(event)
+            if action == 'chat_by_recommendation':
+                return handle_get_chat_by_recommendation(event)
+            if action == 'unread_count':
+                return handle_unread_count(event)
+            return handle_get_chats(event)
 
-    if method == 'POST':
-        if action == 'send':
-            return handle_send_message(event)
-        if action == 'mark_read':
-            return handle_mark_read(event)
-        if action == 'delete_chat':
-            return handle_delete_chat(event)
-        return handle_create_chat(event)
+        if method == 'POST':
+            if action == 'send':
+                return handle_send_message(event)
+            if action == 'mark_read':
+                return handle_mark_read(event)
+            if action == 'delete_chat':
+                return handle_delete_chat(event)
+            return handle_create_chat(event)
 
-    return response(405, {'error': 'Метод не поддерживается'})
+        return response(405, {'error': 'Метод не поддерживается'})
+    except PermissionError as e:
+        return auth_error_response(401, str(e))
