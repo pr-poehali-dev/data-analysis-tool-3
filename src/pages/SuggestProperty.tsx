@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { InviteOwnerStep } from "@/components/suggest-property/InviteOwnerStep";
 import { PropertyDetailsStep } from "@/components/suggest-property/PropertyDetailsStep";
 import type { PropertyData } from "@/components/suggest-property/PropertyDetailsStep";
-
+import { usePropertySubmission } from "@/components/suggest-property/usePropertySubmission";
 import { authStore } from "@/store/authStore";
-import { recommendationsStore } from "@/store/recommendationsStore";
-import { messagesStore } from "@/store/messagesStore";
 import { requestsStore } from "@/store/requestsStore";
 
 type Step = "invite" | "property";
@@ -16,16 +13,14 @@ type Step = "invite" | "property";
 export const SuggestProperty = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [step, setStep] = useState<Step>("invite");
-  const inviteEmail = "";
-  const inviteMessage = "Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект.";
-  
+  const { submit } = usePropertySubmission();
+
   const requestData = location.state as { requestId?: string; requestName?: string; fromDashboard?: boolean } | undefined;
-  
-  const [propertyData, setPropertyData] = useState({
+
+  const [propertyData, setPropertyData] = useState<PropertyData>({
     address: "",
-    coordinates: [55.751574, 37.573856] as [number, number],
+    coordinates: [55.751574, 37.573856],
     area: "",
     floor: "",
     totalFloors: "",
@@ -47,123 +42,28 @@ export const SuggestProperty = () => {
     }
   }, [requestData?.requestId]);
 
-  const handleInviteNext = () => {
-    setStep("property");
-  };
-
-  const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSubmit = async () => {
-    if (!propertyData.address || !propertyData.rent) {
-      toast({
-        title: "Ошибка",
-        description: "Заполните обязательные поля",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const user = authStore.getUser();
-    if (!user) {
-      toast({
-        title: "Ошибка",
-        description: "Необходимо войти в систему",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
-    if (requestData?.requestId) {
-      const request = requestsStore.getRequestById(requestData.requestId);
-      const requestOwnerEmail = request?.userEmail || request?.userId;
-      if (requestOwnerEmail && requestOwnerEmail.toLowerCase() === user.email.toLowerCase()) {
-        toast({
-          title: "Нельзя отправить предложение",
-          description: "Вы не можете предложить вариант на свою же заявку",
-          variant: "destructive",
-        });
-        return;
+  const handleBack = () => {
+    if (step === "property") {
+      setStep("invite");
+    } else {
+      const user = authStore.getUser();
+      if (user || requestData?.fromDashboard) {
+        navigate("/dashboard", { state: { activeSection: "feed" } });
+      } else {
+        navigate("/feed");
       }
     }
+  };
 
-    let photoUrls: string[] = [];
-    try {
-      photoUrls = await Promise.all(photos.map(fileToDataUrl));
-    } catch {
-      photoUrls = [];
-    }
-
-    const userId = user.email || `user_${Date.now()}`;
-
-    let recommendation;
-    try {
-      recommendation = await recommendationsStore.addRecommendation({
-        userId,
-        requestId: requestData?.requestId,
-        requestName: requestData?.requestName,
-        ownerEmail: inviteEmail,
-        inviteMessage,
-        propertyData: {
-          ...propertyData,
-          area: propertyData.area || '',
-          floor: propertyData.floor || '',
-          totalFloors: propertyData.totalFloors || '',
-          rooms: propertyData.rooms || '',
-          comments: propertyData.comments || '',
-        },
-        photos: photoUrls,
-      });
-    } catch (err) {
-      console.error("Ошибка отправки предложения:", err);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отправить предложение. Попробуйте позже.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (requestData?.requestId) {
-      const request = requestsStore.getRequestById(requestData.requestId);
-      if (request) {
-        await messagesStore.fetchChatByRecommendation(recommendation.id);
-        const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
-        if (!existingChat) {
-          const tenantUser = authStore.getUser();
-          const tenantEmail = request.userEmail || request.userId;
-          const tenantPhoto = tenantUser?.email === tenantEmail ? tenantUser.photo : undefined;
-          const tenantVkLink = tenantUser?.email === tenantEmail ? tenantUser.vkLink : undefined;
-          
-          await messagesStore.createChat({
-            recommendationId: recommendation.id,
-            requestId: requestData.requestId,
-            requestName: requestData.requestName || request.name,
-            recommenderEmail: user.email,
-            recommenderName: `${user.firstName} ${user.lastName}`,
-            recommenderPhoto: user.photo,
-            recommenderVkLink: user.vkLink,
-            tenantEmail: request.userEmail || request.userId,
-            tenantName: request.name,
-            tenantPhoto: tenantPhoto,
-            tenantVkLink: tenantVkLink,
-          });
-        }
-      }
-    }
-
-    toast({
-      title: "Предложение отправлено!",
-      description: "Ваше предложение успешно отправлено арендатору",
+  const handleSubmit = () => {
+    submit({
+      propertyData,
+      photos,
+      requestId: requestData?.requestId,
+      requestName: requestData?.requestName,
+      inviteEmail: "",
+      inviteMessage: "Здравствуйте! Я рекомендую ваше жильё арендатору через платформу SovetPay. Это безопасный способ сдать квартиру без агентских комиссий. Пожалуйста, зарегистрируйтесь на платформе, чтобы подтвердить объект.",
     });
-
-    navigate("/dashboard", { state: { activeSection: "feed" } });
   };
 
   return (
@@ -171,18 +71,7 @@ export const SuggestProperty = () => {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => {
-              if (step === "property") {
-                setStep("invite");
-              } else {
-                const user = authStore.getUser();
-                if (user || requestData?.fromDashboard) {
-                  navigate("/dashboard", { state: { activeSection: "feed" } });
-                } else {
-                  navigate("/feed");
-                }
-              }
-            }}
+            onClick={handleBack}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -215,7 +104,7 @@ export const SuggestProperty = () => {
         {step === "invite" && (
           <InviteOwnerStep
             requestId={requestData?.requestId}
-            onNext={handleInviteNext}
+            onNext={() => setStep("property")}
           />
         )}
 
