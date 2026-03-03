@@ -16,9 +16,9 @@ def handle_list(params):
         cur.execute(f"""
             SELECT {TX_COLUMNS}
             FROM {S}escrow_transactions
-            WHERE tenant_email = '{email}' OR recommender_email = '{email}'
+            WHERE tenant_email = %s OR recommender_email = %s
             ORDER BY created_at DESC
-        """)
+        """, (email, email))
         rows = cur.fetchall()
         return resp(200, {'transactions': [tx_row_to_dict(r) for r in rows]})
     finally:
@@ -36,13 +36,13 @@ def handle_balance(params):
         cur = conn.cursor()
         cur.execute(f"""
             SELECT
-                COALESCE(SUM(CASE WHEN status = 'frozen' AND recommender_email = '{email}' THEN commission_amount ELSE 0 END), 0) as frozen,
-                COALESCE(SUM(CASE WHEN status = 'completed' AND recommender_email = '{email}' THEN commission_amount ELSE 0 END), 0) as completed,
-                COALESCE(SUM(CASE WHEN status = 'frozen' AND tenant_email = '{email}' THEN commission_amount ELSE 0 END), 0) as pending,
-                COALESCE(SUM(CASE WHEN status = 'completed' AND tenant_email = '{email}' THEN commission_amount ELSE 0 END), 0) as sent
+                COALESCE(SUM(CASE WHEN status = 'frozen' AND recommender_email = %s THEN commission_amount ELSE 0 END), 0) as frozen,
+                COALESCE(SUM(CASE WHEN status = 'completed' AND recommender_email = %s THEN commission_amount ELSE 0 END), 0) as completed,
+                COALESCE(SUM(CASE WHEN status = 'frozen' AND tenant_email = %s THEN commission_amount ELSE 0 END), 0) as pending,
+                COALESCE(SUM(CASE WHEN status = 'completed' AND tenant_email = %s THEN commission_amount ELSE 0 END), 0) as sent
             FROM {S}escrow_transactions
-            WHERE tenant_email = '{email}' OR recommender_email = '{email}'
-        """)
+            WHERE tenant_email = %s OR recommender_email = %s
+        """, (email, email, email, email, email, email))
         row = cur.fetchone()
         return resp(200, {
             'frozen': float(row[0]),
@@ -65,10 +65,10 @@ def handle_check_chat(params):
         cur = conn.cursor()
         cur.execute(f"""
             SELECT id, status, commission_amount FROM {S}escrow_transactions
-            WHERE chat_id = '{chat_id.replace("'", "''")}'
+            WHERE chat_id = %s
             AND status IN ('frozen', 'completed', 'pending')
             ORDER BY created_at DESC LIMIT 1
-        """)
+        """, (chat_id,))
         row = cur.fetchone()
         if row:
             return resp(200, {'hasActive': True, 'transactionId': str(row[0]), 'status': row[1], 'commissionAmount': float(row[2])})
@@ -92,14 +92,19 @@ def handle_create(event):
             INSERT INTO {S}escrow_transactions
                 (chat_id, recommendation_id, request_name, tenant_email, tenant_name,
                  recommender_email, recommender_name, rent_amount, commission_amount, status)
-            VALUES ('{body.get('chatId', '')}', '{body.get('recommendationId', '')}',
-                    '{body['requestName'].replace("'", "''")}',
-                    '{body['tenantEmail']}', '{body['tenantName'].replace("'", "''")}',
-                    '{body['recommenderEmail']}', '{body['recommenderName'].replace("'", "''")}',
-                    {float(body.get('rentAmount', 0))}, {float(body.get('commissionAmount', 0))},
-                    'frozen')
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'frozen')
             RETURNING id, created_at
-        """)
+        """, (
+            body.get('chatId', ''),
+            body.get('recommendationId', ''),
+            body['requestName'],
+            body['tenantEmail'],
+            body['tenantName'],
+            body['recommenderEmail'],
+            body['recommenderName'],
+            float(body.get('rentAmount', 0)),
+            float(body.get('commissionAmount', 0)),
+        ))
         row = cur.fetchone()
         conn.commit()
         return resp(201, {
@@ -130,10 +135,10 @@ def handle_update_status(event):
         cur = conn.cursor()
         cur.execute(f"""
             UPDATE {S}escrow_transactions
-            SET status = '{new_status}'{completed_sql}
-            WHERE id = {int(tx_id)}
+            SET status = %s{completed_sql}
+            WHERE id = %s
             RETURNING id, status, completed_at, recommender_email, recommender_name, tenant_name, request_name, commission_amount
-        """)
+        """, (new_status, int(tx_id)))
         row = cur.fetchone()
         conn.commit()
         if not row:
