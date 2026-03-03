@@ -95,6 +95,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
       const data = await res.json();
 
       if (res.ok && data.access_token) {
+        authStore.setAccessToken(data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
         authStore.setUser({
           firstName: data.user?.name?.split(' ')[0] || '',
