@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-from utils.db import query_one, escape, get_schema
+from utils.db import query_one, get_schema
 from utils.jwt_utils import create_access_token, decode_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from utils.http import response, error
 
@@ -35,10 +35,10 @@ def handle(event: dict, origin: str = '*') -> dict:
         SELECT rt.id, u.email, u.name
         FROM {S}refresh_tokens rt
         JOIN {S}users u ON u.id = rt.user_id
-        WHERE rt.token_hash = {escape(token_hash)}
-          AND rt.user_id = {escape(user_id)}
-          AND rt.expires_at > {escape(now)}
-    """)
+        WHERE rt.token_hash = %s
+          AND rt.user_id = %s
+          AND rt.expires_at > %s
+    """, (token_hash, user_id, now))
 
     if not result:
         return error(401, 'Refresh token revoked or expired', origin)

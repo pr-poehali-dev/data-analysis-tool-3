@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-from utils.db import query_one, execute, escape, get_schema
+from utils.db import query_one, execute, get_schema
 from utils.password import verify_password
 from utils.jwt_utils import create_access_token, create_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from utils.email import is_email_enabled
@@ -33,8 +33,8 @@ def handle(event: dict, origin: str = '*') -> dict:
 
     rate_check = query_one(f"""
         SELECT failed_login_attempts, last_failed_login_at
-        FROM {S}users WHERE email = {escape(email)}
-    """)
+        FROM {S}users WHERE email = %s
+    """, (email,))
 
     if rate_check:
         attempts, last_failed = rate_check
@@ -46,8 +46,8 @@ def handle(event: dict, origin: str = '*') -> dict:
 
     user = query_one(f"""
         SELECT id, email, name, password_hash, email_verified
-        FROM {S}users WHERE email = {escape(email)}
-    """)
+        FROM {S}users WHERE email = %s
+    """, (email,))
 
     auth_error_msg = 'Неверный email или пароль'
 
@@ -61,12 +61,11 @@ def handle(event: dict, origin: str = '*') -> dict:
         execute(f"""
             UPDATE {S}users
             SET failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1,
-                last_failed_login_at = {escape(now)}
-            WHERE email = {escape(email)}
-        """)
+                last_failed_login_at = %s
+            WHERE email = %s
+        """, (now, email))
         return error(401, auth_error_msg, origin)
 
-    # Check email verification if SMTP is configured
     if is_email_enabled() and not email_verified:
         return error(403, 'Email не подтверждён. Проверьте почту.', origin)
 
@@ -75,9 +74,9 @@ def handle(event: dict, origin: str = '*') -> dict:
         UPDATE {S}users
         SET failed_login_attempts = 0,
             last_failed_login_at = NULL,
-            last_login_at = {escape(now)}
-        WHERE id = {escape(user_id)}
-    """)
+            last_login_at = %s
+        WHERE id = %s
+    """, (now, user_id))
 
     access_token = create_access_token(user_id, user_email)
     refresh_token, refresh_expires = create_refresh_token(user_id)
@@ -87,8 +86,8 @@ def handle(event: dict, origin: str = '*') -> dict:
 
     execute(f"""
         INSERT INTO {S}refresh_tokens (user_id, token_hash, expires_at, created_at)
-        VALUES ({escape(user_id)}, {escape(refresh_hash)}, {escape(expires_at)}, {escape(now)})
-    """)
+        VALUES (%s, %s, %s, %s)
+    """, (user_id, refresh_hash, expires_at, now))
 
     return response(200, {
         'access_token': access_token,

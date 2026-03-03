@@ -1,7 +1,7 @@
 """Database utilities for Simple Query Protocol."""
 import os
 import psycopg2
-from typing import Any
+from typing import Any, Optional
 
 
 def get_connection():
@@ -19,55 +19,54 @@ def get_schema() -> str:
 
 
 def escape(value: Any) -> str:
-    """Escape value for SQL (simple protocol)."""
+    """Deprecated: use parameterized queries instead."""
     if value is None:
         return 'NULL'
     if isinstance(value, bool):
         return 'TRUE' if value else 'FALSE'
     if isinstance(value, (int, float)):
         return str(value)
-    # String - escape single quotes
     s = str(value).replace("'", "''")
     return f"'{s}'"
 
 
-def query(sql: str) -> list:
+def query(sql: str, params: Optional[tuple] = None) -> list:
     """Execute SELECT query and return all rows."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(sql)
+    cur.execute(sql, params)
     rows = cur.fetchall()
     cur.close()
     conn.close()
     return rows
 
 
-def query_one(sql: str):
+def query_one(sql: str, params: Optional[tuple] = None):
     """Execute SELECT query and return first row or None."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(sql)
+    cur.execute(sql, params)
     row = cur.fetchone()
     cur.close()
     conn.close()
     return row
 
 
-def execute(sql: str) -> None:
+def execute(sql: str, params: Optional[tuple] = None) -> None:
     """Execute INSERT/UPDATE/DELETE query."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(sql)
+    cur.execute(sql, params)
     conn.commit()
     cur.close()
     conn.close()
 
 
-def execute_returning(sql: str):
+def execute_returning(sql: str, params: Optional[tuple] = None):
     """Execute INSERT with RETURNING and return first value."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(sql)
+    cur.execute(sql, params)
     result = cur.fetchone()
     conn.commit()
     cur.close()

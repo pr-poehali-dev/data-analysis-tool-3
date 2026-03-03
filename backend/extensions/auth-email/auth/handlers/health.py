@@ -21,31 +21,32 @@ def handle(event: dict, origin: str = '*') -> dict:
         return error(500, 'MAIN_DB_SCHEMA not configured', origin)
 
     schema_name = S.rstrip('.')
-    errors = []
+
+    errors_list = []
 
     for table in REQUIRED_TABLES:
         result = query_one(f"""
             SELECT 1 FROM information_schema.tables
-            WHERE table_schema = '{schema_name}' AND table_name = '{table}'
-        """)
+            WHERE table_schema = %s AND table_name = %s
+        """, (schema_name, table))
 
         if not result:
-            errors.append(f"Table '{table}' not found in schema '{schema_name}'")
+            errors_list.append(f"Table '{table}' not found in schema '{schema_name}'")
             continue
 
         for column in REQUIRED_COLUMNS[table]:
             col_result = query_one(f"""
                 SELECT 1 FROM information_schema.columns
-                WHERE table_schema = '{schema_name}'
-                AND table_name = '{table}'
-                AND column_name = '{column}'
-            """)
+                WHERE table_schema = %s
+                AND table_name = %s
+                AND column_name = %s
+            """, (schema_name, table, column))
 
             if not col_result:
-                errors.append(f"Column '{column}' not found in table '{schema_name}.{table}'")
+                errors_list.append(f"Column '{column}' not found in table '{schema_name}.{table}'")
 
-    if errors:
-        return error(500, f"Schema validation failed: {'; '.join(errors)}", origin)
+    if errors_list:
+        return error(500, f"Schema validation failed: {'; '.join(errors_list)}", origin)
 
     return response(200, {
         'status': 'ok',

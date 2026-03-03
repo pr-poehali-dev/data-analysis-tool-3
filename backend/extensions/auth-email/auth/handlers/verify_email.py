@@ -2,7 +2,7 @@
 import json
 from datetime import datetime
 
-from utils.db import query_one, execute, escape, get_schema
+from utils.db import query_one, execute, get_schema
 from utils.http import response, error
 
 
@@ -20,8 +20,7 @@ def handle(event: dict, origin: str = '*') -> dict:
     now = datetime.utcnow().isoformat()
     S = get_schema()
 
-    # Find user by email
-    user = query_one(f"SELECT id, email_verified FROM {S}users WHERE email = {escape(email)}")
+    user = query_one(f"SELECT id, email_verified FROM {S}users WHERE email = %s", (email,))
     if not user:
         return error(404, 'Пользователь не найден', origin)
 
@@ -30,24 +29,21 @@ def handle(event: dict, origin: str = '*') -> dict:
     if already_verified:
         return response(200, {'message': 'Email уже подтверждён'}, origin)
 
-    # Find valid code
     token_record = query_one(f"""
         SELECT id FROM {S}email_verification_tokens
-        WHERE user_id = {escape(user_id)}
-          AND token_hash = {escape(code)}
-          AND expires_at > {escape(now)}
-    """)
+        WHERE user_id = %s
+          AND token_hash = %s
+          AND expires_at > %s
+    """, (user_id, code, now))
 
     if not token_record:
         return error(400, 'Неверный или истёкший код', origin)
 
-    # Mark email as verified
     execute(f"""
-        UPDATE {S}users SET email_verified = TRUE, updated_at = {escape(now)}
-        WHERE id = {escape(user_id)}
-    """)
+        UPDATE {S}users SET email_verified = TRUE, updated_at = %s
+        WHERE id = %s
+    """, (now, user_id))
 
-    # Delete used token
-    execute(f"DELETE FROM {S}email_verification_tokens WHERE user_id = {escape(user_id)}")
+    execute(f"DELETE FROM {S}email_verification_tokens WHERE user_id = %s", (user_id,))
 
     return response(200, {'message': 'Email подтверждён'}, origin)
