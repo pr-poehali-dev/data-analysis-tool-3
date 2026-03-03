@@ -207,16 +207,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             transition={{ delay: 0.2 }}
             className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
-                  <Icon name="HelpCircle" size={18} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                Сумма, замороженная на эскроу по вашим заявкам как арендатора до подтверждения сделки
-              </TooltipContent>
-            </Tooltip>
+            <MobileTooltip text="Сумма, замороженная на эскроу по вашим заявкам как арендатора до подтверждения сделки" />
             <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Clock" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">К оплате</span>
@@ -233,16 +224,7 @@ export const DashboardBalanceSection = ({ userEmail, userName }: DashboardBalanc
             transition={{ delay: 0.3 }}
             className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 sm:p-6 text-white shadow-lg relative"
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-60 hover:opacity-100 transition-opacity">
-                  <Icon name="HelpCircle" size={18} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                Общая сумма средств, отправленных вами как арендатором рекомендателям по завершённым сделкам
-              </TooltipContent>
-            </Tooltip>
+            <MobileTooltip text="Общая сумма средств, отправленных вами как арендатором рекомендателям по завершённым сделкам" />
             <div className="flex items-center justify-between mb-2 mt-5">
               <Icon name="Send" size={24} className="opacity-80" />
               <span className="text-sm opacity-80">Отправлено</span>
