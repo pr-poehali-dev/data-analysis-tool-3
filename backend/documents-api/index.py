@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, timezone
 import psycopg2
-from auth_utils import get_auth_email, require_auth
+from auth_utils import require_auth, auth_error_response
 
 
 def get_connection():
@@ -41,12 +41,6 @@ def parse_body(event):
     return json.loads(body_str)
 
 
-def get_user_email(event):
-    headers = event.get('headers', {})
-    return (headers.get('X-User-Email') or
-            headers.get('x-user-email') or '')
-
-
 def row_to_dict(row):
     return {
         'id': str(row[0]),
@@ -63,11 +57,7 @@ COLUMNS = "id, user_email, type, file_name, data, created_at, updated_at"
 
 
 def handle_get_documents(event):
-    params = event.get('queryStringParameters') or {}
-    auth_email = get_auth_email(event)
-    user_email = auth_email or params.get('user_email') or get_user_email(event)
-    if not user_email:
-        return response(400, {'error': 'user_email обязателен'})
+    auth_email = require_auth(event)
 
     S = get_schema()
     conn = get_connection()
@@ -77,7 +67,7 @@ def handle_get_documents(event):
             SELECT {COLUMNS} FROM {S}documents
             WHERE user_email = %s
             ORDER BY updated_at DESC
-        """, (user_email,))
+        """, (auth_email,))
         rows = cur.fetchall()
         return response(200, {'documents': [row_to_dict(r) for r in rows]})
     finally:
@@ -85,6 +75,8 @@ def handle_get_documents(event):
 
 
 def handle_get_document(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     doc_id = params.get('id')
     if not doc_id:
@@ -98,8 +90,7 @@ def handle_get_document(event):
         row = cur.fetchone()
         if not row:
             return response(404, {'error': 'Документ не найден'})
-        auth_email = get_auth_email(event)
-        if auth_email and row[1] != auth_email:
+        if row[1] != auth_email:
             return response(403, {'error': 'Нет доступа к этому документу'})
         return response(200, {'document': row_to_dict(row)})
     finally:
@@ -107,11 +98,8 @@ def handle_get_document(event):
 
 
 def handle_save_document(event):
+    auth_email = require_auth(event)
     body = parse_body(event)
-    auth_email = get_auth_email(event)
-    user_email = auth_email or body.get('userEmail') or get_user_email(event)
-    if not user_email:
-        return response(400, {'error': 'userEmail обязателен'})
 
     doc_type = body.get('type', 'rental-agreement')
     file_name = body.get('fileName', '')
@@ -124,30 +112,29 @@ def handle_save_document(event):
     try:
         cur = conn.cursor()
 
-        if existing_id and auth_email:
+        if existing_id:
             cur.execute(f"SELECT user_email FROM {S}documents WHERE id = %s", (existing_id,))
             owner = cur.fetchone()
-            if owner and owner[0] != auth_email:
+            if not owner:
+                return response(404, {'error': 'Документ не найден'})
+            if owner[0] != auth_email:
                 return response(403, {'error': 'Нет доступа к этому документу'})
 
-        if existing_id:
-            cur.execute(f"SELECT id FROM {S}documents WHERE id = %s", (existing_id,))
-            if cur.fetchone():
-                cur.execute(f"""
-                    UPDATE {S}documents
-                    SET data = %s, file_name = %s, updated_at = %s
-                    WHERE id = %s
-                    RETURNING {COLUMNS}
-                """, (json.dumps(data), file_name, now, existing_id))
-                row = cur.fetchone()
-                conn.commit()
-                return response(200, {'document': row_to_dict(row)})
+            cur.execute(f"""
+                UPDATE {S}documents
+                SET data = %s, file_name = %s, updated_at = %s
+                WHERE id = %s
+                RETURNING {COLUMNS}
+            """, (json.dumps(data), file_name, now, existing_id))
+            row = cur.fetchone()
+            conn.commit()
+            return response(200, {'document': row_to_dict(row)})
 
         cur.execute(f"""
             INSERT INTO {S}documents (user_email, type, file_name, data, created_at, updated_at)
             VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING {COLUMNS}
-        """, (user_email, doc_type, file_name, json.dumps(data), now, now))
+        """, (auth_email, doc_type, file_name, json.dumps(data), now, now))
         row = cur.fetchone()
         conn.commit()
         return response(201, {'document': row_to_dict(row)})
@@ -160,6 +147,8 @@ def handle_save_document(event):
 
 
 def handle_delete_document(event):
+    auth_email = require_auth(event)
+
     params = event.get('queryStringParameters') or {}
     doc_id = params.get('id')
     if not doc_id:
@@ -173,17 +162,15 @@ def handle_delete_document(event):
     try:
         cur = conn.cursor()
 
-        auth_email = get_auth_email(event)
-        if auth_email:
-            cur.execute(f"SELECT user_email FROM {S}documents WHERE id = %s", (doc_id,))
-            owner = cur.fetchone()
-            if not owner or owner[0] != auth_email:
-                return response(403, {'error': 'Нет доступа к этому документу'})
+        cur.execute(f"SELECT user_email FROM {S}documents WHERE id = %s", (doc_id,))
+        owner = cur.fetchone()
+        if not owner:
+            return response(404, {'error': 'Документ не найден'})
+        if owner[0] != auth_email:
+            return response(403, {'error': 'Нет доступа к этому документу'})
 
         cur.execute(f"DELETE FROM {S}documents WHERE id = %s", (doc_id,))
         conn.commit()
-        if cur.rowcount == 0:
-            return response(404, {'error': 'Документ не найден'})
         return response(200, {'success': True})
     except Exception as e:
         conn.rollback()
@@ -206,15 +193,18 @@ def handler(event, context):
     params = event.get('queryStringParameters') or {}
     action = params.get('action', '')
 
-    if method == 'GET' and action == 'get_one':
-        return handle_get_document(event)
-    elif method == 'GET':
-        return handle_get_documents(event)
-    elif method == 'POST':
-        return handle_save_document(event)
-    elif method == 'PUT':
-        return handle_save_document(event)
-    elif method == 'DELETE':
-        return handle_delete_document(event)
+    try:
+        if method == 'GET' and action == 'get_one':
+            return handle_get_document(event)
+        elif method == 'GET':
+            return handle_get_documents(event)
+        elif method == 'POST':
+            return handle_save_document(event)
+        elif method == 'PUT':
+            return handle_save_document(event)
+        elif method == 'DELETE':
+            return handle_delete_document(event)
 
-    return response(405, {'error': 'Метод не поддерживается'})
+        return response(405, {'error': 'Метод не поддерживается'})
+    except PermissionError as e:
+        return auth_error_response(401, str(e))

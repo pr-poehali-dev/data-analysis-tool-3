@@ -1,32 +1,43 @@
 {
   "tests": [
     {
-      "name": "GET documents list",
-      "method": "GET",
-      "path": "/?user_email=test@example.com",
-      "expectedStatus": 200
-    },
-    {
-      "name": "POST create document",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "userEmail": "testcreate@example.com",
-        "type": "rental-agreement",
-        "fileName": "Test_contract.docx",
-        "data": {"contractCity": "Москва"}
-      },
-      "expectedStatus": 201,
-      "expectedBody": {
-        "document": {"id": "string"}
-      },
-      "bodyMatcher": "partial"
-    },
-    {
       "name": "OPTIONS CORS",
       "method": "OPTIONS",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "GET documents list without token returns 401",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET single document without token returns 401",
+      "method": "GET",
+      "path": "/?action=get_one&id=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST create document without token returns 401",
+      "method": "POST",
+      "path": "/",
+      "body": {"type": "rental-agreement", "fileName": "test.docx", "data": {}},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "DELETE document without token returns 401",
+      "method": "DELETE",
+      "path": "/?id=1",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
     }
   ]
 }
