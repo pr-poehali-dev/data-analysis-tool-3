@@ -52,12 +52,16 @@ def generate_token(length: int = 32) -> str:
     return secrets.token_urlsafe(length)
 
 
-def create_jwt(user_id: int, secret: str, expires_in: int = 900) -> str:
+def create_jwt(user_id: int, secret: str, email: str = "", expires_in: int = 900) -> str:
     payload = {
+        "sub": str(user_id),
         "user_id": user_id,
         "exp": datetime.now(timezone.utc) + timedelta(seconds=expires_in),
         "iat": datetime.now(timezone.utc),
+        "type": "access",
     }
+    if email:
+        payload["email"] = email
     return jwt.encode(payload, secret, algorithm="HS256")
 
 
@@ -351,8 +355,8 @@ def handle_callback(cursor, body: dict) -> dict:
     # Mark token as used
     mark_token_used(cursor, token)
 
-    # Generate tokens
-    access_token = create_jwt(user["id"], jwt_secret)
+    user_email = user.get("email") or f'tg_{user.get("telegram_id", user["id"])}'
+    access_token = create_jwt(user["id"], jwt_secret, email=user_email)
     refresh_token = generate_token(48)
     refresh_token_hash = hash_token(refresh_token)
     refresh_expires = datetime.now(timezone.utc) + timedelta(days=30)
@@ -387,8 +391,8 @@ def handle_refresh(cursor, body: dict) -> dict:
     if not user:
         return cors_response(401, {"error": "User not found"})
 
-    # Generate new access token
-    access_token = create_jwt(user["id"], jwt_secret)
+    user_email = user.get("email") or f'tg_{user.get("telegram_id", user["id"])}'
+    access_token = create_jwt(user["id"], jwt_secret, email=user_email)
 
     return cors_response(200, {
         "access_token": access_token,
