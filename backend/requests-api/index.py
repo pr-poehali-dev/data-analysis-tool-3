@@ -2,11 +2,13 @@
 import json
 from utils import response
 from handlers import handle_list, handle_create, handle_update, handle_delete
-from auth_utils import auth_error_response
+from auth_utils import auth_error_response, set_request_origin
 
 
 def handler(event, context):
     """API для управления заявками на аренду."""
+    set_request_origin(event)
+
     if event.get('httpMethod') == 'OPTIONS':
         return response(200, {})
 

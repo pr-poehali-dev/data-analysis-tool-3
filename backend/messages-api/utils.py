@@ -14,18 +14,13 @@ def get_schema() -> str:
     return f"{schema}." if schema else ""
 
 
-CORS_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization, X-User-Email',
-}
+from auth_utils import get_cors_headers
 
 
 def response(status, body):
     return {
         'statusCode': status,
-        'headers': CORS_HEADERS,
+        'headers': get_cors_headers(),
         'body': json.dumps(body, default=str),
     }
 

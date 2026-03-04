@@ -2,13 +2,13 @@
 from datetime import datetime, timezone
 from utils import (
     get_connection, get_schema, response, parse_body,
-    CORS_HEADERS, CHAT_COLUMNS, chat_row_to_dict,
+    CHAT_COLUMNS, chat_row_to_dict,
 )
 from message_handlers import (
     handle_get_messages, handle_send_message,
     handle_mark_read, handle_unread_count,
 )
-from auth_utils import require_auth, auth_error_response
+from auth_utils import require_auth, auth_error_response, set_request_origin, get_cors_headers
 
 
 def handle_get_chats(event):
@@ -171,10 +171,12 @@ def handle_delete_chat(event):
 
 def handler(event, context):
     """API для чатов и сообщений между арендаторами и рекомендателями."""
+    set_request_origin(event)
+
     if event.get('httpMethod') == 'OPTIONS':
         return {
             'statusCode': 200,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': '',
         }
 

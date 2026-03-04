@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime, timezone
 import psycopg2
-from auth_utils import require_auth, auth_error_response
+from auth_utils import require_auth, auth_error_response, set_request_origin, get_cors_headers
 
 MAX_BODY_SIZE = 5 * 1024 * 1024
 MAX_DATA_SIZE = 5 * 1024 * 1024
@@ -18,18 +18,10 @@ def get_schema() -> str:
     return f"{schema}." if schema else ""
 
 
-CORS_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization, X-User-Email',
-}
-
-
 def response(status, body):
     return {
         'statusCode': status,
-        'headers': CORS_HEADERS,
+        'headers': get_cors_headers(),
         'body': json.dumps(body, default=str),
     }
 
@@ -192,10 +184,12 @@ def handle_delete_document(event):
 
 def handler(event, context):
     """API документов: CRUD операции для договоров аренды и других документов."""
+    set_request_origin(event)
+
     if event.get('httpMethod') == 'OPTIONS':
         return {
             'statusCode': 200,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': '',
         }
 
