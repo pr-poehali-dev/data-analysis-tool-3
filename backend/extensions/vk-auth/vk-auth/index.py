@@ -23,9 +23,12 @@ VK_USER_INFO_URL = "https://id.vk.com/oauth2/user_info"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
+REFRESH_COOKIE_NAME = 'refresh_token'
+
 HEADERS = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
     'Content-Type': 'application/json'
 }
 
@@ -177,6 +180,40 @@ def get_vk_user_info(access_token: str, client_id: str) -> dict:
 # HELPERS
 # =============================================================================
 
+def make_refresh_cookie(token: str) -> str:
+    max_age = REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    return (
+        f"{REFRESH_COOKIE_NAME}={token}; "
+        f"HttpOnly; Secure; SameSite=None; Path=/; Max-Age={max_age}"
+    )
+
+
+def clear_refresh_cookie() -> str:
+    return (
+        f"{REFRESH_COOKIE_NAME}=; "
+        f"HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0"
+    )
+
+
+def get_refresh_token_from_cookie(event: dict) -> str:
+    from http.cookies import SimpleCookie
+    headers = event.get('headers', {}) or {}
+    cookie_str = (
+        headers.get('X-Cookie') or headers.get('x-cookie')
+        or headers.get('Cookie') or headers.get('cookie') or ''
+    )
+    if not cookie_str:
+        return ''
+    try:
+        c = SimpleCookie()
+        c.load(cookie_str)
+        if REFRESH_COOKIE_NAME in c:
+            return c[REFRESH_COOKIE_NAME].value
+    except Exception:
+        pass
+    return ''
+
+
 def get_allowed_origins() -> list[str]:
     """Get list of allowed origins from environment."""
     origins = os.environ.get('ALLOWED_ORIGINS', '')
@@ -193,16 +230,18 @@ def is_origin_allowed(origin: str) -> bool:
     return origin in allowed
 
 
-def response(status_code: int, body: dict, origin: str = '*') -> dict:
+def response(status_code: int, body: dict, origin: str = '*', set_cookie: str = '') -> dict:
     """Create HTTP response."""
     headers = HEADERS.copy()
-    # Use specific origin if allowed, otherwise deny
     if origin != '*' and is_origin_allowed(origin):
         headers['Access-Control-Allow-Origin'] = origin
     elif not get_allowed_origins():
         headers['Access-Control-Allow-Origin'] = origin if origin != '*' else '*'
     else:
         headers['Access-Control-Allow-Origin'] = 'null'
+
+    if set_cookie:
+        headers['X-Set-Cookie'] = set_cookie
 
     return {
         'statusCode': status_code,
@@ -404,7 +443,7 @@ def handle_callback(event: dict, origin: str) -> dict:
                     'avatar_url': photo_url,
                     'vk_id': str(vk_user_id)
                 }
-            }, origin)
+            }, origin, set_cookie=make_refresh_cookie(refresh_token))
 
         except Exception:
             conn.rollback()
@@ -420,16 +459,18 @@ def handle_callback(event: dict, origin: str) -> dict:
 
 def handle_refresh(event: dict, origin: str) -> dict:
     """Refresh access token."""
-    body_str = event.get('body', '{}')
-    if event.get('isBase64Encoded'):
-        body_str = base64.b64decode(body_str).decode('utf-8')
+    refresh_token = get_refresh_token_from_cookie(event)
 
-    try:
-        payload = json.loads(body_str)
-    except json.JSONDecodeError:
-        return error(400, 'Invalid JSON', origin)
+    if not refresh_token:
+        body_str = event.get('body', '{}')
+        if event.get('isBase64Encoded'):
+            body_str = base64.b64decode(body_str).decode('utf-8')
+        try:
+            payload = json.loads(body_str)
+        except json.JSONDecodeError:
+            return error(400, 'Invalid JSON', origin)
+        refresh_token = payload.get('refresh_token', '')
 
-    refresh_token = payload.get('refresh_token', '')
     if not refresh_token:
         return error(400, 'refresh_token is required', origin)
 
@@ -480,7 +521,7 @@ def handle_refresh(event: dict, origin: str) -> dict:
                 'avatar_url': avatar_url,
                 'vk_id': vk_id
             }
-        }, origin)
+        }, origin, set_cookie=make_refresh_cookie(refresh_token))
 
     except Exception:
         return error(500, 'Internal server error', origin)
@@ -490,16 +531,18 @@ def handle_refresh(event: dict, origin: str) -> dict:
 
 def handle_logout(event: dict, origin: str) -> dict:
     """Logout user by invalidating refresh token."""
-    body_str = event.get('body', '{}')
-    if event.get('isBase64Encoded'):
-        body_str = base64.b64decode(body_str).decode('utf-8')
+    refresh_token = get_refresh_token_from_cookie(event)
 
-    try:
-        payload = json.loads(body_str)
-    except json.JSONDecodeError:
-        return error(400, 'Invalid JSON', origin)
+    if not refresh_token:
+        body_str = event.get('body', '{}')
+        if event.get('isBase64Encoded'):
+            body_str = base64.b64decode(body_str).decode('utf-8')
+        try:
+            payload = json.loads(body_str)
+        except json.JSONDecodeError:
+            payload = {}
+        refresh_token = payload.get('refresh_token', '')
 
-    refresh_token = payload.get('refresh_token', '')
     if refresh_token:
         S = get_schema()
         conn = get_connection()
@@ -510,7 +553,6 @@ def handle_logout(event: dict, origin: str) -> dict:
                 f"DELETE FROM {S}refresh_tokens WHERE token_hash = %s",
                 (token_hash,)
             )
-            # Also cleanup expired tokens
             cleanup_expired_tokens(cur, S)
             conn.commit()
         except Exception:
@@ -518,7 +560,7 @@ def handle_logout(event: dict, origin: str) -> dict:
         finally:
             conn.close()
 
-    return response(200, {'message': 'Logged out'}, origin)
+    return response(200, {'message': 'Logged out'}, origin, set_cookie=clear_refresh_cookie())
 
 
 # =============================================================================

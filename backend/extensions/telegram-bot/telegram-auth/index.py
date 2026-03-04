@@ -276,27 +276,76 @@ def cleanup_expired_refresh_tokens(cursor) -> None:
 # CORS HELPERS
 # =============================================================================
 
-def get_cors_headers() -> dict:
-    allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*")
+REFRESH_COOKIE_NAME = 'refresh_token'
+REFRESH_TOKEN_EXPIRE_DAYS = 30
+
+
+def make_refresh_cookie(token: str) -> str:
+    max_age = REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    return (
+        f"{REFRESH_COOKIE_NAME}={token}; "
+        f"HttpOnly; Secure; SameSite=None; Path=/; Max-Age={max_age}"
+    )
+
+
+def clear_refresh_cookie() -> str:
+    return (
+        f"{REFRESH_COOKIE_NAME}=; "
+        f"HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0"
+    )
+
+
+def get_refresh_token_from_cookie(event: dict) -> str:
+    from http.cookies import SimpleCookie
+    headers = event.get('headers', {}) or {}
+    cookie_str = (
+        headers.get('X-Cookie') or headers.get('x-cookie')
+        or headers.get('Cookie') or headers.get('cookie') or ''
+    )
+    if not cookie_str:
+        return ''
+    try:
+        c = SimpleCookie()
+        c.load(cookie_str)
+        if REFRESH_COOKIE_NAME in c:
+            return c[REFRESH_COOKIE_NAME].value
+    except Exception:
+        pass
+    return ''
+
+
+def get_cors_origin(event: dict) -> str:
+    headers = event.get('headers', {}) or {}
+    origin = headers.get('Origin') or headers.get('origin') or ''
+    if origin:
+        return origin
+    return os.environ.get("ALLOWED_ORIGINS", "*")
+
+
+def get_cors_headers(origin: str = '*') -> dict:
     return {
-        "Access-Control-Allow-Origin": allowed_origins,
+        "Access-Control-Allow-Origin": origin,
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Credentials": "true",
     }
 
 
-def cors_response(status: int, body: dict) -> dict:
+def cors_response(status: int, body: dict, origin: str = '*', set_cookie: str = '') -> dict:
+    headers = {**get_cors_headers(origin), "Content-Type": "application/json"}
+    if set_cookie:
+        headers['X-Set-Cookie'] = set_cookie
     return {
         "statusCode": status,
-        "headers": {**get_cors_headers(), "Content-Type": "application/json"},
+        "headers": headers,
         "body": json.dumps(body),
     }
 
 
-def options_response() -> dict:
+def options_response(origin: str = '*') -> dict:
     return {
         "statusCode": 204,
-        "headers": get_cors_headers(),
+        "headers": get_cors_headers(origin),
         "body": "",
     }
 
@@ -305,7 +354,7 @@ def options_response() -> dict:
 # ACTION HANDLERS
 # =============================================================================
 
-def handle_callback(cursor, body: dict) -> dict:
+def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
     """
     POST ?action=callback
     Frontend calls this with token to exchange for JWT.
@@ -313,34 +362,29 @@ def handle_callback(cursor, body: dict) -> dict:
     """
     token = body.get("token")
     if not token:
-        return cors_response(400, {"error": "Missing token"})
+        return cors_response(400, {"error": "Missing token"}, origin)
 
     token_data = get_auth_token(cursor, token)
 
     if not token_data:
-        return cors_response(404, {"error": "Token not found"})
+        return cors_response(404, {"error": "Token not found"}, origin)
 
-    # Check if expired (handle both naive and aware datetime from DB)
     expires_at = token_data["expires_at"]
     now = datetime.now(timezone.utc)
-    # Convert to naive UTC for comparison if needed
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < now:
-        return cors_response(410, {"error": "Token expired"})
+        return cors_response(410, {"error": "Token expired"}, origin)
 
-    # Check if already used
     if token_data["used"]:
-        return cors_response(410, {"error": "Token already used"})
+        return cors_response(410, {"error": "Token already used"}, origin)
 
-    # Check if user data exists
     if not token_data["telegram_id"]:
-        return cors_response(400, {"error": "Token not authenticated"})
+        return cors_response(400, {"error": "Token not authenticated"}, origin)
 
-    # Get JWT secret
     jwt_secret = get_env("JWT_SECRET")
     if len(jwt_secret) < 32:
-        return cors_response(500, {"error": "Server configuration error"})
+        return cors_response(500, {"error": "Server configuration error"}, origin)
 
     # Create or update user
     user = create_or_update_user(
@@ -368,28 +412,34 @@ def handle_callback(cursor, body: dict) -> dict:
         "refresh_token": refresh_token,
         "expires_in": 900,
         "user": user,
-    })
+    }, origin, set_cookie=make_refresh_cookie(refresh_token))
 
 
-def handle_refresh(cursor, body: dict) -> dict:
+def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') -> dict:
     """
     POST ?action=refresh
     Refresh access token using refresh token.
     """
-    refresh_token = body.get("refresh_token")
+    refresh_token = ''
+    if event:
+        refresh_token = get_refresh_token_from_cookie(event)
+
     if not refresh_token:
-        return cors_response(400, {"error": "Missing refresh_token"})
+        refresh_token = body.get("refresh_token", "")
+
+    if not refresh_token:
+        return cors_response(400, {"error": "Missing refresh_token"}, origin)
 
     jwt_secret = get_env("JWT_SECRET")
     token_hash = hash_token(refresh_token)
 
     token_data = find_refresh_token(cursor, token_hash)
     if not token_data:
-        return cors_response(401, {"error": "Invalid or expired refresh token"})
+        return cors_response(401, {"error": "Invalid or expired refresh token"}, origin)
 
     user = get_user_by_id(cursor, token_data["user_id"])
     if not user:
-        return cors_response(401, {"error": "User not found"})
+        return cors_response(401, {"error": "User not found"}, origin)
 
     user_email = user.get("email") or f'tg_{user.get("telegram_id", user["id"])}'
     access_token = create_jwt(user["id"], jwt_secret, email=user_email)
@@ -398,20 +448,26 @@ def handle_refresh(cursor, body: dict) -> dict:
         "access_token": access_token,
         "expires_in": 900,
         "user": user,
-    })
+    }, origin, set_cookie=make_refresh_cookie(refresh_token))
 
 
-def handle_logout(cursor, body: dict) -> dict:
+def handle_logout(cursor, body: dict, event: dict = None, origin: str = '*') -> dict:
     """
     POST ?action=logout
     Invalidate refresh token.
     """
-    refresh_token = body.get("refresh_token")
+    refresh_token = ''
+    if event:
+        refresh_token = get_refresh_token_from_cookie(event)
+
+    if not refresh_token:
+        refresh_token = body.get("refresh_token", "")
+
     if refresh_token:
         token_hash = hash_token(refresh_token)
         delete_refresh_token(cursor, token_hash)
 
-    return cors_response(200, {"success": True})
+    return cors_response(200, {"success": True}, origin, set_cookie=clear_refresh_cookie())
 
 
 # =============================================================================
@@ -421,53 +477,49 @@ def handle_logout(cursor, body: dict) -> dict:
 def handler(event, context):
     """Main entry point."""
     method = event.get("httpMethod", "GET")
+    origin = get_cors_origin(event)
 
-    # Handle CORS preflight
     if method == "OPTIONS":
-        return options_response()
+        return options_response(origin)
 
-    # Parse query params
     params = event.get("queryStringParameters") or {}
     action = params.get("action", "")
 
-    # Parse body for POST requests
     body = {}
     if method == "POST":
         raw_body = event.get("body", "{}")
         try:
             body = json.loads(raw_body) if raw_body else {}
         except json.JSONDecodeError:
-            return cors_response(400, {"error": "Invalid JSON"})
+            return cors_response(400, {"error": "Invalid JSON"}, origin)
 
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Cleanup expired tokens periodically
         cleanup_expired_tokens(cursor)
         cleanup_expired_refresh_tokens(cursor)
 
-        # Route to action handler
         if action == "callback" and method == "POST":
-            response = handle_callback(cursor, body)
+            result = handle_callback(cursor, body, origin)
         elif action == "refresh" and method == "POST":
-            response = handle_refresh(cursor, body)
+            result = handle_refresh(cursor, body, event, origin)
         elif action == "logout" and method == "POST":
-            response = handle_logout(cursor, body)
+            result = handle_logout(cursor, body, event, origin)
         else:
-            response = cors_response(400, {"error": f"Unknown action: {action}"})
+            result = cors_response(400, {"error": f"Unknown action: {action}"}, origin)
 
         conn.commit()
-        return response
+        return result
 
-    except ValueError as e:
-        return cors_response(500, {"error": "Server configuration error"})
+    except ValueError:
+        return cors_response(500, {"error": "Server configuration error"}, origin)
     except Exception as e:
         if conn:
             conn.rollback()
         print(f"Error: {e}")
-        return cors_response(500, {"error": "Internal server error"})
+        return cors_response(500, {"error": "Internal server error"}, origin)
     finally:
         if conn:
             conn.close()
