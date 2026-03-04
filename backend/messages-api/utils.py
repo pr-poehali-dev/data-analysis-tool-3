@@ -30,10 +30,15 @@ def response(status, body):
     }
 
 
+MAX_BODY_SIZE = 70 * 1024 * 1024
+
+
 def parse_body(event):
     body_str = event.get('body', '{}')
     if not body_str:
         return {}
+    if len(body_str) > MAX_BODY_SIZE:
+        raise ValueError(f"Тело запроса слишком большое ({len(body_str)} байт). Максимум {MAX_BODY_SIZE} байт")
     if event.get('isBase64Encoded'):
         body_str = base64.b64decode(body_str).decode('utf-8')
     return json.loads(body_str)

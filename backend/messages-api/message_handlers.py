@@ -73,7 +73,10 @@ def handle_send_message(event):
     if auth_email != sender_id:
         return response(403, {'error': 'Нельзя отправлять от чужого имени'})
 
-    photos = upload_photos_to_s3(raw_photos)
+    try:
+        photos = upload_photos_to_s3(raw_photos)
+    except ValueError as e:
+        return response(400, {'error': str(e)})
 
     S = get_schema()
     conn = get_connection()
