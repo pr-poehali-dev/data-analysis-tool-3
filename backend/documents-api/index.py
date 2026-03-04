@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 import psycopg2
 from auth_utils import require_auth, auth_error_response
 
+MAX_BODY_SIZE = 5 * 1024 * 1024
+MAX_DATA_SIZE = 5 * 1024 * 1024
+
 
 def get_connection():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -36,6 +39,8 @@ def parse_body(event):
     body_str = event.get('body', '{}')
     if not body_str:
         return {}
+    if len(body_str) > MAX_BODY_SIZE:
+        raise ValueError(f"Тело запроса слишком большое. Максимум 5 МБ")
     if event.get('isBase64Encoded'):
         body_str = base64.b64decode(body_str).decode('utf-8')
     return json.loads(body_str)
@@ -105,6 +110,11 @@ def handle_save_document(event):
     file_name = body.get('fileName', '')
     data = body.get('data', {})
     existing_id = body.get('id')
+
+    data_str = json.dumps(data)
+    if len(data_str) > MAX_DATA_SIZE:
+        size_mb = round(len(data_str) / 1024 / 1024, 1)
+        return response(400, {'error': f'Данные документа слишком большие ({size_mb} МБ). Максимум 5 МБ'})
 
     S = get_schema()
     conn = get_connection()
@@ -206,5 +216,7 @@ def handler(event, context):
             return handle_delete_document(event)
 
         return response(405, {'error': 'Метод не поддерживается'})
+    except ValueError as e:
+        return response(400, {'error': str(e)})
     except PermissionError as e:
         return auth_error_response(401, str(e))
