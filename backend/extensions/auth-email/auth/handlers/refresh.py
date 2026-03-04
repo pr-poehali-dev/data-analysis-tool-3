@@ -5,7 +5,7 @@ from datetime import datetime
 
 from utils.db import query_one, get_schema
 from utils.jwt_utils import create_access_token, decode_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from utils.http import response, error, get_refresh_token_from_cookie
+from utils.http import response, error, get_refresh_token_from_cookie, make_refresh_cookie
 
 
 def handle(event: dict, origin: str = '*') -> dict:
@@ -58,4 +58,4 @@ def handle(event: dict, origin: str = '*') -> dict:
             'email': user_email,
             'name': user_name
         }
-    }, origin)
+    }, origin, set_cookie=make_refresh_cookie(refresh_token))

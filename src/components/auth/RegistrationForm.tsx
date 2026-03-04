@@ -89,6 +89,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
       const res = await fetch(`${AUTH_EMAIL_URL}?action=login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
@@ -96,7 +97,6 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
 
       if (res.ok && data.access_token) {
         authStore.setAccessToken(data.access_token);
-        localStorage.setItem("auth_refresh_token", data.refresh_token);
         authStore.setProvider("email");
         authStore.setUser({
           firstName: data.user?.name?.split(' ')[0] || '',

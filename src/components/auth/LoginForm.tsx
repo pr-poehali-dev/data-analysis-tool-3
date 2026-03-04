@@ -51,6 +51,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
       const res = await fetch(`${AUTH_EMAIL_URL}?action=login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: data.email, password: data.password }),
       });
 
@@ -67,7 +68,6 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
 
       if (result.access_token) {
         authStore.setAccessToken(result.access_token);
-        localStorage.setItem("auth_refresh_token", result.refresh_token);
         authStore.setProvider("email");
       }
 

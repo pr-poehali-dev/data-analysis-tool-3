@@ -56,14 +56,50 @@ function detectProviderFromLegacyKeys(): AuthProvider {
 
 function getRefreshToken(provider: AuthProvider): string | null {
   if (!provider) return null;
+  if (provider === "email") return null;
   const key = REFRESH_KEYS[provider];
   if (!key) return null;
-  const token = localStorage.getItem(key);
-  if (token) return token;
-  if (provider === "email") {
-    return localStorage.getItem("refresh_token");
+  return localStorage.getItem(key);
+}
+
+function getLegacyEmailRefreshToken(): string | null {
+  return (
+    localStorage.getItem(REFRESH_KEYS.email) ||
+    localStorage.getItem("refresh_token")
+  );
+}
+
+async function doRefreshEmail(): Promise<string> {
+  const url = REFRESH_URLS.email;
+  if (!url) return "no_url";
+
+  const legacyToken = getLegacyEmailRefreshToken();
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: legacyToken
+        ? JSON.stringify({ refresh_token: legacyToken })
+        : JSON.stringify({}),
+    });
+
+    if (res.status === 401) return "expired";
+    if (!res.ok) return "error";
+
+    const data = await res.json();
+    currentAccessToken = data.access_token;
+
+    if (legacyToken) {
+      localStorage.removeItem(REFRESH_KEYS.email);
+      localStorage.removeItem("refresh_token");
+    }
+
+    return "ok";
+  } catch {
+    return "network_error";
   }
-  return null;
 }
 
 async function doRefresh(): Promise<string> {
@@ -75,6 +111,10 @@ async function doRefresh(): Promise<string> {
     }
   }
   if (!provider) return "no_provider";
+
+  if (provider === "email") {
+    return doRefreshEmail();
+  }
 
   const refreshToken = getRefreshToken(provider);
   if (!refreshToken) return "no_token";
@@ -167,8 +207,19 @@ export const authStore = {
   },
 
   logout: () => {
-    currentAccessToken = null;
     const provider = getProvider();
+
+    if (provider === "email") {
+      const logoutUrl = `${funcUrls["auth-email-auth"]}?action=logout`;
+      fetch(logoutUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({}),
+      }).catch(() => {});
+    }
+
+    currentAccessToken = null;
     if (provider) {
       const key = REFRESH_KEYS[provider];
       if (key) localStorage.removeItem(key);
@@ -199,7 +250,10 @@ export const authStore = {
 
     restorePromise = (async () => {
       const hasUser = !!localStorage.getItem(USER_KEY);
-      if (!hasUser) {
+      const provider = getProvider();
+      const hasEmailProvider = provider === "email";
+
+      if (!hasUser && !hasEmailProvider) {
         sessionRestored = true;
         return;
       }
