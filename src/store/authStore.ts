@@ -116,17 +116,19 @@ async function doRefresh(): Promise<string> {
     return doRefreshEmail();
   }
 
-  const refreshToken = getRefreshToken(provider);
-  if (!refreshToken) return "no_token";
-
   const url = REFRESH_URLS[provider];
   if (!url) return "no_url";
+
+  const legacyToken = getRefreshToken(provider);
 
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      credentials: "include",
+      body: legacyToken
+        ? JSON.stringify({ refresh_token: legacyToken })
+        : JSON.stringify({}),
     });
 
     if (res.status === 401) return "expired";
@@ -134,6 +136,12 @@ async function doRefresh(): Promise<string> {
 
     const data = await res.json();
     currentAccessToken = data.access_token;
+
+    if (legacyToken && provider) {
+      const key = REFRESH_KEYS[provider];
+      if (key) localStorage.removeItem(key);
+    }
+
     return "ok";
   } catch {
     return "network_error";
@@ -209,9 +217,16 @@ export const authStore = {
   logout: () => {
     const provider = getProvider();
 
-    if (provider === "email") {
-      const logoutUrl = `${funcUrls["auth-email-auth"]}?action=logout`;
-      fetch(logoutUrl, {
+    const LOGOUT_URLS: Record<string, string> = {
+      email: `${funcUrls["auth-email-auth"]}?action=logout`,
+      google: `${funcUrls["google-auth-google-auth"]}?action=logout`,
+      vk: `${funcUrls["vk-auth-vk-auth"]}?action=logout`,
+      yandex: `${funcUrls["yandex-auth-yandex-auth"]}?action=logout`,
+      telegram: `${funcUrls["telegram-bot-telegram-auth"]}?action=logout`,
+    };
+
+    if (provider && LOGOUT_URLS[provider]) {
+      fetch(LOGOUT_URLS[provider], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -251,9 +266,8 @@ export const authStore = {
     restorePromise = (async () => {
       const hasUser = !!localStorage.getItem(USER_KEY);
       const provider = getProvider();
-      const hasEmailProvider = provider === "email";
 
-      if (!hasUser && !hasEmailProvider) {
+      if (!hasUser && !provider) {
         sessionRestored = true;
         return;
       }

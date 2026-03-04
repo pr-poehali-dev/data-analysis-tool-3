@@ -23,6 +23,7 @@ export default function TelegramCallback() {
         const res = await fetch(`${AUTH_URL}?action=callback`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ token }),
         });
 
@@ -33,9 +34,6 @@ export default function TelegramCallback() {
           return;
         }
 
-        if (data.refresh_token) {
-          localStorage.setItem("telegram_auth_refresh_token", data.refresh_token);
-        }
         if (data.access_token) {
           authStore.setAccessToken(data.access_token);
         }

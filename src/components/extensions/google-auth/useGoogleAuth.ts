@@ -56,11 +56,6 @@ function getStoredRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
-function setStoredRefreshToken(token: string): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(REFRESH_TOKEN_KEY, token);
-}
-
 function clearStoredRefreshToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -131,16 +126,16 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const storedRefreshToken = getStoredRefreshToken();
-    if (!storedRefreshToken) {
-      return false;
-    }
+    const legacyToken = getStoredRefreshToken();
 
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken }),
+        credentials: "include",
+        body: legacyToken
+          ? JSON.stringify({ refresh_token: legacyToken })
+          : JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -152,6 +147,11 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
       setAccessToken(data.access_token);
       setUser(data.user);
       scheduleRefresh(data.expires_in, refreshTokenFn);
+
+      if (legacyToken) {
+        clearStoredRefreshToken();
+      }
+
       return true;
     } catch {
       clearAuth();
@@ -162,10 +162,7 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
   // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const hasToken = !!getStoredRefreshToken();
-      if (hasToken) {
-        await refreshTokenFn();
-      }
+      await refreshTokenFn();
       setIsLoading(false);
     };
 
@@ -245,6 +242,7 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
         const response = await fetch(apiUrls.callback, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ code }),
         });
 
@@ -261,7 +259,6 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
         // Set auth data
         setAccessToken(data.access_token);
         setUser(data.user);
-        setStoredRefreshToken(data.refresh_token);
         scheduleRefresh(data.expires_in, refreshTokenFn);
         return true;
       } catch (err) {
@@ -278,13 +275,12 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
    * Logout user
    */
   const logout = useCallback(async () => {
-    const storedRefreshToken = getStoredRefreshToken();
-
     try {
       await fetch(apiUrls.logout, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken || "" }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
     } catch {
       // Ignore errors

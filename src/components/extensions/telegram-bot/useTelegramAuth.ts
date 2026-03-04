@@ -59,11 +59,6 @@ function getStoredRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
-function setStoredRefreshToken(token: string): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(REFRESH_TOKEN_KEY, token);
-}
-
 function clearStoredRefreshToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -119,16 +114,16 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const storedRefreshToken = getStoredRefreshToken();
-    if (!storedRefreshToken) {
-      return false;
-    }
+    const legacyToken = getStoredRefreshToken();
 
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken }),
+        credentials: "include",
+        body: legacyToken
+          ? JSON.stringify({ refresh_token: legacyToken })
+          : JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -139,6 +134,9 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
       const data = await response.json();
       setAccessToken(data.access_token);
       setUser(data.user);
+      if (legacyToken) {
+        clearStoredRefreshToken();
+      }
       scheduleRefresh(data.expires_in, refreshTokenFn);
       return true;
     } catch {
@@ -150,10 +148,7 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
   // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const hasToken = !!getStoredRefreshToken();
-      if (hasToken) {
-        await refreshTokenFn();
-      }
+      await refreshTokenFn();
       setIsLoading(false);
     };
 
@@ -190,6 +185,7 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
       const response = await fetch(apiUrls.callback, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ token }),
       });
 
@@ -204,7 +200,6 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
       // Set auth data
       setAccessToken(data.access_token);
       setUser(data.user);
-      setStoredRefreshToken(data.refresh_token);
       scheduleRefresh(data.expires_in, refreshTokenFn);
       setIsLoading(false);
       return true;
@@ -219,13 +214,12 @@ export function useTelegramAuth(options: UseTelegramAuthOptions): UseTelegramAut
    * Logout user
    */
   const logout = useCallback(async () => {
-    const storedRefreshToken = getStoredRefreshToken();
-
     try {
       await fetch(apiUrls.logout, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken || "" }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
     } catch {
       // Ignore errors

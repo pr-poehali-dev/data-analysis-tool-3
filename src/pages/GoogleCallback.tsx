@@ -31,6 +31,7 @@ export default function GoogleCallback() {
         const res = await fetch(`${AUTH_URL}?action=callback`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ code }),
         });
 
@@ -41,9 +42,6 @@ export default function GoogleCallback() {
           return;
         }
 
-        if (data.refresh_token) {
-          localStorage.setItem("google_auth_refresh_token", data.refresh_token);
-        }
         if (data.access_token) {
           authStore.setAccessToken(data.access_token);
         }

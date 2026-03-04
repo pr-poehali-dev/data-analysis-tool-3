@@ -56,11 +56,6 @@ function getStoredRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
-function setStoredRefreshToken(token: string): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(REFRESH_TOKEN_KEY, token);
-}
-
 function clearStoredRefreshToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -131,16 +126,16 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const storedRefreshToken = getStoredRefreshToken();
-    if (!storedRefreshToken) {
-      return false;
-    }
+    const legacyToken = getStoredRefreshToken();
 
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken }),
+        credentials: "include",
+        body: legacyToken
+          ? JSON.stringify({ refresh_token: legacyToken })
+          : JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -151,6 +146,9 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
       const data = await response.json();
       setAccessToken(data.access_token);
       setUser(data.user);
+      if (legacyToken) {
+        clearStoredRefreshToken();
+      }
       scheduleRefresh(data.expires_in, refreshTokenFn);
       return true;
     } catch {
@@ -162,10 +160,7 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
   // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
-      const hasToken = !!getStoredRefreshToken();
-      if (hasToken) {
-        await refreshTokenFn();
-      }
+      await refreshTokenFn();
       setIsLoading(false);
     };
 
@@ -245,6 +240,7 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
         const response = await fetch(apiUrls.callback, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ code }),
         });
 
@@ -261,7 +257,6 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
         // Set auth data
         setAccessToken(data.access_token);
         setUser(data.user);
-        setStoredRefreshToken(data.refresh_token);
         scheduleRefresh(data.expires_in, refreshTokenFn);
         return true;
       } catch (err) {
@@ -278,13 +273,12 @@ export function useYandexAuth(options: UseYandexAuthOptions): UseYandexAuthRetur
    * Logout user
    */
   const logout = useCallback(async () => {
-    const storedRefreshToken = getStoredRefreshToken();
-
     try {
       await fetch(apiUrls.logout, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: storedRefreshToken || "" }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
     } catch {
       // Ignore errors
