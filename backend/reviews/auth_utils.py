@@ -4,12 +4,31 @@ import os
 import jwt
 
 
-CORS_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
-}
+_current_origin = '*'
+
+
+def set_request_origin(event):
+    global _current_origin
+    allowed = os.environ.get('ALLOWED_ORIGINS', '').strip()
+    if not allowed:
+        _current_origin = '*'
+        return
+    origins = [o.strip() for o in allowed.split(',') if o.strip()]
+    if not origins:
+        _current_origin = '*'
+        return
+    headers = event.get('headers', {})
+    request_origin = headers.get('Origin') or headers.get('origin') or ''
+    _current_origin = request_origin if request_origin in origins else origins[0]
+
+
+def get_cors_headers():
+    return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': _current_origin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
+    }
 
 
 def get_jwt_secret() -> str:
@@ -51,6 +70,6 @@ def check_ownership(auth_email: str, target_email: str):
 def auth_error_response(status: int = 401, message: str = 'Требуется авторизация') -> dict:
     return {
         'statusCode': status,
-        'headers': CORS_HEADERS,
+        'headers': get_cors_headers(),
         'body': json.dumps({'error': message}),
     }

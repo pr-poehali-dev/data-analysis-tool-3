@@ -2,14 +2,7 @@
 import json
 import os
 import psycopg2
-
-CORS_HEADERS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization, X-User-Id, X-Auth-Token',
-    'Access-Control-Max-Age': '86400',
-    'Content-Type': 'application/json'
-}
+from auth_utils import get_cors_headers
 
 
 def get_conn():
@@ -21,8 +14,16 @@ def get_schema():
     return f"{schema}." if schema else ""
 
 
+def get_escrow_cors_headers():
+    base = get_cors_headers()
+    base['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+    base['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Authorization, X-User-Id, X-Auth-Token'
+    base['Access-Control-Max-Age'] = '86400'
+    return base
+
+
 def resp(status, body):
-    return {'statusCode': status, 'headers': CORS_HEADERS, 'body': json.dumps(body, default=str)}
+    return {'statusCode': status, 'headers': get_escrow_cors_headers(), 'body': json.dumps(body, default=str)}
 
 
 def tx_row_to_dict(r):

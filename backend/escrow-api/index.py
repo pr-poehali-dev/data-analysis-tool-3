@@ -1,15 +1,17 @@
 """API для управления эскроу-транзакциями."""
-from utils import CORS_HEADERS, resp
+from utils import resp, get_escrow_cors_headers
 from handlers import handle_list, handle_balance, handle_check_chat, handle_create, handle_update_status
-from auth_utils import auth_error_response
+from auth_utils import auth_error_response, set_request_origin
 
 
 def handler(event, context):
     """CRUD для эскроу-транзакций: создание, список, обновление статуса, баланс."""
+    set_request_origin(event)
+
     method = event.get('httpMethod', 'GET').upper()
 
     if method == 'OPTIONS':
-        return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': ''}
+        return {'statusCode': 200, 'headers': get_escrow_cors_headers(), 'body': ''}
 
     params = event.get('queryStringParameters') or {}
     action = params.get('action', '')

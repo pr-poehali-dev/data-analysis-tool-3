@@ -2,22 +2,16 @@ import json
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from auth_utils import require_auth, auth_error_response
-
-CORS_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
-}
+from auth_utils import require_auth, auth_error_response, set_request_origin, get_cors_headers
 
 def handler(event: dict, context) -> dict:
     """API для работы с отзывами между участниками сделок"""
+    set_request_origin(event)
 
     method = event.get('httpMethod', 'GET')
 
     if method == 'OPTIONS':
-        return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': ''}
+        return {'statusCode': 200, 'headers': get_cors_headers(), 'body': ''}
 
     try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
@@ -29,7 +23,7 @@ def handler(event: dict, context) -> dict:
         else:
             return {
                 'statusCode': 405,
-                'headers': CORS_HEADERS,
+                'headers': get_cors_headers(),
                 'body': json.dumps({'error': 'Метод не поддерживается'})
             }
     except PermissionError as e:
@@ -37,7 +31,7 @@ def handler(event: dict, context) -> dict:
     except Exception as e:
         return {
             'statusCode': 500,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': json.dumps({'error': str(e)})
         }
     finally:
@@ -70,7 +64,7 @@ def get_reviews(event: dict, conn) -> dict:
         else:
             return {
                 'statusCode': 400,
-                'headers': CORS_HEADERS,
+                'headers': get_cors_headers(),
                 'body': json.dumps({'error': 'reviewee_email or chat_id required'})
             }
 
@@ -88,7 +82,7 @@ def get_reviews(event: dict, conn) -> dict:
 
         return {
             'statusCode': 200,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': json.dumps({
                 'reviews': [dict(r) for r in reviews],
                 'avg_rating': avg_rating,
@@ -104,7 +98,7 @@ def create_review(event: dict, conn) -> dict:
     if data.get('reviewer_email') and auth_email != data.get('reviewer_email'):
         return {
             'statusCode': 403,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': json.dumps({'error': 'Нельзя оставлять отзыв от чужого имени'})
         }
 
@@ -117,7 +111,7 @@ def create_review(event: dict, conn) -> dict:
         if field not in data:
             return {
                 'statusCode': 400,
-                'headers': CORS_HEADERS,
+                'headers': get_cors_headers(),
                 'body': json.dumps({'error': f'Missing required field: {field}'})
             }
 
@@ -125,7 +119,7 @@ def create_review(event: dict, conn) -> dict:
     if not isinstance(rating, int) or rating < 1 or rating > 5:
         return {
             'statusCode': 400,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': json.dumps({'error': 'Rating must be between 1 and 5'})
         }
 
@@ -162,7 +156,7 @@ def create_review(event: dict, conn) -> dict:
 
         return {
             'statusCode': 200,
-            'headers': CORS_HEADERS,
+            'headers': get_cors_headers(),
             'body': json.dumps({
                 'success': True,
                 'review': dict(review)
