@@ -4,6 +4,9 @@ import os
 from datetime import datetime, timezone
 import psycopg2
 from auth_utils import get_auth_email, require_auth, auth_error_response
+from s3_upload import upload_photos_to_s3
+
+MAX_BODY_SIZE = 150 * 1024 * 1024
 
 
 def get_connection():
@@ -36,6 +39,8 @@ def parse_body(event):
     body_str = event.get('body', '{}')
     if not body_str:
         return {}
+    if len(body_str) > MAX_BODY_SIZE:
+        raise ValueError("Тело запроса слишком большое. Максимум 150 МБ")
     if event.get('isBase64Encoded'):
         body_str = base64.b64decode(body_str).decode('utf-8')
     return json.loads(body_str)
@@ -159,6 +164,12 @@ def handle_create(event):
     coords = pd.get('coordinates', [0, 0])
     request_id = body.get('requestId') or None
 
+    raw_photos = body.get('photos', [])
+    try:
+        photo_urls = upload_photos_to_s3(raw_photos)
+    except ValueError as e:
+        return response(400, {'error': str(e)})
+
     S = get_schema()
     conn = get_connection()
     try:
@@ -195,7 +206,7 @@ def handle_create(event):
             pd.get('hasAppliances', False),
             pd.get('rent', ''),
             pd.get('comments', ''),
-            body.get('photos', []),
+            photo_urls,
             'pending',
             now,
             now,
@@ -250,8 +261,12 @@ def handle_update(event):
                 values.append(body[js_key])
 
         if 'photos' in body:
+            try:
+                photo_urls = upload_photos_to_s3(body['photos'])
+            except ValueError as e:
+                return response(400, {'error': str(e)})
             updates.append("photos = %s")
-            values.append(body['photos'])
+            values.append(photo_urls)
 
         pd = body.get('propertyData')
         if pd:
@@ -357,6 +372,8 @@ def handler(event, context):
             return handle_delete(event)
         else:
             return response(405, {'error': 'Метод не поддерживается'})
+    except ValueError as e:
+        return response(400, {'error': str(e)})
     except json.JSONDecodeError:
         return response(400, {'error': 'Некорректный JSON'})
     except PermissionError as e:

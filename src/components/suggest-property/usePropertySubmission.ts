@@ -15,11 +15,32 @@ interface SubmissionParams {
   inviteMessage: string;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(file);
+const PHOTO_MAX_SIZE = 1200;
+const PHOTO_QUALITY = 0.7;
+
+function compressPhoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > PHOTO_MAX_SIZE || height > PHOTO_MAX_SIZE) {
+        const ratio = Math.min(PHOTO_MAX_SIZE / width, PHOTO_MAX_SIZE / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas не поддерживается"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", PHOTO_QUALITY));
+    };
+    img.onerror = () => reject(new Error("Не удалось загрузить изображение"));
+    img.src = URL.createObjectURL(file);
   });
 }
 
@@ -65,7 +86,7 @@ export function usePropertySubmission() {
 
     let photoUrls: string[] = [];
     try {
-      photoUrls = await Promise.all(photos.map(fileToDataUrl));
+      photoUrls = await Promise.all(photos.map(compressPhoto));
     } catch {
       photoUrls = [];
     }
