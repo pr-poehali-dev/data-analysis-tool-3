@@ -1,7 +1,7 @@
 /**
  * Auth Email Extension - useAuth Hook
  *
- * JWT-based authentication with localStorage for token storage.
+ * JWT-based authentication with httpOnly cookies for refresh tokens.
  * Supports email verification with 6-digit codes.
  *
  * Usage:
@@ -22,8 +22,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 // ============================================================================
 // ТИПЫ
 // ============================================================================
-
-const REFRESH_TOKEN_KEY = "auth_refresh_token";
 
 export interface User {
   id: number;
@@ -82,20 +80,6 @@ interface UseAuthReturn {
 }
 
 // ============================================================================
-// ЛОКАЛЬНОЕ ХРАНИЛИЩЕ
-// ============================================================================
-
-function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-function clearStoredRefreshToken(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-}
-
-// ============================================================================
 // ХУК
 // ============================================================================
 
@@ -120,7 +104,6 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
     }
     setAccessToken(null);
     setUser(null);
-    clearStoredRefreshToken();
   }, []);
 
   const scheduleRefresh = useCallback(
@@ -144,16 +127,12 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const legacyToken = getStoredRefreshToken();
-
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: legacyToken
-          ? JSON.stringify({ refresh_token: legacyToken })
-          : JSON.stringify({}),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -165,10 +144,6 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
       setAccessToken(data.access_token);
       setUser(data.user);
       scheduleRefresh(data.expires_in, refreshTokenFn);
-
-      if (legacyToken) {
-        clearStoredRefreshToken();
-      }
 
       return true;
     } catch {
@@ -424,6 +399,10 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
 // УТИЛИТЫ
 // ============================================================================
 
+/**
+ * With httpOnly cookies, we cannot check client-side if a refresh token exists.
+ * Always returns true so the app attempts a refresh on startup.
+ */
 export function mightBeAuthenticated(): boolean {
-  return !!getStoredRefreshToken();
+  return true;
 }

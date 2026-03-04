@@ -91,10 +91,8 @@ def handle(event: dict, origin: str = '*') -> dict:
 
     return response(200, {
         'access_token': access_token,
-        'refresh_token': refresh_token,
         'token_type': 'Bearer',
         'expires_in': ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        'refresh_expires_in': REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         'user': {
             'id': user_id,
             'email': user_email,

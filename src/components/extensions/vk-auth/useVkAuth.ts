@@ -9,7 +9,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 // TYPES
 // =============================================================================
 
-const REFRESH_TOKEN_KEY = "vk_auth_refresh_token";
 const CODE_VERIFIER_KEY = "vk_auth_code_verifier";
 const STATE_KEY = "vk_auth_state";
 
@@ -49,18 +48,8 @@ interface UseVkAuthReturn {
 }
 
 // =============================================================================
-// LOCAL STORAGE
+// SESSION STORAGE (OAuth state & PKCE code_verifier)
 // =============================================================================
-
-function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-function clearStoredRefreshToken(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-}
 
 function getStoredCodeVerifier(): string | null {
   if (typeof window === "undefined") return null;
@@ -117,7 +106,6 @@ export function useVkAuth(options: UseVkAuthOptions): UseVkAuthReturn {
     }
     setAccessToken(null);
     setUser(null);
-    clearStoredRefreshToken();
     clearStoredCodeVerifier();
     clearStoredState();
   }, []);
@@ -143,16 +131,12 @@ export function useVkAuth(options: UseVkAuthOptions): UseVkAuthReturn {
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const legacyToken = getStoredRefreshToken();
-
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: legacyToken
-          ? JSON.stringify({ refresh_token: legacyToken })
-          : JSON.stringify({}),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -163,9 +147,6 @@ export function useVkAuth(options: UseVkAuthOptions): UseVkAuthReturn {
       const data = await response.json();
       setAccessToken(data.access_token);
       setUser(data.user);
-      if (legacyToken) {
-        clearStoredRefreshToken();
-      }
       scheduleRefresh(data.expires_in, refreshTokenFn);
       return true;
     } catch {

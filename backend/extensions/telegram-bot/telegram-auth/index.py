@@ -409,7 +409,6 @@ def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
 
     return cors_response(200, {
         "access_token": access_token,
-        "refresh_token": refresh_token,
         "expires_in": 900,
         "user": user,
     }, origin, set_cookie=make_refresh_cookie(refresh_token))

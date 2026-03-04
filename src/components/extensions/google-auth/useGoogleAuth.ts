@@ -9,7 +9,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 // TYPES
 // =============================================================================
 
-const REFRESH_TOKEN_KEY = "google_auth_refresh_token";
 const STATE_KEY = "google_auth_state";
 
 export interface User {
@@ -48,18 +47,8 @@ interface UseGoogleAuthReturn {
 }
 
 // =============================================================================
-// LOCAL STORAGE
+// SESSION STORAGE (OAuth state only)
 // =============================================================================
-
-function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-function clearStoredRefreshToken(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-}
 
 function setStoredState(state: string): void {
   if (typeof window === "undefined") return;
@@ -101,7 +90,6 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
     }
     setAccessToken(null);
     setUser(null);
-    clearStoredRefreshToken();
     clearStoredState();
   }, []);
 
@@ -126,16 +114,12 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
   );
 
   const refreshTokenFn = useCallback(async (): Promise<boolean> => {
-    const legacyToken = getStoredRefreshToken();
-
     try {
       const response = await fetch(apiUrls.refresh, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: legacyToken
-          ? JSON.stringify({ refresh_token: legacyToken })
-          : JSON.stringify({}),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -147,10 +131,6 @@ export function useGoogleAuth(options: UseGoogleAuthOptions): UseGoogleAuthRetur
       setAccessToken(data.access_token);
       setUser(data.user);
       scheduleRefresh(data.expires_in, refreshTokenFn);
-
-      if (legacyToken) {
-        clearStoredRefreshToken();
-      }
 
       return true;
     } catch {

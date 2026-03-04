@@ -17,13 +17,20 @@ type AuthProvider = "email" | "google" | "vk" | "yandex" | "telegram" | null;
 const PROVIDER_KEY = "sovetpay_auth_provider";
 const USER_KEY = "sovetpay_user";
 
-const REFRESH_KEYS: Record<string, string> = {
-  email: "auth_refresh_token",
-  google: "google_auth_refresh_token",
-  vk: "vk_auth_refresh_token",
-  yandex: "yandex_auth_refresh_token",
-  telegram: "telegram_auth_refresh_token",
-};
+const LEGACY_REFRESH_KEYS = [
+  "auth_refresh_token",
+  "google_auth_refresh_token",
+  "vk_auth_refresh_token",
+  "yandex_auth_refresh_token",
+  "telegram_auth_refresh_token",
+  "refresh_token",
+  "sovetpay_token",
+  "google_auth_access_token",
+  "vk_auth_access_token",
+  "yandex_auth_access_token",
+  "telegram_auth_access_token",
+  "email_auth_access_token",
+];
 
 const REFRESH_URLS: Record<string, string> = {
   email: `${funcUrls["auth-email-auth"]}?action=refresh`,
@@ -41,94 +48,27 @@ const listeners: (() => void)[] = [];
 
 function getProvider(): AuthProvider {
   const saved = localStorage.getItem(PROVIDER_KEY);
-  if (saved && saved in REFRESH_KEYS) return saved as AuthProvider;
+  if (saved && saved in REFRESH_URLS) return saved as AuthProvider;
   return null;
 }
 
-function detectProviderFromLegacyKeys(): AuthProvider {
-  if (localStorage.getItem("auth_refresh_token") || localStorage.getItem("refresh_token")) return "email";
-  if (localStorage.getItem("google_auth_refresh_token")) return "google";
-  if (localStorage.getItem("vk_auth_refresh_token")) return "vk";
-  if (localStorage.getItem("yandex_auth_refresh_token")) return "yandex";
-  if (localStorage.getItem("telegram_auth_refresh_token")) return "telegram";
-  return null;
-}
-
-function getRefreshToken(provider: AuthProvider): string | null {
-  if (!provider) return null;
-  if (provider === "email") return null;
-  const key = REFRESH_KEYS[provider];
-  if (!key) return null;
-  return localStorage.getItem(key);
-}
-
-function getLegacyEmailRefreshToken(): string | null {
-  return (
-    localStorage.getItem(REFRESH_KEYS.email) ||
-    localStorage.getItem("refresh_token")
-  );
-}
-
-async function doRefreshEmail(): Promise<string> {
-  const url = REFRESH_URLS.email;
-  if (!url) return "no_url";
-
-  const legacyToken = getLegacyEmailRefreshToken();
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: legacyToken
-        ? JSON.stringify({ refresh_token: legacyToken })
-        : JSON.stringify({}),
-    });
-
-    if (res.status === 401) return "expired";
-    if (!res.ok) return "error";
-
-    const data = await res.json();
-    currentAccessToken = data.access_token;
-
-    if (legacyToken) {
-      localStorage.removeItem(REFRESH_KEYS.email);
-      localStorage.removeItem("refresh_token");
-    }
-
-    return "ok";
-  } catch {
-    return "network_error";
-  }
+function cleanupLegacyTokens(): void {
+  LEGACY_REFRESH_KEYS.forEach((key) => localStorage.removeItem(key));
 }
 
 async function doRefresh(): Promise<string> {
-  let provider = getProvider();
-  if (!provider) {
-    provider = detectProviderFromLegacyKeys();
-    if (provider) {
-      localStorage.setItem(PROVIDER_KEY, provider);
-    }
-  }
+  const provider = getProvider();
   if (!provider) return "no_provider";
-
-  if (provider === "email") {
-    return doRefreshEmail();
-  }
 
   const url = REFRESH_URLS[provider];
   if (!url) return "no_url";
 
-  const legacyToken = getRefreshToken(provider);
-
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: legacyToken
-        ? JSON.stringify({ refresh_token: legacyToken })
-        : JSON.stringify({}),
+      body: JSON.stringify({}),
     });
 
     if (res.status === 401) return "expired";
@@ -136,12 +76,6 @@ async function doRefresh(): Promise<string> {
 
     const data = await res.json();
     currentAccessToken = data.access_token;
-
-    if (legacyToken && provider) {
-      const key = REFRESH_KEYS[provider];
-      if (key) localStorage.removeItem(key);
-    }
-
     return "ok";
   } catch {
     return "network_error";
@@ -235,18 +169,8 @@ export const authStore = {
     }
 
     currentAccessToken = null;
-    if (provider) {
-      const key = REFRESH_KEYS[provider];
-      if (key) localStorage.removeItem(key);
-    }
-    localStorage.removeItem("refresh_token");
+    cleanupLegacyTokens();
     localStorage.removeItem(PROVIDER_KEY);
-    localStorage.removeItem("sovetpay_token");
-    localStorage.removeItem("google_auth_access_token");
-    localStorage.removeItem("vk_auth_access_token");
-    localStorage.removeItem("yandex_auth_access_token");
-    localStorage.removeItem("telegram_auth_access_token");
-    localStorage.removeItem("email_auth_access_token");
     authStore.setUser(null);
   },
 
@@ -264,6 +188,8 @@ export const authStore = {
     if (restorePromise) return restorePromise;
 
     restorePromise = (async () => {
+      cleanupLegacyTokens();
+
       const hasUser = !!localStorage.getItem(USER_KEY);
       const provider = getProvider();
 
