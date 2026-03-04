@@ -10,6 +10,10 @@ from datetime import datetime, timezone
 import psycopg2
 import jwt
 
+MAX_AVATAR_URL_LENGTH = 2048
+MAX_AVATAR_DATA_URI_BYTES = 5 * 1024 * 1024
+MAX_BODY_SIZE = 10 * 1024 * 1024
+
 
 def get_connection():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -130,9 +134,29 @@ def handle_get_public_profile(email: str) -> dict:
         conn.close()
 
 
+def validate_avatar_url(avatar_url):
+    """Проверяет размер и формат avatar_url. Возвращает ошибку или None."""
+    if not avatar_url:
+        return None
+    if avatar_url.startswith('data:'):
+        if len(avatar_url) > MAX_AVATAR_DATA_URI_BYTES:
+            size_mb = round(len(avatar_url) / 1024 / 1024, 1)
+            return f"Аватар слишком большой ({size_mb} МБ). Максимум 5 МБ"
+        if not avatar_url.startswith('data:image/'):
+            return "Допускаются только изображения"
+    elif avatar_url.startswith('http'):
+        if len(avatar_url) > MAX_AVATAR_URL_LENGTH:
+            return f"URL аватара слишком длинный. Максимум {MAX_AVATAR_URL_LENGTH} символов"
+    else:
+        return "Недопустимый формат аватара"
+    return None
+
+
 def handle_update_profile(event: dict) -> dict:
     user_id = get_user_id_from_event(event)
     body_str = event.get('body', '{}')
+    if body_str and len(body_str) > MAX_BODY_SIZE:
+        return response(400, {'error': 'Тело запроса слишком большое. Максимум 10 МБ'})
     try:
         body = json.loads(body_str) if body_str else {}
     except json.JSONDecodeError:
@@ -144,6 +168,11 @@ def handle_update_profile(event: dict) -> dict:
     city = body.get('city')
     vk_link = body.get('vkLink')
     avatar_url = body.get('avatar_url')
+
+    if avatar_url is not None:
+        avatar_error = validate_avatar_url(avatar_url)
+        if avatar_error:
+            return response(400, {'error': avatar_error})
 
     S = get_schema()
     conn = get_connection()

@@ -1,6 +1,35 @@
 import { useRef } from "react";
 import Icon from "@/components/ui/icon";
 
+const AVATAR_MAX_SIZE = 400;
+const AVATAR_QUALITY = 0.8;
+
+function compressAvatar(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > AVATAR_MAX_SIZE || height > AVATAR_MAX_SIZE) {
+        const ratio = Math.min(AVATAR_MAX_SIZE / width, AVATAR_MAX_SIZE / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas не поддерживается"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", AVATAR_QUALITY));
+    };
+    img.onerror = () => reject(new Error("Не удалось загрузить изображение"));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 interface ProfilePhotoProps {
   photo: string;
   isEditing: boolean;
@@ -10,14 +39,15 @@ interface ProfilePhotoProps {
 export const ProfilePhoto = ({ photo, isEditing, onPhotoChange }: ProfilePhotoProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onPhotoChange(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressAvatar(file);
+        onPhotoChange(compressed);
+      } catch {
+        onPhotoChange("");
+      }
     }
   };
 
