@@ -3,6 +3,9 @@ import json
 import os
 import psycopg2
 
+MAX_BODY_SIZE = 1 * 1024 * 1024
+MAX_AVATAR_LENGTH = 2048
+
 
 def get_connection():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -33,6 +36,8 @@ def parse_body(event):
     body_str = event.get('body', '{}')
     if not body_str:
         return {}
+    if len(body_str) > MAX_BODY_SIZE:
+        raise ValueError("Тело запроса слишком большое. Максимум 1 МБ")
     return json.loads(body_str)
 
 

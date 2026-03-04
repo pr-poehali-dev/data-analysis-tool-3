@@ -1,7 +1,16 @@
 """CRUD-обработчики для заявок на аренду."""
 from datetime import datetime, timezone
-from utils import get_connection, get_schema, response, parse_body, COLUMNS, row_to_dict
+from utils import get_connection, get_schema, response, parse_body, COLUMNS, row_to_dict, MAX_AVATAR_LENGTH
 from auth_utils import get_auth_email, require_auth
+
+
+def validate_avatar(avatar):
+    """Проверяет длину поля avatar. Возвращает ошибку или None."""
+    if not avatar:
+        return None
+    if len(avatar) > MAX_AVATAR_LENGTH:
+        return f"URL аватара слишком длинный ({len(avatar)} символов). Максимум {MAX_AVATAR_LENGTH}"
+    return None
 
 
 def handle_list(event):
@@ -61,6 +70,10 @@ def handle_create(event):
     for field in ['userEmail', 'name']:
         if not body.get(field):
             return response(400, {'error': f'Поле {field} обязательно'})
+
+    avatar_error = validate_avatar(body.get('avatar', ''))
+    if avatar_error:
+        return response(400, {'error': avatar_error})
 
     S = get_schema()
     conn = get_connection()
@@ -139,6 +152,11 @@ def handle_update(event):
             return response(404, {'error': 'Заявка не найдена'})
         if auth_email != owner_row[0]:
             return response(403, {'error': 'Нет доступа к этой заявке'})
+
+        if 'avatar' in body:
+            avatar_error = validate_avatar(body['avatar'])
+            if avatar_error:
+                return response(400, {'error': avatar_error})
 
         now = datetime.now(timezone.utc)
 

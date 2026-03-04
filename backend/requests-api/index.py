@@ -23,6 +23,8 @@ def handler(event, context):
             return handle_delete(event)
         else:
             return response(405, {'error': 'Метод не поддерживается'})
+    except ValueError as e:
+        return response(400, {'error': str(e)})
     except json.JSONDecodeError:
         return response(400, {'error': 'Некорректный JSON'})
     except PermissionError as e:
