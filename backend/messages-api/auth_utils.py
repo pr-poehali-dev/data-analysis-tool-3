@@ -28,15 +28,11 @@ def get_auth_email(event: dict) -> str | None:
     auth = (headers.get('X-Authorization') or headers.get('x-authorization')
             or headers.get('Authorization') or headers.get('authorization') or '')
     if not auth.startswith('Bearer '):
-        print(f"[AUTH_DEBUG] No Bearer token found")
         return None
     try:
         payload = verify_token(auth[7:])
-        email = payload.get('email')
-        print(f"[AUTH_DEBUG] JWT payload keys: {list(payload.keys())}, email: {email}")
-        return email
-    except Exception as e:
-        print(f"[AUTH_DEBUG] JWT decode error: {e}")
+        return payload.get('email')
+    except Exception:
         return None
 
 

@@ -32,7 +32,6 @@ class MessagesStore {
         return this.chatsCache;
       }
       const data = await res.json();
-      console.log('[CHATS_DEBUG] raw chats from API:', data.chats?.length, data.chats?.map((c: Record<string, string>) => ({ id: c.id, rec: c.recommender_email, ten: c.tenant_email })));
       this.chatsCache = (data.chats || []).map(parseChat);
       this.notifyListeners();
       return this.chatsCache;
@@ -43,7 +42,6 @@ class MessagesStore {
   }
 
   getUserChats(userEmail: string): Chat[] {
-    console.log('[CHATS_DEBUG] getUserChats filter email:', userEmail, 'cache size:', this.chatsCache.length, 'cache emails:', this.chatsCache.map(c => ({ rec: c.recommenderEmail, ten: c.tenantEmail })));
     return this.chatsCache
       .filter(c => c.recommenderEmail === userEmail || c.tenantEmail === userEmail)
       .sort((a, b) => {

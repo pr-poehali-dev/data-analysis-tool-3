@@ -1,0 +1,2 @@
+UPDATE chats SET tenant_photo = '' WHERE tenant_photo LIKE 'data:%' AND length(tenant_photo) > 1000;
+UPDATE chats SET recommender_photo = '' WHERE recommender_photo LIKE 'data:%' AND length(recommender_photo) > 1000;
