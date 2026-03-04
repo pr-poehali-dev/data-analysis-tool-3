@@ -5,18 +5,21 @@ from datetime import datetime
 
 from utils.db import query_one, get_schema
 from utils.jwt_utils import create_access_token, decode_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from utils.http import response, error
+from utils.http import response, error, get_refresh_token_from_cookie
 
 
 def handle(event: dict, origin: str = '*') -> dict:
-    """Refresh access token using refresh token from request body."""
+    """Refresh access token using refresh token from cookie or request body."""
     jwt_secret = os.environ.get('JWT_SECRET')
     if not jwt_secret:
         return error(500, 'JWT_SECRET not configured', origin)
 
-    body_str = event.get('body', '{}')
-    payload = json.loads(body_str)
-    refresh_token = payload.get('refresh_token', '')
+    refresh_token = get_refresh_token_from_cookie(event)
+
+    if not refresh_token:
+        body_str = event.get('body', '{}')
+        payload = json.loads(body_str)
+        refresh_token = payload.get('refresh_token', '')
 
     if not refresh_token:
         return error(401, 'Refresh token required', origin)

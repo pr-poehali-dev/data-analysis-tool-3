@@ -7,7 +7,7 @@ from utils.db import query_one, execute, get_schema
 from utils.password import verify_password
 from utils.jwt_utils import create_access_token, create_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from utils.email import is_email_enabled
-from utils.http import response, error
+from utils.http import response, error, make_refresh_cookie
 
 
 MAX_LOGIN_ATTEMPTS = int(os.environ.get('MAX_LOGIN_ATTEMPTS', '5'))
@@ -101,4 +101,4 @@ def handle(event: dict, origin: str = '*') -> dict:
             'name': user_name,
             'email_verified': email_verified
         }
-    }, origin)
+    }, origin, set_cookie=make_refresh_cookie(refresh_token))
