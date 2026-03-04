@@ -8,6 +8,9 @@ from email import encoders
 from typing import Dict, Any
 from auth_utils import require_auth, auth_error_response
 
+MAX_BODY_SIZE = 15 * 1024 * 1024
+MAX_FILE_BASE64_LENGTH = int(10 * 1024 * 1024 * 4 / 3) + 100
+
 CORS_HEADERS = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -36,7 +39,16 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     try:
         auth_email = require_auth(event)
 
-        body = json.loads(event.get('body', '{}'))
+        body_str = event.get('body', '{}')
+        if body_str and len(body_str) > MAX_BODY_SIZE:
+            return {
+                'statusCode': 400,
+                'headers': CORS_HEADERS,
+                'body': json.dumps({'error': 'Тело запроса слишком большое. Максимум 15 МБ'}),
+                'isBase64Encoded': False
+            }
+
+        body = json.loads(body_str)
         recipient_email = body.get('email')
         file_content_base64 = body.get('fileContent')
         file_name = body.get('fileName', 'Договор_аренды.docx')
@@ -46,6 +58,15 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
                 'statusCode': 400,
                 'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'Email и содержимое файла обязательны'}),
+                'isBase64Encoded': False
+            }
+
+        if len(file_content_base64) > MAX_FILE_BASE64_LENGTH:
+            size_mb = round(len(file_content_base64) * 3 / 4 / 1024 / 1024, 1)
+            return {
+                'statusCode': 400,
+                'headers': CORS_HEADERS,
+                'body': json.dumps({'error': f'Файл слишком большой ({size_mb} МБ). Максимум 10 МБ'}),
                 'isBase64Encoded': False
             }
 
