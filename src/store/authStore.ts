@@ -66,7 +66,7 @@ function getRefreshToken(provider: AuthProvider): string | null {
   return null;
 }
 
-async function doRefresh(): Promise<boolean> {
+async function doRefresh(): Promise<string> {
   let provider = getProvider();
   if (!provider) {
     provider = detectProviderFromLegacyKeys();
@@ -74,13 +74,13 @@ async function doRefresh(): Promise<boolean> {
       localStorage.setItem(PROVIDER_KEY, provider);
     }
   }
-  if (!provider) return false;
+  if (!provider) return "no_provider";
 
   const refreshToken = getRefreshToken(provider);
-  if (!refreshToken) return false;
+  if (!refreshToken) return "no_token";
 
   const url = REFRESH_URLS[provider];
-  if (!url) return false;
+  if (!url) return "no_url";
 
   try {
     const res = await fetch(url, {
@@ -89,13 +89,14 @@ async function doRefresh(): Promise<boolean> {
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
-    if (!res.ok) return false;
+    if (res.status === 401) return "expired";
+    if (!res.ok) return "error";
 
     const data = await res.json();
     currentAccessToken = data.access_token;
-    return true;
+    return "ok";
   } catch {
-    return false;
+    return "network_error";
   }
 }
 
@@ -203,8 +204,12 @@ export const authStore = {
         return;
       }
 
-      const success = await doRefresh();
-      if (!success) {
+      const result = await doRefresh();
+      if (result === "ok") {
+        // ok
+      } else if (result === "network_error" || result === "error") {
+        // don't logout
+      } else {
         authStore.logout();
       }
       sessionRestored = true;
