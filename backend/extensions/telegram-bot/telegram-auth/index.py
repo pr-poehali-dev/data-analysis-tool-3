@@ -417,7 +417,7 @@ def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
 def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') -> dict:
     """
     POST ?action=refresh
-    Refresh access token using refresh token.
+    Обновление access-токена с ротацией refresh-токена.
     """
     refresh_token = ''
     if event:
@@ -430,15 +430,22 @@ def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') ->
         return cors_response(400, {"error": "Missing refresh_token"}, origin)
 
     jwt_secret = get_env("JWT_SECRET")
-    token_hash = hash_token(refresh_token)
+    old_token_hash = hash_token(refresh_token)
 
-    token_data = find_refresh_token(cursor, token_hash)
+    token_data = find_refresh_token(cursor, old_token_hash)
     if not token_data:
         return cors_response(401, {"error": "Invalid or expired refresh token"}, origin)
 
     user = get_user_by_id(cursor, token_data["user_id"])
     if not user:
         return cors_response(401, {"error": "User not found"}, origin)
+
+    delete_refresh_token(cursor, old_token_hash)
+
+    new_refresh_token = generate_token(32)
+    new_token_hash = hash_token(new_refresh_token)
+    new_expires = datetime.now(timezone.utc) + timedelta(days=30)
+    save_refresh_token(cursor, user["id"], new_token_hash, new_expires)
 
     user_email = user.get("email") or f'tg_{user.get("telegram_id", user["id"])}'
     access_token = create_jwt(user["id"], jwt_secret, email=user_email)
@@ -447,7 +454,7 @@ def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') ->
         "access_token": access_token,
         "expires_in": 900,
         "user": user,
-    }, origin, set_cookie=make_refresh_cookie(refresh_token))
+    }, origin, set_cookie=make_refresh_cookie(new_refresh_token))
 
 
 def handle_logout(cursor, body: dict, event: dict = None, origin: str = '*') -> dict:
