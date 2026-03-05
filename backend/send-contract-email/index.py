@@ -6,32 +6,31 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from typing import Dict, Any
-from auth_utils import require_auth, auth_error_response
+from auth_utils import require_auth, auth_error_response, set_request_origin, get_cors_headers
 
 MAX_BODY_SIZE = 15 * 1024 * 1024
 MAX_FILE_BASE64_LENGTH = int(10 * 1024 * 1024 * 4 / 3) + 100
 
-CORS_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
-    'Access-Control-Max-Age': '86400',
-}
+
+def _cors():
+    h = get_cors_headers()
+    h['Access-Control-Max-Age'] = '86400'
+    return h
 
 
 def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     '''Отправка договора аренды на email — только для авторизованных пользователей'''
+    set_request_origin(event)
 
     method = event.get('httpMethod', 'POST')
 
     if method == 'OPTIONS':
-        return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': '', 'isBase64Encoded': False}
+        return {'statusCode': 200, 'headers': _cors(), 'body': '', 'isBase64Encoded': False}
 
     if method != 'POST':
         return {
             'statusCode': 405,
-            'headers': CORS_HEADERS,
+            'headers': _cors(),
             'body': json.dumps({'error': 'Method not allowed'}),
             'isBase64Encoded': False
         }
@@ -43,7 +42,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         if body_str and len(body_str) > MAX_BODY_SIZE:
             return {
                 'statusCode': 400,
-                'headers': CORS_HEADERS,
+                'headers': _cors(),
                 'body': json.dumps({'error': 'Тело запроса слишком большое. Максимум 15 МБ'}),
                 'isBase64Encoded': False
             }
@@ -56,7 +55,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         if not recipient_email or not file_content_base64:
             return {
                 'statusCode': 400,
-                'headers': CORS_HEADERS,
+                'headers': _cors(),
                 'body': json.dumps({'error': 'Email и содержимое файла обязательны'}),
                 'isBase64Encoded': False
             }
@@ -65,7 +64,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             size_mb = round(len(file_content_base64) * 3 / 4 / 1024 / 1024, 1)
             return {
                 'statusCode': 400,
-                'headers': CORS_HEADERS,
+                'headers': _cors(),
                 'body': json.dumps({'error': f'Файл слишком большой ({size_mb} МБ). Максимум 10 МБ'}),
                 'isBase64Encoded': False
             }
@@ -81,7 +80,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         if not sender_email or not sender_password:
             return {
                 'statusCode': 500,
-                'headers': CORS_HEADERS,
+                'headers': _cors(),
                 'body': json.dumps({'error': 'SMTP credentials not configured'}),
                 'isBase64Encoded': False
             }
@@ -115,7 +114,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
 
         return {
             'statusCode': 200,
-            'headers': CORS_HEADERS,
+            'headers': _cors(),
             'body': json.dumps({
                 'success': True,
                 'message': f'Договор успешно отправлен на {recipient_email}'
@@ -129,7 +128,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         print(f'Ошибка при отправке email: {str(e)}')
         return {
             'statusCode': 500,
-            'headers': CORS_HEADERS,
+            'headers': _cors(),
             'body': json.dumps({'error': f'Не удалось отправить email: {str(e)}'}),
             'isBase64Encoded': False
         }

@@ -14,6 +14,32 @@ MAX_AVATAR_URL_LENGTH = 2048
 MAX_AVATAR_DATA_URI_BYTES = 5 * 1024 * 1024
 MAX_BODY_SIZE = 10 * 1024 * 1024
 
+_current_origin = '*'
+
+
+def set_request_origin(event):
+    global _current_origin
+    allowed = os.environ.get('ALLOWED_ORIGINS', '').strip()
+    if not allowed:
+        _current_origin = '*'
+        return
+    origins = [o.strip() for o in allowed.split(',') if o.strip()]
+    if not origins:
+        _current_origin = '*'
+        return
+    headers = event.get('headers', {})
+    request_origin = headers.get('Origin') or headers.get('origin') or ''
+    _current_origin = request_origin if request_origin in origins else origins[0]
+
+
+def get_cors_headers():
+    return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': _current_origin,
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
+    }
+
 
 def get_connection():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -40,12 +66,7 @@ def verify_access_token(token: str) -> dict:
 def response(status: int, body: dict) -> dict:
     return {
         'statusCode': status,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization',
-        },
+        'headers': get_cors_headers(),
         'body': json.dumps(body, default=str),
     }
 
@@ -425,6 +446,8 @@ def handle_verify_email_code(event: dict) -> dict:
 
 def handler(event: dict, context) -> dict:
     """Обновление и получение профиля пользователя."""
+    set_request_origin(event)
+
     if event.get('httpMethod') == 'OPTIONS':
         return response(200, {})
 
