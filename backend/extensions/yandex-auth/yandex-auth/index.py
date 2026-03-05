@@ -429,7 +429,7 @@ def handle_callback(event: dict, origin: str) -> dict:
 
 
 def handle_refresh(event: dict, origin: str) -> dict:
-    """Refresh access token."""
+    """Обновление access-токена с ротацией refresh-токена."""
     refresh_token = get_refresh_token_from_cookie(event)
 
     if not refresh_token:
@@ -459,15 +459,15 @@ def handle_refresh(event: dict, origin: str) -> dict:
 
         cleanup_expired_tokens(cur, S)
 
-        token_hash = hash_token(refresh_token)
+        old_token_hash = hash_token(refresh_token)
 
         cur.execute(
-            f"""SELECT rt.user_id, u.email, u.name, u.avatar_url, u.yandex_id,
+            f"""SELECT rt.id, rt.user_id, u.email, u.name, u.avatar_url, u.yandex_id,
                        u.first_name, u.last_name, u.role, u.phone, u.city, u.vk_link
                 FROM {S}refresh_tokens rt
                 JOIN {S}users u ON u.id = rt.user_id
                 WHERE rt.token_hash = %s AND rt.expires_at > %s""",
-            (token_hash, now.isoformat())
+            (old_token_hash, now.isoformat())
         )
 
         row = cur.fetchone()
@@ -475,11 +475,23 @@ def handle_refresh(event: dict, origin: str) -> dict:
             conn.commit()
             return error(401, 'Invalid or expired refresh token', origin)
 
-        user_id, email, name, avatar_url, yandex_id, first_name, last_name, role, phone, city, vk_link = row
+        old_rt_id, user_id, email, name, avatar_url, yandex_id, first_name, last_name, role, phone, city, vk_link = row
 
-        access_token, expires_in = create_access_token(user_id, email)
+        cur.execute(f"DELETE FROM {S}refresh_tokens WHERE id = %s", (old_rt_id,))
+
+        new_refresh_token = create_refresh_token()
+        new_token_hash = hash_token(new_refresh_token)
+        new_expires = (now + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)).isoformat()
+
+        cur.execute(
+            f"""INSERT INTO {S}refresh_tokens (user_id, token_hash, expires_at, created_at)
+                VALUES (%s, %s, %s, %s)""",
+            (user_id, new_token_hash, new_expires, now.isoformat())
+        )
 
         conn.commit()
+
+        access_token, expires_in = create_access_token(user_id, email)
 
         return response(200, {
             'access_token': access_token,
@@ -497,9 +509,10 @@ def handle_refresh(event: dict, origin: str) -> dict:
                 'city': city or '',
                 'vkLink': vk_link or ''
             }
-        }, origin, set_cookie=make_refresh_cookie(refresh_token))
+        }, origin, set_cookie=make_refresh_cookie(new_refresh_token))
 
     except Exception:
+        conn.rollback()
         return error(500, 'Internal server error', origin)
     finally:
         conn.close()
