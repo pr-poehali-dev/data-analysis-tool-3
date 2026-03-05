@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { authStore } from "@/store/authStore";
+import funcUrls from "../../../../backend/func2url.json";
 
 interface ReviewModalProps {
   chatId: string;
@@ -40,7 +41,7 @@ export const ReviewModal = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("https://functions.poehali.dev/38e54b9b-a9a2-4fb2-8b73-c372543b694f", {
+      const response = await fetch(funcUrls["reviews"], {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
