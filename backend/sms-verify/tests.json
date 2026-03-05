@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Verify invalid code returns error",
+      "name": "Отклонение неверного кода",
       "method": "POST",
       "path": "/",
       "body": {
@@ -18,7 +18,7 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Reject missing fields",
+      "name": "Отклонение без обязательных полей",
       "method": "POST",
       "path": "/",
       "body": {
@@ -28,6 +28,13 @@
       "expectedBody": {
         "error": "Missing required fields"
       },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS запрос",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
       "bodyMatcher": "partial"
     }
   ]

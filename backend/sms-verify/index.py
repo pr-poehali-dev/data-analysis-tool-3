@@ -31,6 +31,63 @@ def _cors():
     }
 
 
+def _get_schema():
+    schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+    return f"{schema}." if schema else ""
+
+
+def _check_rate_limit(key, action, max_attempts, window_seconds):
+    """Проверка лимита запросов. Возвращает (превышен, осталось_секунд). Fail-open при ошибке БД."""
+    try:
+        import psycopg2
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        try:
+            S = _get_schema()
+            cur = conn.cursor()
+
+            cur.execute(f"""
+                DELETE FROM {S}rate_limits
+                WHERE action = %s AND created_at < NOW() - INTERVAL '{int(window_seconds)} seconds'
+            """, (action,))
+
+            cur.execute(f"""
+                SELECT COUNT(*) FROM {S}rate_limits
+                WHERE key = %s AND action = %s
+                  AND created_at > NOW() - INTERVAL '{int(window_seconds)} seconds'
+            """, (key, action))
+            count = cur.fetchone()[0]
+
+            if count >= max_attempts:
+                cur.execute(f"""
+                    SELECT EXTRACT(EPOCH FROM (MIN(created_at) + INTERVAL '{int(window_seconds)} seconds' - NOW()))::int
+                    FROM {S}rate_limits
+                    WHERE key = %s AND action = %s
+                      AND created_at > NOW() - INTERVAL '{int(window_seconds)} seconds'
+                """, (key, action))
+                remaining = cur.fetchone()[0] or window_seconds
+                conn.commit()
+                return True, max(remaining, 1)
+
+            cur.execute(f"""
+                INSERT INTO {S}rate_limits (key, action, created_at)
+                VALUES (%s, %s, NOW())
+            """, (key, action))
+            conn.commit()
+            return False, 0
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"Rate limit check error (fail-open): {e}")
+        return False, 0
+
+
+VERIFY_PER_PHONE_LIMIT = 5
+VERIFY_PER_PHONE_WINDOW = 900
+
+
 def handler(event: dict, context) -> dict:
     '''Проверка SMS-кода верификации'''
     set_request_origin(event)
@@ -60,6 +117,18 @@ def handler(event: dict, context) -> dict:
                 'statusCode': 400,
                 'headers': _cors(),
                 'body': json.dumps({'error': 'Missing required fields'}),
+                'isBase64Encoded': False
+            }
+
+        limited, wait = _check_rate_limit(phone, 'sms_verify', VERIFY_PER_PHONE_LIMIT, VERIFY_PER_PHONE_WINDOW)
+        if limited:
+            return {
+                'statusCode': 429,
+                'headers': _cors(),
+                'body': json.dumps({
+                    'error': f'Слишком много попыток. Повторите через {wait // 60 + 1} мин.',
+                    'retryAfter': wait
+                }),
                 'isBase64Encoded': False
             }
 
