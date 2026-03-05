@@ -162,9 +162,7 @@ def handler(event: dict, context) -> dict:
         code_hash = hashlib.sha256(f"{phone}:{code}".encode()).hexdigest()
         timestamp = int(time.time())
 
-        print(f"SMS Code for {phone}: {code}")
-        print(f"Code hash: {code_hash}")
-        print(f"Timestamp: {timestamp}")
+        print("SMS код сгенерирован и отправлен")
 
         return {
             'statusCode': 200,
