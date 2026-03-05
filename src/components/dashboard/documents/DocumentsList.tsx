@@ -68,7 +68,7 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
       const base64Content = await generateDOCXBase64Lazy(doc.data);
       const fileName = `Договор_аренды_${doc.data.propertyAddress.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.docx`;
       
-      console.log('Отправка на email:', email);
+      console.log('Отправка договора на email...');
       const response = await fetch(funcUrls["send-contract-email"], {
         method: 'POST',
         headers: {
