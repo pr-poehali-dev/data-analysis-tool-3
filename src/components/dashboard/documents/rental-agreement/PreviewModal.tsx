@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { generateDOCXBase64Lazy } from "./DOCXGeneratorBase64Lazy";
 import { documentsStore } from "@/store/documentsStore";
+import funcUrls from "../../../../../backend/func2url.json";
 
 interface PreviewModalProps {
   formData: RentalAgreementData;
@@ -51,7 +52,7 @@ export const PreviewModal = ({ formData, onEdit, onReset, documentId, onDocument
       const fileName = `Договор_аренды_${formData.propertyAddress.replace(/[^a-zа-я0-9]/gi, '_')}_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.docx`;
       
       console.log('Отправка на email:', email);
-      const response = await fetch('https://functions.poehali.dev/ef87cab5-dd87-4cb9-b8bd-a4fa837976a4', {
+      const response = await fetch(funcUrls["send-contract-email"], {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
