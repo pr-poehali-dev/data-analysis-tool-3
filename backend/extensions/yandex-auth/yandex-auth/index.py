@@ -428,8 +428,29 @@ def handle_callback(event: dict, origin: str) -> dict:
         return error(500, 'Internal server error', origin)
 
 
+def _validate_request_origin(event):
+    """Проверка Origin запроса для защиты от CSRF. Возвращает сообщение об ошибке или None."""
+    allowed = os.environ.get('ALLOWED_ORIGINS', '').strip()
+    if not allowed:
+        return None
+    origins = [o.strip() for o in allowed.split(',') if o.strip()]
+    if not origins:
+        return None
+    headers = event.get('headers', {}) or {}
+    request_origin = headers.get('Origin') or headers.get('origin') or ''
+    if not request_origin:
+        return None
+    if request_origin not in origins:
+        return 'Запрос отклонён: недопустимый источник'
+    return None
+
+
 def handle_refresh(event: dict, origin: str) -> dict:
     """Обновление access-токена с ротацией refresh-токена."""
+    csrf_error = _validate_request_origin(event)
+    if csrf_error:
+        return error(403, csrf_error, origin)
+
     refresh_token = get_refresh_token_from_cookie(event)
 
     if not refresh_token:
