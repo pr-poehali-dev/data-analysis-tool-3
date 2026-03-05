@@ -9,11 +9,15 @@ from utils.jwt_utils import (
     decode_refresh_token, hash_token,
     ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS,
 )
-from utils.http import response, error, get_refresh_token_from_cookie, make_refresh_cookie
+from utils.http import response, error, get_refresh_token_from_cookie, make_refresh_cookie, validate_request_origin
 
 
 def handle(event: dict, origin: str = '*') -> dict:
     """Обновление access-токена с ротацией refresh-токена."""
+    csrf_error = validate_request_origin(event)
+    if csrf_error:
+        return error(403, csrf_error, origin)
+
     jwt_secret = os.environ.get('JWT_SECRET')
     if not jwt_secret:
         return error(500, 'JWT_SECRET not configured', origin)

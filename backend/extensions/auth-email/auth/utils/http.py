@@ -53,6 +53,23 @@ def get_refresh_token_from_cookie(event: dict) -> str:
     return ''
 
 
+def validate_request_origin(event: dict) -> Optional[str]:
+    """Проверка Origin запроса для защиты от CSRF. Возвращает сообщение об ошибке или None если всё ок."""
+    allowed = os.environ.get('ALLOWED_ORIGINS', '').strip()
+    if not allowed:
+        return None
+    origins = [o.strip() for o in allowed.split(',') if o.strip()]
+    if not origins:
+        return None
+    headers = event.get('headers', {})
+    request_origin = headers.get('Origin') or headers.get('origin') or ''
+    if not request_origin:
+        return None
+    if request_origin not in origins:
+        return 'Запрос отклонён: недопустимый источник'
+    return None
+
+
 def make_headers(origin: str = '*', set_cookie: Optional[str] = None) -> dict:
     """Create response headers with CORS."""
     headers = {
