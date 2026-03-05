@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Send SMS code successfully",
+      "name": "Отправка SMS-кода успешно",
       "method": "POST",
       "path": "/",
       "body": {
@@ -15,7 +15,7 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Reject empty phone number",
+      "name": "Отклонение пустого номера",
       "method": "POST",
       "path": "/",
       "body": {
@@ -25,6 +25,13 @@
       "expectedBody": {
         "error": "Phone number is required"
       },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS запрос",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
       "bodyMatcher": "partial"
     }
   ]
