@@ -4,7 +4,7 @@ import { RentalAgreementData, getPropertyTypeName } from "./types";
 import { documentsStore } from "@/store/documentsStore";
 
 export const generateDOCX = async (formData: RentalAgreementData, existingDocId?: string) => {
-  console.log('🚀 Начало генерации DOCX...', { formData, existingDocId });
+  console.log('Начало генерации DOCX...');
   
   try {
     console.log('✅ Библиотеки docx и file-saver импортированы');
