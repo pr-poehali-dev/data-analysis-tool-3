@@ -2,13 +2,75 @@
 import json
 from datetime import datetime, timedelta
 
-from utils.db import query_one, execute_returning, execute, get_schema
+from utils.db import query_one, execute_returning, execute, get_connection, get_schema
 from utils.password import hash_password, verify_password, validate_password, validate_email
 from utils.email import is_email_enabled, generate_code, send_verification_code
 from utils.http import response, error
 
 
 VERIFICATION_CODE_HOURS = 24
+REGISTER_PER_IP_LIMIT = 5
+REGISTER_PER_IP_WINDOW = 3600
+
+
+def _get_client_ip(event):
+    """Получение IP-адреса клиента из заголовков запроса."""
+    headers = event.get('headers', {})
+    ip = (
+        headers.get('X-Forwarded-For', '').split(',')[0].strip()
+        or headers.get('x-forwarded-for', '').split(',')[0].strip()
+        or headers.get('X-Real-Ip', '')
+        or headers.get('x-real-ip', '')
+        or (event.get('requestContext', {}).get('identity', {}).get('sourceIp', ''))
+    )
+    return ip or 'unknown'
+
+
+def _check_rate_limit(key, action, max_attempts, window_seconds):
+    """Проверка лимита запросов. Возвращает (превышен, осталось_секунд). Fail-open при ошибке БД."""
+    try:
+        conn = get_connection()
+        try:
+            S = get_schema()
+            cur = conn.cursor()
+
+            cur.execute(f"""
+                DELETE FROM {S}rate_limits
+                WHERE action = %s AND created_at < NOW() - INTERVAL '{int(window_seconds)} seconds'
+            """, (action,))
+
+            cur.execute(f"""
+                SELECT COUNT(*) FROM {S}rate_limits
+                WHERE key = %s AND action = %s
+                  AND created_at > NOW() - INTERVAL '{int(window_seconds)} seconds'
+            """, (key, action))
+            count = cur.fetchone()[0]
+
+            if count >= max_attempts:
+                cur.execute(f"""
+                    SELECT EXTRACT(EPOCH FROM (MIN(created_at) + INTERVAL '{int(window_seconds)} seconds' - NOW()))::int
+                    FROM {S}rate_limits
+                    WHERE key = %s AND action = %s
+                      AND created_at > NOW() - INTERVAL '{int(window_seconds)} seconds'
+                """, (key, action))
+                remaining = cur.fetchone()[0] or window_seconds
+                conn.commit()
+                return True, max(remaining, 1)
+
+            cur.execute(f"""
+                INSERT INTO {S}rate_limits (key, action, created_at)
+                VALUES (%s, %s, NOW())
+            """, (key, action))
+            conn.commit()
+            return False, 0
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"Rate limit check error (fail-open): {e}")
+        return False, 0
 
 
 def _send_verification_code(user_id: int, email: str, S: str) -> dict:
@@ -31,6 +93,11 @@ def _send_verification_code(user_id: int, email: str, S: str) -> dict:
 
 def handle(event: dict, origin: str = '*') -> dict:
     """Register new user with email and password."""
+    client_ip = _get_client_ip(event)
+    limited, wait = _check_rate_limit(client_ip, 'register_ip', REGISTER_PER_IP_LIMIT, REGISTER_PER_IP_WINDOW)
+    if limited:
+        return error(429, f'Слишком много попыток регистрации. Повторите через {wait // 60 + 1} мин.', origin)
+
     body_str = event.get('body', '{}')
     payload = json.loads(body_str)
 
