@@ -64,8 +64,9 @@ export default function YandexCallback() {
 
         navigate("/dashboard", { replace: true });
       } catch (err) {
-        console.error("[YandexCallback] fetch error:", err);
-        setError("Ошибка сети. Попробуйте позже.");
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[YandexCallback] fetch error:", msg);
+        setError(`Ошибка сети: ${msg}`);
       }
     };
 

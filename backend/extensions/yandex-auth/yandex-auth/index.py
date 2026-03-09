@@ -581,14 +581,16 @@ def handle_logout(event: dict, origin: str) -> dict:
 def handler(event: dict, context) -> dict:
     """Main handler - routes to specific handlers based on action."""
     origin = get_origin(event)
+    method = event.get('httpMethod', '')
+    query = event.get('queryStringParameters', {}) or {}
+    action = query.get('action', '')
 
-    if event.get('httpMethod') == 'OPTIONS':
+    print(f"[yandex-auth] method={method} action={action} origin={origin}")
+
+    if method == 'OPTIONS':
         headers = HEADERS.copy()
         headers['Access-Control-Allow-Origin'] = origin if origin != '*' else '*'
         return {'statusCode': 200, 'headers': headers, 'body': ''}
-
-    query = event.get('queryStringParameters', {}) or {}
-    action = query.get('action', '')
 
     handlers = {
         'auth-url': handle_auth_url,
@@ -600,4 +602,6 @@ def handler(event: dict, context) -> dict:
     if action not in handlers:
         return error(400, f'Unknown action: {action}', origin)
 
-    return handlers[action](event, origin)
+    result = handlers[action](event, origin)
+    print(f"[yandex-auth] response status={result.get('statusCode')} origin_header={result.get('headers', {}).get('Access-Control-Allow-Origin')}")
+    return result
