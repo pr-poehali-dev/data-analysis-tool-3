@@ -24,7 +24,7 @@ export const SocialLoginButtons = () => {
       const data = await res.json();
       if (data.auth_url) {
         if (data.state) {
-          sessionStorage.setItem("yandex_auth_state", data.state);
+          localStorage.setItem("yandex_auth_state", data.state);
         }
         window.location.href = data.auth_url;
       } else {

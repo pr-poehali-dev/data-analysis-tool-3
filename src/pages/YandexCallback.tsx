@@ -20,12 +20,12 @@ export default function YandexCallback() {
         return;
       }
 
-      const storedState = sessionStorage.getItem("yandex_auth_state");
+      const storedState = localStorage.getItem("yandex_auth_state");
       if (storedState && state !== storedState) {
         setError("Ошибка безопасности");
         return;
       }
-      sessionStorage.removeItem("yandex_auth_state");
+      localStorage.removeItem("yandex_auth_state");
 
       try {
         const res = await fetch(`${AUTH_URL}?action=callback`, {
