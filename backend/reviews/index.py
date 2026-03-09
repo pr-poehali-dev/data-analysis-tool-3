@@ -48,7 +48,9 @@ def get_reviews(event: dict, conn) -> dict:
         if chat_id:
             cur.execute("""
                 SELECT id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                       reviewee_email, reviewee_name, rating, comment, created_at
+                       reviewee_email, reviewee_name, rating, comment, created_at,
+                       COALESCE(reviewer_photo, '') as reviewer_photo,
+                       COALESCE(reviewee_photo, '') as reviewee_photo
                 FROM reviews
                 WHERE chat_id = %s
                 ORDER BY created_at DESC
@@ -56,7 +58,9 @@ def get_reviews(event: dict, conn) -> dict:
         elif reviewee_email:
             cur.execute("""
                 SELECT id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                       reviewee_email, reviewee_name, rating, comment, created_at
+                       reviewee_email, reviewee_name, rating, comment, created_at,
+                       COALESCE(reviewer_photo, '') as reviewer_photo,
+                       COALESCE(reviewee_photo, '') as reviewee_photo
                 FROM reviews
                 WHERE reviewee_email = %s
                 ORDER BY created_at DESC
@@ -123,6 +127,9 @@ def create_review(event: dict, conn) -> dict:
             'body': json.dumps({'error': 'Rating must be between 1 and 5'})
         }
 
+    reviewer_photo = data.get('reviewer_photo', '') or ''
+    reviewee_photo = data.get('reviewee_photo', '') or ''
+
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
             SELECT id FROM reviews
@@ -134,22 +141,29 @@ def create_review(event: dict, conn) -> dict:
         if existing:
             cur.execute("""
                 UPDATE reviews
-                SET rating = %s, comment = %s, updated_at = CURRENT_TIMESTAMP
+                SET rating = %s, comment = %s,
+                    reviewer_photo = %s, reviewee_photo = %s,
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 RETURNING id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                          reviewee_email, reviewee_name, rating, comment, created_at
-            """, (rating, data.get('comment'), existing['id']))
+                          reviewee_email, reviewee_name, rating, comment, created_at,
+                          COALESCE(reviewer_photo, '') as reviewer_photo,
+                          COALESCE(reviewee_photo, '') as reviewee_photo
+            """, (rating, data.get('comment'), reviewer_photo, reviewee_photo, existing['id']))
         else:
             cur.execute("""
                 INSERT INTO reviews
                 (chat_id, recommendation_id, reviewer_email, reviewer_name,
-                 reviewee_email, reviewee_name, rating, comment)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                 reviewee_email, reviewee_name, rating, comment,
+                 reviewer_photo, reviewee_photo)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                          reviewee_email, reviewee_name, rating, comment, created_at
+                          reviewee_email, reviewee_name, rating, comment, created_at,
+                          COALESCE(reviewer_photo, '') as reviewer_photo,
+                          COALESCE(reviewee_photo, '') as reviewee_photo
             """, (data['chat_id'], data['recommendation_id'], auth_email,
                   data['reviewer_name'], data['reviewee_email'], data['reviewee_name'],
-                  rating, data.get('comment')))
+                  rating, data.get('comment'), reviewer_photo, reviewee_photo))
 
         review = cur.fetchone()
         conn.commit()

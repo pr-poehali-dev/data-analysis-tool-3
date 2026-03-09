@@ -10,8 +10,10 @@ interface Review {
   recommendation_id: string;
   reviewer_email: string;
   reviewer_name: string;
+  reviewer_photo: string;
   reviewee_email: string;
   reviewee_name: string;
+  reviewee_photo: string;
   rating: number;
   comment: string | null;
   created_at: string;
@@ -120,19 +122,37 @@ export const DashboardReviewsSection = ({ userEmail }: DashboardReviewsSectionPr
               className="bg-white rounded-xl border border-border p-4 sm:p-6"
             >
               <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-foreground text-sm sm:text-base mb-1">
-                    {review.reviewer_name}
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(review.created_at).toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </p>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {review.reviewer_photo ? (
+                    <img
+                      src={review.reviewer_photo}
+                      alt={review.reviewer_name}
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                      }}
+                    />
+                  ) : null}
+                  <div className={`w-10 h-10 rounded-full flex-shrink-0 bg-primary/10 flex items-center justify-center${review.reviewer_photo ? " hidden" : ""}`}>
+                    <span className="text-primary font-semibold text-sm">
+                      {review.reviewer_name?.charAt(0)?.toUpperCase() || "?"}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-semibold text-foreground text-sm sm:text-base mb-0.5 truncate">
+                      {review.reviewer_name}
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(review.created_at).toLocaleDateString('ru-RU', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-0.5 sm:gap-1">
+                <div className="flex gap-0.5 sm:gap-1 flex-shrink-0">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Icon
                       key={star}

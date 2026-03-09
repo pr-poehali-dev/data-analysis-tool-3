@@ -179,8 +179,10 @@ export const ChatWindow = ({ chat, currentUserEmail, currentUserName, currentUse
           recommendationId={chat.recommendationId}
           reviewerEmail={currentUserEmail}
           reviewerName={currentUserName}
+          reviewerPhoto={currentUserPhoto}
           revieweeEmail={otherUserEmail}
           revieweeName={otherUserName}
+          revieweePhoto={otherUserPhoto}
           onClose={() => setShowReviewModal(false)}
           onSuccess={() => {
             setHasReview(true);

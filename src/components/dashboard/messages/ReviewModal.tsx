@@ -11,8 +11,10 @@ interface ReviewModalProps {
   recommendationId: string;
   reviewerEmail: string;
   reviewerName: string;
+  reviewerPhoto?: string;
   revieweeEmail: string;
   revieweeName: string;
+  revieweePhoto?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -22,8 +24,10 @@ export const ReviewModal = ({
   recommendationId,
   reviewerEmail,
   reviewerName,
+  reviewerPhoto,
   revieweeEmail,
   revieweeName,
+  revieweePhoto,
   onClose,
   onSuccess
 }: ReviewModalProps) => {
@@ -52,8 +56,10 @@ export const ReviewModal = ({
           recommendation_id: recommendationId,
           reviewer_email: reviewerEmail,
           reviewer_name: reviewerName,
+          reviewer_photo: reviewerPhoto || "",
           reviewee_email: revieweeEmail,
           reviewee_name: revieweeName,
+          reviewee_photo: revieweePhoto || "",
           rating,
           comment: comment.trim() || null
         })
