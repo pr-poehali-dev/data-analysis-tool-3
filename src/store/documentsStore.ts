@@ -34,15 +34,7 @@ class DocumentsStore {
   private fetched = false;
 
   constructor() {
-    const saved = localStorage.getItem("documents");
-    if (saved) {
-      this.cache = JSON.parse(saved, (key, value) => {
-        if (key === "createdAt" || key === "updatedAt") {
-          return new Date(value);
-        }
-        return value;
-      });
-    }
+    localStorage.removeItem("documents");
   }
 
   subscribe(listener: () => void) {
@@ -53,7 +45,6 @@ class DocumentsStore {
   }
 
   private notify() {
-    localStorage.setItem("documents", JSON.stringify(this.cache));
     this.listeners.forEach((listener) => listener());
   }
 
