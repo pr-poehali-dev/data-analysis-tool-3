@@ -109,11 +109,22 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
           </h1>
           <div className="bg-white border border-border rounded-xl p-4 sm:p-6 mt-4">
             <div className="flex items-start gap-4">
-              <img
-                src={request.avatar}
-                alt={request.name}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full"
-              />
+              {request.avatar ? (
+                <img
+                  src={request.avatar}
+                  alt={request.name}
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                  }}
+                />
+              ) : null}
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center${request.avatar ? " hidden" : ""}`}>
+                <span className="text-primary font-semibold text-lg sm:text-xl">
+                  {request.name?.charAt(0)?.toUpperCase() || "?"}
+                </span>
+              </div>
               <div className="flex-1">
                 <h3 className="text-base sm:text-xl font-semibold text-foreground mb-2">{request.name}</h3>
                 <div className="grid md:grid-cols-2 gap-4 text-sm">

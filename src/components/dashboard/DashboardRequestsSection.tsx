@@ -102,11 +102,22 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
               className="bg-white border border-border rounded-xl p-3 sm:p-6"
             >
               <div className="flex items-start gap-3 sm:gap-4 mb-3">
-                <img
-                  src={request.avatar}
-                  alt={request.name}
-                  className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex-shrink-0"
-                />
+                {request.avatar ? (
+                  <img
+                    src={request.avatar}
+                    alt={request.name}
+                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex-shrink-0 object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                    }}
+                  />
+                ) : null}
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full flex-shrink-0 bg-primary/10 flex items-center justify-center${request.avatar ? " hidden" : ""}`}>
+                  <span className="text-primary font-semibold text-sm sm:text-lg">
+                    {request.name?.charAt(0)?.toUpperCase() || "?"}
+                  </span>
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <h3 className="text-base sm:text-xl font-semibold text-foreground truncate">{request.name}</h3>

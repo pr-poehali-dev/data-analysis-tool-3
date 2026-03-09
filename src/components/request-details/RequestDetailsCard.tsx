@@ -43,12 +43,26 @@ export const RequestDetailsCard = ({
       )}
 
       <div className="flex items-start gap-3 sm:gap-6 mb-6 sm:mb-8">
-        <img
-          src={request.avatar}
-          alt={request.name}
-          className="w-14 h-14 sm:w-24 sm:h-24 rounded-full shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+        {request.avatar ? (
+          <img
+            src={request.avatar}
+            alt={request.name}
+            className="w-14 h-14 sm:w-24 sm:h-24 rounded-full shrink-0 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={onAuthorClick}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+        ) : null}
+        <div
+          className={`w-14 h-14 sm:w-24 sm:h-24 rounded-full shrink-0 bg-primary/10 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity${request.avatar ? " hidden" : ""}`}
           onClick={onAuthorClick}
-        />
+        >
+          <span className="text-primary font-bold text-2xl sm:text-4xl">
+            {request.name?.charAt(0)?.toUpperCase() || "?"}
+          </span>
+        </div>
         <div className="flex-1 min-w-0">
           <h1
             className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2 break-words cursor-pointer hover:text-primary transition-colors"

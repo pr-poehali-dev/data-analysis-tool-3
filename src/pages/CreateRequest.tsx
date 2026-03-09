@@ -101,7 +101,7 @@ export const CreateRequest = () => {
     await requestsStore.addRequest({
       userId,
       name: user ? `${user.firstName} ${user.lastName}` : "Вы",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NewUser",
+      avatar: user?.photo || "",
       location: `${formData.city}, ${districtsText}`,
       budget: `${parseInt(formData.budgetMin).toLocaleString('ru-RU')} - ${parseInt(formData.budgetMax).toLocaleString('ru-RU')} ₽`,
       reward: `${formData.reward.toLocaleString('ru-RU')} ₽`,

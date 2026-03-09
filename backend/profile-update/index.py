@@ -264,12 +264,18 @@ def handle_update_profile(event: dict) -> dict:
                 cur.execute(f"""
                     UPDATE {S}chats SET tenant_name = %s WHERE tenant_email = %s
                 """, (new_name, user_email))
+                cur.execute(f"""
+                    UPDATE {S}requests SET name = %s WHERE user_email = %s AND status != 'archived'
+                """, (new_name, user_email))
             if avatar_url is not None:
                 cur.execute(f"""
                     UPDATE {S}chats SET recommender_photo = %s WHERE recommender_email = %s
                 """, (new_photo, user_email))
                 cur.execute(f"""
                     UPDATE {S}chats SET tenant_photo = %s WHERE tenant_email = %s
+                """, (new_photo, user_email))
+                cur.execute(f"""
+                    UPDATE {S}requests SET avatar = %s WHERE user_email = %s AND status != 'archived'
                 """, (new_photo, user_email))
             if vk_link is not None:
                 cur.execute(f"""

@@ -88,11 +88,22 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
         className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 cursor-pointer pr-16 sm:pr-20"
         onClick={() => navigate(`/request/${request.id}`, { state: { fromDashboard } })}
       >
-        <img
-          src={request.avatar}
-          alt={request.name}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
-        />
+        {request.avatar ? (
+          <img
+            src={request.avatar}
+            alt={request.name}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+        ) : null}
+        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-primary/10 flex items-center justify-center${request.avatar ? " hidden" : ""}`}>
+          <span className="text-primary font-semibold text-sm sm:text-base">
+            {request.name?.charAt(0)?.toUpperCase() || "?"}
+          </span>
+        </div>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-foreground text-sm sm:text-base truncate">{request.name}</p>
           <p className="text-xs sm:text-sm text-muted-foreground truncate">
