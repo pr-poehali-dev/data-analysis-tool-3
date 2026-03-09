@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { Footer } from "@/components/landing/Footer";
 import { authStore } from "@/store/authStore";
+import func2url from "../../backend/func2url.json";
+
+const FEEDBACK_URL = (func2url as Record<string, string>)["send-feedback"];
 
 export const Help = () => {
   const navigate = useNavigate();
@@ -29,7 +32,7 @@ export const Help = () => {
     setStatus("loading");
 
     try {
-      const res = await fetch("/api/send-feedback", {
+      const res = await fetch(FEEDBACK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), message: message.trim() }),
