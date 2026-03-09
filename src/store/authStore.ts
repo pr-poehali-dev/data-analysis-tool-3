@@ -17,6 +17,7 @@ type AuthProvider = "email" | "google" | "vk" | "yandex" | "telegram" | null;
 const PROVIDER_KEY = "sovetpay_auth_provider";
 const USER_KEY = "sovetpay_user";
 const REFRESH_TOKEN_KEY = "sovetpay_refresh_token";
+const REFRESH_COOKIE_NAME = "app_rt";
 
 const LEGACY_REFRESH_KEYS = [
   "auth_refresh_token",
@@ -57,6 +58,55 @@ function cleanupLegacyTokens(): void {
   LEGACY_REFRESH_KEYS.forEach((key) => localStorage.removeItem(key));
 }
 
+function setCookie(name: string, value: string, days: number): void {
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; samesite=strict`;
+}
+
+function getCookie(name: string): string {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+function deleteCookie(name: string): void {
+  document.cookie = `${name}=; path=/; max-age=0`;
+}
+
+function saveRefreshToken(token: string): void {
+  try {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  } catch {
+    cleanupLegacyTokens();
+    try {
+      localStorage.setItem(REFRESH_TOKEN_KEY, token);
+    } catch {
+      console.warn("[auth] localStorage full, could not save refresh_token to localStorage");
+    }
+  }
+  setCookie(REFRESH_COOKIE_NAME, token, 30);
+}
+
+function readRefreshToken(): string {
+  const fromStorage = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (fromStorage) return fromStorage;
+
+  const fromCookie = getCookie(REFRESH_COOKIE_NAME);
+  if (fromCookie) {
+    try {
+      localStorage.setItem(REFRESH_TOKEN_KEY, fromCookie);
+    } catch {
+      // ignore
+    }
+    return fromCookie;
+  }
+  return "";
+}
+
+function clearRefreshToken(): void {
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  deleteCookie(REFRESH_COOKIE_NAME);
+}
+
 function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
@@ -65,8 +115,8 @@ function safeSetItem(key: string, value: string): void {
     try {
       localStorage.setItem(key, value);
     } catch {
-      console.warn("localStorage quota exceeded, clearing all and retrying");
-      const keysToKeep = [PROVIDER_KEY, USER_KEY];
+      console.warn("[auth] localStorage quota exceeded, clearing non-essential keys");
+      const keysToKeep = [PROVIDER_KEY, USER_KEY, REFRESH_TOKEN_KEY];
       const allKeys: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -76,7 +126,7 @@ function safeSetItem(key: string, value: string): void {
       try {
         localStorage.setItem(key, value);
       } catch {
-        console.error("localStorage still full after cleanup");
+        console.error("[auth] localStorage still full after cleanup");
       }
     }
   }
@@ -89,8 +139,12 @@ async function doRefresh(): Promise<string> {
   const url = REFRESH_URLS[provider];
   if (!url) return "no_url";
 
-  const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+  const savedRefreshToken = readRefreshToken();
   console.log("[doRefresh] provider:", provider, "has_token:", !!savedRefreshToken, "token_len:", savedRefreshToken.length);
+
+  if (!savedRefreshToken) {
+    return "no_token";
+  }
 
   try {
     const res = await fetch(url, {
@@ -112,7 +166,7 @@ async function doRefresh(): Promise<string> {
     const data = await res.json();
     currentAccessToken = data.access_token;
     if (data.refresh_token) {
-      safeSetItem(REFRESH_TOKEN_KEY, data.refresh_token);
+      saveRefreshToken(data.refresh_token);
       console.log("[doRefresh] new refresh_token saved");
     }
     return "ok";
@@ -157,9 +211,9 @@ export const authStore = {
 
   setRefreshToken: (token: string | null) => {
     if (token) {
-      safeSetItem(REFRESH_TOKEN_KEY, token);
+      saveRefreshToken(token);
     } else {
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      clearRefreshToken();
     }
   },
 
@@ -207,7 +261,7 @@ export const authStore = {
       telegram: `${funcUrls["telegram-bot-telegram-auth"]}?action=logout`,
     };
 
-    const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+    const savedRefreshToken = readRefreshToken();
 
     if (provider && LOGOUT_URLS[provider]) {
       fetch(LOGOUT_URLS[provider], {
@@ -221,7 +275,7 @@ export const authStore = {
     currentAccessToken = null;
     cleanupLegacyTokens();
     localStorage.removeItem(PROVIDER_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    clearRefreshToken();
     authStore.setUser(null);
   },
 
@@ -251,11 +305,11 @@ export const authStore = {
 
       const result = await doRefresh();
       console.log("[restoreSession] refresh result:", result);
-      if (result === "ok") {
-        // ok
-      } else if (result === "expired" || result === "no_provider" || result === "no_url") {
+
+      if (result === "expired") {
         authStore.logout();
       }
+
       sessionRestored = true;
     })();
 

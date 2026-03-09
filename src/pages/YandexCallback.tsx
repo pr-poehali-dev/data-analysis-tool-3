@@ -45,13 +45,11 @@ export default function YandexCallback() {
           return;
         }
 
-        console.log("[YandexCallback] data keys:", Object.keys(data), "has refresh:", !!data.refresh_token);
-        if (data.access_token) {
-          authStore.setAccessToken(data.access_token);
-        }
         if (data.refresh_token) {
           authStore.setRefreshToken(data.refresh_token);
-          console.log("[YandexCallback] refresh_token saved, verify:", !!localStorage.getItem("sovetpay_refresh_token"));
+        }
+        if (data.access_token) {
+          authStore.setAccessToken(data.access_token);
         }
         authStore.setProvider("yandex");
 
