@@ -250,11 +250,10 @@ export const authStore = {
       }
 
       const result = await doRefresh();
+      console.log("[restoreSession] refresh result:", result);
       if (result === "ok") {
         // ok
-      } else if (result === "network_error" || result === "error") {
-        // don't logout
-      } else {
+      } else if (result === "expired" || result === "no_provider" || result === "no_url") {
         authStore.logout();
       }
       sessionRestored = true;
