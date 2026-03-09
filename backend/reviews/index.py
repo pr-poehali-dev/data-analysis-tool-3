@@ -44,26 +44,31 @@ def get_reviews(event: dict, conn) -> dict:
     reviewee_email = params.get('reviewee_email')
     chat_id = params.get('chat_id')
 
+    S = os.environ.get('MAIN_DB_SCHEMA', 'public')
+    schema = f"{S}." if S else ""
+
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         if chat_id:
-            cur.execute("""
-                SELECT id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                       reviewee_email, reviewee_name, rating, comment, created_at,
-                       COALESCE(reviewer_photo, '') as reviewer_photo,
-                       COALESCE(reviewee_photo, '') as reviewee_photo
-                FROM reviews
-                WHERE chat_id = %s
-                ORDER BY created_at DESC
+            cur.execute(f"""
+                SELECT r.id, r.chat_id, r.recommendation_id, r.reviewer_email, r.reviewer_name,
+                       r.reviewee_email, r.reviewee_name, r.rating, r.comment, r.created_at,
+                       COALESCE(NULLIF(u.avatar_url, ''), COALESCE(r.reviewer_photo, '')) as reviewer_photo,
+                       COALESCE(r.reviewee_photo, '') as reviewee_photo
+                FROM {schema}reviews r
+                LEFT JOIN {schema}users u ON u.email = r.reviewer_email
+                WHERE r.chat_id = %s
+                ORDER BY r.created_at DESC
             """, (chat_id,))
         elif reviewee_email:
-            cur.execute("""
-                SELECT id, chat_id, recommendation_id, reviewer_email, reviewer_name,
-                       reviewee_email, reviewee_name, rating, comment, created_at,
-                       COALESCE(reviewer_photo, '') as reviewer_photo,
-                       COALESCE(reviewee_photo, '') as reviewee_photo
-                FROM reviews
-                WHERE reviewee_email = %s
-                ORDER BY created_at DESC
+            cur.execute(f"""
+                SELECT r.id, r.chat_id, r.recommendation_id, r.reviewer_email, r.reviewer_name,
+                       r.reviewee_email, r.reviewee_name, r.rating, r.comment, r.created_at,
+                       COALESCE(NULLIF(u.avatar_url, ''), COALESCE(r.reviewer_photo, '')) as reviewer_photo,
+                       COALESCE(r.reviewee_photo, '') as reviewee_photo
+                FROM {schema}reviews r
+                LEFT JOIN {schema}users u ON u.email = r.reviewer_email
+                WHERE r.reviewee_email = %s
+                ORDER BY r.created_at DESC
             """, (reviewee_email,))
         else:
             return {
@@ -76,9 +81,9 @@ def get_reviews(event: dict, conn) -> dict:
 
         avg_rating = None
         if reviewee_email:
-            cur.execute("""
+            cur.execute(f"""
                 SELECT AVG(rating)::numeric(3,2) as avg_rating, COUNT(*) as count
-                FROM reviews
+                FROM {schema}reviews
                 WHERE reviewee_email = %s
             """, (reviewee_email,))
             stats = cur.fetchone()
@@ -130,17 +135,20 @@ def create_review(event: dict, conn) -> dict:
     reviewer_photo = data.get('reviewer_photo', '') or ''
     reviewee_photo = data.get('reviewee_photo', '') or ''
 
+    S = os.environ.get('MAIN_DB_SCHEMA', 'public')
+    schema = f"{S}." if S else ""
+
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("""
-            SELECT id FROM reviews
+        cur.execute(f"""
+            SELECT id FROM {schema}reviews
             WHERE chat_id = %s AND reviewer_email = %s
         """, (data['chat_id'], auth_email))
 
         existing = cur.fetchone()
 
         if existing:
-            cur.execute("""
-                UPDATE reviews
+            cur.execute(f"""
+                UPDATE {schema}reviews
                 SET rating = %s, comment = %s,
                     reviewer_photo = %s, reviewee_photo = %s,
                     updated_at = CURRENT_TIMESTAMP
@@ -151,8 +159,8 @@ def create_review(event: dict, conn) -> dict:
                           COALESCE(reviewee_photo, '') as reviewee_photo
             """, (rating, data.get('comment'), reviewer_photo, reviewee_photo, existing['id']))
         else:
-            cur.execute("""
-                INSERT INTO reviews
+            cur.execute(f"""
+                INSERT INTO {schema}reviews
                 (chat_id, recommendation_id, reviewer_email, reviewer_name,
                  reviewee_email, reviewee_name, rating, comment,
                  reviewer_photo, reviewee_photo)
