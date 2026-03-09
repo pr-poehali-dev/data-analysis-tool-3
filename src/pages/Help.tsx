@@ -1,0 +1,158 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import Icon from "@/components/ui/icon";
+import { Footer } from "@/components/landing/Footer";
+import { authStore } from "@/store/authStore";
+
+export const Help = () => {
+  const navigate = useNavigate();
+  const user = authStore.getUser();
+
+  const [email, setEmail] = useState(user?.email || "");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleGoBack = () => {
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim() || !message.trim()) return;
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch("/api/send-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), message: message.trim() }),
+      });
+
+      if (!res.ok) throw new Error("error");
+
+      setStatus("success");
+      setMessage("");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <img
+            src="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/bf9825ff-384f-4373-81c0-67ea99aefa6f.png"
+            alt="SovetPay"
+            className="h-12 w-auto cursor-pointer"
+            onClick={handleGoBack}
+          />
+          <Button onClick={handleGoBack} variant="outline">
+            <Icon name="ArrowLeft" size={16} className="mr-2" />
+            Назад
+          </Button>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+              <Icon name="LifeBuoy" size={20} className="text-blue-500" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Помощь</h1>
+          </div>
+          <p className="text-gray-500 mb-8 text-sm leading-relaxed">
+            Столкнулись с проблемой или хотите оставить отзыв? Напишите нам — мы ответим на вашу почту в ближайшее время.
+          </p>
+
+          {status === "success" ? (
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
+                <Icon name="CheckCircle" size={32} className="text-green-500" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Сообщение отправлено!</h2>
+              <p className="text-gray-500 text-sm max-w-xs">
+                Мы получили ваше обращение и ответим на&nbsp;
+                <span className="font-medium text-gray-700">{email}</span> в ближайшее время.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-2"
+                onClick={() => setStatus("idle")}
+              >
+                Отправить ещё одно
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Ваш email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@mail.ru"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Описание проблемы или отзыв
+                </label>
+                <textarea
+                  required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Опишите вашу ситуацию как можно подробнее..."
+                  rows={6}
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
+                />
+              </div>
+
+              {status === "error" && (
+                <p className="text-sm text-red-500 flex items-center gap-1.5">
+                  <Icon name="AlertCircle" size={14} />
+                  Не удалось отправить сообщение. Попробуйте позже.
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={status === "loading" || !email.trim() || !message.trim()}
+                className="w-full"
+              >
+                {status === "loading" ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                    Отправляем...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Send" size={16} className="mr-2" />
+                    Отправить
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Help;
