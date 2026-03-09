@@ -454,18 +454,24 @@ def handle_refresh(event: dict, origin: str) -> dict:
         return error(403, csrf_error, origin)
 
     refresh_token = get_refresh_token_from_cookie(event)
+    print(f"[refresh] cookie_token={'yes' if refresh_token else 'no'}")
 
     if not refresh_token:
         body_str = event.get('body', '{}')
-        if event.get('isBase64Encoded'):
+        is_b64 = event.get('isBase64Encoded')
+        print(f"[refresh] body_len={len(body_str or '')} isBase64={is_b64}")
+        if is_b64:
             body_str = base64.b64decode(body_str).decode('utf-8')
         try:
             payload = json.loads(body_str)
         except json.JSONDecodeError:
+            print("[refresh] invalid JSON in body")
             return error(400, 'Invalid JSON', origin)
         refresh_token = payload.get('refresh_token', '')
+        print(f"[refresh] body_token={'yes' if refresh_token else 'no'} body_keys={list(payload.keys())}")
 
     if not refresh_token:
+        print("[refresh] no token found anywhere")
         return error(400, 'refresh_token is required', origin)
 
     try:

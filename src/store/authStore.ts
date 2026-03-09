@@ -90,6 +90,7 @@ async function doRefresh(): Promise<string> {
   if (!url) return "no_url";
 
   const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+  console.log("[doRefresh] provider:", provider, "has_token:", !!savedRefreshToken, "token_len:", savedRefreshToken.length);
 
   try {
     const res = await fetch(url, {
@@ -99,16 +100,24 @@ async function doRefresh(): Promise<string> {
       body: JSON.stringify({ refresh_token: savedRefreshToken }),
     });
 
+    console.log("[doRefresh] response status:", res.status);
+
     if (res.status === 401) return "expired";
-    if (!res.ok) return "error";
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.log("[doRefresh] error response:", errData);
+      return "error";
+    }
 
     const data = await res.json();
     currentAccessToken = data.access_token;
     if (data.refresh_token) {
       safeSetItem(REFRESH_TOKEN_KEY, data.refresh_token);
+      console.log("[doRefresh] new refresh_token saved");
     }
     return "ok";
-  } catch {
+  } catch (e) {
+    console.error("[doRefresh] network error:", e);
     return "network_error";
   }
 }
