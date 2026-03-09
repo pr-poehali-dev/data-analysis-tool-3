@@ -4,15 +4,42 @@ import os
 import hashlib
 import secrets
 import smtplib
+import base64
+import uuid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 import psycopg2
 import jwt
+import boto3
 
 MAX_AVATAR_URL_LENGTH = 2048
 MAX_AVATAR_DATA_URI_BYTES = 5 * 1024 * 1024
 MAX_BODY_SIZE = 10 * 1024 * 1024
+
+
+def upload_avatar_to_s3(data_uri: str, user_id: int) -> str:
+    """Загружает base64-аватар в S3, возвращает CDN URL."""
+    header, b64data = data_uri.split(',', 1)
+    ext = 'jpg'
+    if 'image/png' in header:
+        ext = 'png'
+    elif 'image/webp' in header:
+        ext = 'webp'
+    elif 'image/gif' in header:
+        ext = 'gif'
+    img_bytes = base64.b64decode(b64data)
+    key = f"avatars/{user_id}/{uuid.uuid4().hex}.{ext}"
+    s3 = boto3.client(
+        's3',
+        endpoint_url='https://bucket.poehali.dev',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
+    content_type = f'image/{ext}'
+    s3.put_object(Bucket='files', Key=key, Body=img_bytes, ContentType=content_type)
+    cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+    return cdn_url
 
 _current_origin = '*'
 
@@ -194,6 +221,12 @@ def handle_update_profile(event: dict) -> dict:
         avatar_error = validate_avatar_url(avatar_url)
         if avatar_error:
             return response(400, {'error': avatar_error})
+        if avatar_url.startswith('data:image/'):
+            try:
+                avatar_url = upload_avatar_to_s3(avatar_url, user_id)
+            except Exception as e:
+                print(f"S3 upload error: {e}")
+                return response(500, {'error': 'Ошибка загрузки аватара'})
 
     S = get_schema()
     conn = get_connection()
@@ -268,15 +301,16 @@ def handle_update_profile(event: dict) -> dict:
                     UPDATE {S}requests SET name = %s WHERE user_email = %s AND status != 'archived'
                 """, (new_name, user_email))
             if avatar_url is not None:
+                safe_photo = new_photo if (new_photo and not new_photo.startswith('data:')) else ''
                 cur.execute(f"""
                     UPDATE {S}chats SET recommender_photo = %s WHERE recommender_email = %s
-                """, (new_photo, user_email))
+                """, (safe_photo, user_email))
                 cur.execute(f"""
                     UPDATE {S}chats SET tenant_photo = %s WHERE tenant_email = %s
-                """, (new_photo, user_email))
+                """, (safe_photo, user_email))
                 cur.execute(f"""
                     UPDATE {S}requests SET avatar = %s WHERE user_email = %s AND status != 'archived'
-                """, (new_photo, user_email))
+                """, (safe_photo, user_email))
             if vk_link is not None:
                 cur.execute(f"""
                     UPDATE {S}chats SET recommender_vk_link = %s WHERE recommender_email = %s

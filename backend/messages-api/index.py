@@ -93,6 +93,11 @@ def handle_create_chat(event):
             if existing:
                 return response(200, {'chat': chat_row_to_dict(existing), 'existing': True})
 
+        def safe_photo(val):
+            if not val or val.startswith('data:'):
+                return ''
+            return val[:500]
+
         now = datetime.now(timezone.utc)
         cur.execute(f"""
             INSERT INTO {S}chats (
@@ -108,11 +113,11 @@ def handle_create_chat(event):
             body.get('requestName', ''),
             body.get('recommenderEmail', ''),
             body.get('recommenderName', ''),
-            body.get('recommenderPhoto', ''),
+            safe_photo(body.get('recommenderPhoto', '')),
             body.get('recommenderVkLink', ''),
             body.get('tenantEmail', ''),
             body.get('tenantName', ''),
-            body.get('tenantPhoto', ''),
+            safe_photo(body.get('tenantPhoto', '')),
             body.get('tenantVkLink', ''),
             now, now,
         ))
