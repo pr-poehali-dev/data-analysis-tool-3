@@ -40,14 +40,18 @@ const AppContent = () => {
   const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
+    console.log("[App] starting restoreSession...");
     authStore.restoreSession().then(() => {
       const restoredUser = authStore.getUser();
+      console.log("[App] session restored, user:", restoredUser?.email || "null", "hasAccessToken:", !!authStore.getAccessToken());
       setUser(restoredUser);
       setSessionReady(true);
     });
 
     const unsubscribe = authStore.subscribe(() => {
-      setUser(authStore.getUser());
+      const newUser = authStore.getUser();
+      console.log("[App] subscribe triggered, user:", newUser?.email || "null");
+      setUser(newUser);
     });
 
     return unsubscribe;

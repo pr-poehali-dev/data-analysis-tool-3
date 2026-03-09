@@ -28,7 +28,6 @@ export default function YandexCallback() {
       localStorage.removeItem("yandex_auth_state");
 
       try {
-        console.log("[YandexCallback] sending callback, code length:", code?.length);
         const res = await fetch(`${AUTH_URL}?action=callback`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -36,9 +35,7 @@ export default function YandexCallback() {
           body: JSON.stringify({ code }),
         });
 
-        console.log("[YandexCallback] response status:", res.status);
         const data = await res.json();
-        console.log("[YandexCallback] response data keys:", Object.keys(data));
 
         if (!res.ok) {
           setError(data.error || "Ошибка авторизации");

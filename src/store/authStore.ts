@@ -167,7 +167,21 @@ async function doRefresh(): Promise<string> {
     currentAccessToken = data.access_token;
     if (data.refresh_token) {
       saveRefreshToken(data.refresh_token);
-      console.log("[doRefresh] new refresh_token saved");
+    }
+    if (data.user) {
+      const u = data.user;
+      const userData = {
+        firstName: u.firstName || u.name?.split(" ")[0] || "",
+        lastName: u.lastName || u.name?.split(" ").slice(1).join(" ") || "",
+        role: u.role || "tenant",
+        email: u.email || "",
+        phone: u.phone || "",
+        city: u.city || "",
+        photo: u.avatar_url || "",
+        vkLink: u.vkLink || "",
+      };
+      currentUser = userData;
+      safeSetItem(USER_KEY, JSON.stringify(userData));
     }
     return "ok";
   } catch (e) {
@@ -280,10 +294,8 @@ export const authStore = {
   },
 
   handleUnauthorized: (response: Response): boolean => {
-    if (response.status === 401 && currentAccessToken) {
-      authStore.logout();
-      window.location.href = "/";
-      return true;
+    if (response.status === 401) {
+      console.log("[auth] 401 received, hasAccessToken:", !!currentAccessToken);
     }
     return false;
   },
@@ -297,8 +309,17 @@ export const authStore = {
 
       const hasUser = !!localStorage.getItem(USER_KEY);
       const provider = getProvider();
+      const hasRefresh = !!readRefreshToken();
+      console.log("[restoreSession] hasUser:", hasUser, "provider:", provider, "hasRefresh:", hasRefresh);
 
       if (!hasUser && !provider) {
+        console.log("[restoreSession] no user and no provider, skipping");
+        sessionRestored = true;
+        return;
+      }
+
+      if (!hasRefresh) {
+        console.log("[restoreSession] no refresh token, keeping user from localStorage");
         sessionRestored = true;
         return;
       }
@@ -308,6 +329,9 @@ export const authStore = {
 
       if (result === "expired") {
         authStore.logout();
+      } else if (result === "ok") {
+        const userData = authStore.getUser();
+        console.log("[restoreSession] session restored, user:", userData?.email);
       }
 
       sessionRestored = true;
