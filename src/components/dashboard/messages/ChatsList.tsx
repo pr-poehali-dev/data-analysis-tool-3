@@ -85,12 +85,15 @@ export const ChatsList = ({ chats, selectedChatId, onChatSelect, onChatDeleted, 
                       src={otherUserPhoto}
                       alt={otherUserName}
                       className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/20"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                      }}
                     />
-                  ) : (
-                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Icon name="User" size={20} className="text-primary" />
-                    </div>
-                  )}
+                  ) : null}
+                  <div className={`w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0${otherUserPhoto ? " hidden" : ""}`}>
+                    <Icon name="User" size={20} className="text-primary" />
+                  </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">

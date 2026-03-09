@@ -25,6 +25,7 @@ interface RecommendationCardProps {
     firstName: string;
     lastName: string;
     photo?: string;
+    vkLink?: string;
   };
   onOpenProfile: (profile: UserProfile) => void;
 }
@@ -158,9 +159,12 @@ export default function RecommendationCard({ recommendation, profile, request, c
                         requestName: request?.name || '',
                         recommenderEmail: recommendation.userId,
                         recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
+                        recommenderPhoto: profile?.avatar_url || '',
+                        recommenderVkLink: profile?.vkLink || '',
                         tenantEmail: currentUser.email,
                         tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
-                        tenantPhoto: currentUser.photo,
+                        tenantPhoto: currentUser.photo || '',
+                        tenantVkLink: currentUser.vkLink || '',
                       });
                     }
                     
@@ -198,10 +202,13 @@ export default function RecommendationCard({ recommendation, profile, request, c
                       requestId: request?.id || '',
                       requestName: request?.name || '',
                       recommenderEmail: recommendation.userId,
-                      recommenderName: recommendation.userId.split('@')[0],
+                      recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
+                      recommenderPhoto: profile?.avatar_url || '',
+                      recommenderVkLink: profile?.vkLink || '',
                       tenantEmail: currentUser.email,
                       tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
-                      tenantPhoto: currentUser.photo,
+                      tenantPhoto: currentUser.photo || '',
+                      tenantVkLink: currentUser.vkLink || '',
                     });
                     navigate("/", { state: { activeSection: "messages" } });
                   }

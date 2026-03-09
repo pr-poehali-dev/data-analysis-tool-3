@@ -87,17 +87,22 @@ export const MessagesList = ({
                   className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}
                 >
                   {!isOwn && (
-                    message.senderPhoto ? (
-                      <img
-                        src={message.senderPhoto}
-                        alt={message.senderName}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-border"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <div className="flex-shrink-0">
+                      {message.senderPhoto ? (
+                        <img
+                          src={message.senderPhoto}
+                          alt={message.senderName}
+                          className="w-8 h-8 rounded-full object-cover border border-border"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center${message.senderPhoto ? " hidden" : ""}`}>
                         <Icon name="User" size={14} className="text-primary" />
                       </div>
-                    )
+                    </div>
                   )}
                   
                   <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col group`}>

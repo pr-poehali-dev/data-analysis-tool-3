@@ -127,10 +127,8 @@ export function usePropertySubmission() {
         await messagesStore.fetchChatByRecommendation(recommendation.id);
         const existingChat = messagesStore.getChatByRecommendation(recommendation.id);
         if (!existingChat) {
-          const tenantUser = authStore.getUser();
           const tenantEmail = request.userEmail || request.userId;
-          const tenantPhoto = tenantUser?.email === tenantEmail ? tenantUser.photo : undefined;
-          const tenantVkLink = tenantUser?.email === tenantEmail ? tenantUser.vkLink : undefined;
+          const tenantPhoto = request.avatar || '';
 
           await messagesStore.createChat({
             recommendationId: recommendation.id,
@@ -138,12 +136,12 @@ export function usePropertySubmission() {
             requestName: requestName || request.name,
             recommenderEmail: user.email,
             recommenderName: `${user.firstName} ${user.lastName}`,
-            recommenderPhoto: user.photo,
-            recommenderVkLink: user.vkLink,
-            tenantEmail: request.userEmail || request.userId,
+            recommenderPhoto: user.photo || '',
+            recommenderVkLink: user.vkLink || '',
+            tenantEmail,
             tenantName: request.name,
-            tenantPhoto: tenantPhoto,
-            tenantVkLink: tenantVkLink,
+            tenantPhoto,
+            tenantVkLink: '',
           });
         }
       }

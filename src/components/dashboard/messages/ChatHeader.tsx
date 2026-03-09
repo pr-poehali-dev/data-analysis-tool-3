@@ -123,12 +123,15 @@ export const ChatHeader = ({
                   src={otherUserPhoto}
                   alt={otherUserName}
                   className="w-10 h-10 rounded-full object-cover border-2 border-primary/20 cursor-pointer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                  }}
                 />
-              ) : (
-                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center cursor-pointer">
-                  <Icon name="User" size={18} className="text-primary" />
-                </div>
-              )}
+              ) : null}
+              <div className={`w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center cursor-pointer${otherUserPhoto ? " hidden" : ""}`}>
+                <Icon name="User" size={18} className="text-primary" />
+              </div>
             </button>
             <button
               onClick={onShowProfile}
