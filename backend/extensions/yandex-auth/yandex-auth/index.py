@@ -110,7 +110,8 @@ def get_yandex_auth_url(client_id: str, redirect_uri: str, state: str) -> str:
         'client_id': client_id,
         'redirect_uri': redirect_uri,
         'response_type': 'code',
-        'state': state
+        'state': state,
+        'force_confirm': 'yes'
     }
     return f"{YANDEX_AUTH_URL}?{urlencode(params)}"
 
