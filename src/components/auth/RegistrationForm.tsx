@@ -97,6 +97,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
 
       if (res.ok && data.access_token) {
         authStore.setAccessToken(data.access_token);
+        if (data.refresh_token) {
+          authStore.setRefreshToken(data.refresh_token);
+        }
         authStore.setProvider("email");
         authStore.setUser({
           firstName: data.user?.name?.split(' ')[0] || '',

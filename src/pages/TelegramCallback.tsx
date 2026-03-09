@@ -37,6 +37,9 @@ export default function TelegramCallback() {
         if (data.access_token) {
           authStore.setAccessToken(data.access_token);
         }
+        if (data.refresh_token) {
+          authStore.setRefreshToken(data.refresh_token);
+        }
         authStore.setProvider("telegram");
 
         const user = data.user;

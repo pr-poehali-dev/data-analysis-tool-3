@@ -53,6 +53,9 @@ export default function VkCallback() {
         if (data.access_token) {
           authStore.setAccessToken(data.access_token);
         }
+        if (data.refresh_token) {
+          authStore.setRefreshToken(data.refresh_token);
+        }
         authStore.setProvider("vk");
 
         const user = data.user;

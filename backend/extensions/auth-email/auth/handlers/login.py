@@ -93,6 +93,7 @@ def handle(event: dict, origin: str = '*') -> dict:
         'access_token': access_token,
         'token_type': 'Bearer',
         'expires_in': ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        'refresh_token': refresh_token,
         'user': {
             'id': user_id,
             'email': user_email,

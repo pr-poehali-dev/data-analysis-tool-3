@@ -435,6 +435,7 @@ def handle_callback(event: dict, origin: str) -> dict:
             return response(200, {
                 'access_token': access_token,
                 'expires_in': expires_in,
+                'refresh_token': refresh_token,
                 'user': {
                     'id': user_id,
                     'email': email,
@@ -544,6 +545,7 @@ def handle_refresh(event: dict, origin: str) -> dict:
         return response(200, {
             'access_token': access_token,
             'expires_in': expires_in,
+            'refresh_token': new_refresh_token,
             'user': {
                 'id': user_id,
                 'email': email,

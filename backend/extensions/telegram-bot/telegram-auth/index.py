@@ -410,6 +410,7 @@ def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
     return cors_response(200, {
         "access_token": access_token,
         "expires_in": 900,
+        "refresh_token": refresh_token,
         "user": user,
     }, origin, set_cookie=make_refresh_cookie(refresh_token))
 
@@ -474,6 +475,7 @@ def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') ->
     return cors_response(200, {
         "access_token": access_token,
         "expires_in": 900,
+        "refresh_token": new_refresh_token,
         "user": user,
     }, origin, set_cookie=make_refresh_cookie(new_refresh_token))
 

@@ -16,6 +16,7 @@ type AuthProvider = "email" | "google" | "vk" | "yandex" | "telegram" | null;
 
 const PROVIDER_KEY = "sovetpay_auth_provider";
 const USER_KEY = "sovetpay_user";
+const REFRESH_TOKEN_KEY = "sovetpay_refresh_token";
 
 const LEGACY_REFRESH_KEYS = [
   "auth_refresh_token",
@@ -88,12 +89,14 @@ async function doRefresh(): Promise<string> {
   const url = REFRESH_URLS[provider];
   if (!url) return "no_url";
 
+  const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({}),
+      body: JSON.stringify({ refresh_token: savedRefreshToken }),
     });
 
     if (res.status === 401) return "expired";
@@ -101,6 +104,9 @@ async function doRefresh(): Promise<string> {
 
     const data = await res.json();
     currentAccessToken = data.access_token;
+    if (data.refresh_token) {
+      safeSetItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    }
     return "ok";
   } catch {
     return "network_error";
@@ -138,6 +144,14 @@ export const authStore = {
 
   setAccessToken: (token: string | null) => {
     currentAccessToken = token;
+  },
+
+  setRefreshToken: (token: string | null) => {
+    if (token) {
+      safeSetItem(REFRESH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    }
   },
 
   getAuthHeaders: (): Record<string, string> => {
@@ -184,18 +198,21 @@ export const authStore = {
       telegram: `${funcUrls["telegram-bot-telegram-auth"]}?action=logout`,
     };
 
+    const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+
     if (provider && LOGOUT_URLS[provider]) {
       fetch(LOGOUT_URLS[provider], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({}),
+        body: JSON.stringify({ refresh_token: savedRefreshToken }),
       }).catch(() => {});
     }
 
     currentAccessToken = null;
     cleanupLegacyTokens();
     localStorage.removeItem(PROVIDER_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     authStore.setUser(null);
   },
 

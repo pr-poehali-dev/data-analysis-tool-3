@@ -68,6 +68,9 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
 
       if (result.access_token) {
         authStore.setAccessToken(result.access_token);
+        if (result.refresh_token) {
+          authStore.setRefreshToken(result.refresh_token);
+        }
         authStore.setProvider("email");
       }
 
