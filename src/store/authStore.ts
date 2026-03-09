@@ -226,7 +226,7 @@ export const authStore = {
   },
 
   handleUnauthorized: (response: Response): boolean => {
-    if (response.status === 401) {
+    if (response.status === 401 && currentAccessToken) {
       authStore.logout();
       window.location.href = "/";
       return true;
