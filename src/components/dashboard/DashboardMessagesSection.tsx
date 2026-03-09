@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Chat, messagesStore } from "@/store/messagesStore";
+import { authStore } from "@/store/authStore";
 import { ChatsList } from "./messages/ChatsList";
 import { ChatWindow } from "./messages/ChatWindow";
 import Icon from "@/components/ui/icon";
@@ -35,6 +36,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
     };
 
     const init = async () => {
+      await authStore.restoreSession();
       await messagesStore.fetchUserChats();
       loadChats();
     };
