@@ -56,6 +56,31 @@ function cleanupLegacyTokens(): void {
   LEGACY_REFRESH_KEYS.forEach((key) => localStorage.removeItem(key));
 }
 
+function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    cleanupLegacyTokens();
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      console.warn("localStorage quota exceeded, clearing all and retrying");
+      const keysToKeep = [PROVIDER_KEY, USER_KEY];
+      const allKeys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && !keysToKeep.includes(k)) allKeys.push(k);
+      }
+      allKeys.forEach((k) => localStorage.removeItem(k));
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        console.error("localStorage still full after cleanup");
+      }
+    }
+  }
+}
+
 async function doRefresh(): Promise<string> {
   const provider = getProvider();
   if (!provider) return "no_provider";
@@ -100,7 +125,7 @@ export const authStore = {
   setUser: (user: User) => {
     currentUser = user;
     if (user) {
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      safeSetItem(USER_KEY, JSON.stringify(user));
     } else {
       localStorage.removeItem(USER_KEY);
     }
@@ -123,7 +148,7 @@ export const authStore = {
 
   setProvider: (provider: AuthProvider) => {
     if (provider) {
-      localStorage.setItem(PROVIDER_KEY, provider);
+      safeSetItem(PROVIDER_KEY, provider);
     } else {
       localStorage.removeItem(PROVIDER_KEY);
     }
