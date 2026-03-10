@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
@@ -11,6 +11,10 @@ const FEEDBACK_URL = (func2url as Record<string, string>)["send-feedback"];
 export const Help = () => {
   const navigate = useNavigate();
   const user = authStore.getUser();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const [email, setEmail] = useState(user?.email || "");
   const [subjectType, setSubjectType] = useState("Вопрос");
