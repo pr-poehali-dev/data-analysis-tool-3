@@ -1,6 +1,7 @@
 import { Instagram } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { authStore } from "@/store/authStore";
 
 interface FooterLink {
   label: string;
@@ -64,7 +65,7 @@ const defaultSections: FooterSection[] = [
 export const Footer = ({
   companyName = "SovetPay",
   tagline = "Аренда жилья через рекомендации — безопасно и выгодно",
-  sections = defaultSections,
+  sections,
   socialLinks = {
     vk: "https://vk.ru/sovetpay",
     telegram: "https://t.me/SovetPay",
@@ -76,6 +77,15 @@ export const Footer = ({
 }: FooterProps) => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+  const isLoggedIn = !!authStore.getUser();
+
+  const resolvedSections = sections ?? defaultSections.map((section) => {
+    if (section.title !== "Компания") return section;
+    return {
+      ...section,
+      links: section.links.filter((link) => link.href !== "/help" || isLoggedIn),
+    };
+  });
   const copyright = copyrightText || `© ${currentYear} ${companyName}. Все права защищены.`;
 
   const handleLinkClick = (href: string, e: React.MouseEvent) => {
@@ -152,7 +162,7 @@ export const Footer = ({
             </div>
           </motion.div>
 
-          {sections.map((section, index) => (
+          {resolvedSections.map((section, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
