@@ -45,7 +45,7 @@ const footerSections = [
   {
     title: "Компания",
     links: [
-      { label: "Помощь", href: "#help" },
+      { label: "Помощь", href: "/help" },
 
       { label: "Политика конфиденциальности", href: "/privacy-policy" },
     ],
@@ -407,7 +407,10 @@ export const PortfolioNavbar = ({ onRegisterClick, onLoginClick, onLogout, showN
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
-                  {footerSections.map((section, index) => (
+                  {footerSections.map((section) => ({
+                    ...section,
+                    links: section.links.filter((link) => link.href !== "/help" || !!user),
+                  })).map((section, index) => (
                     <div key={index}>
                       <h4 className="text-[10px] font-bold text-foreground mb-1 uppercase tracking-wider">
                         {section.title}
