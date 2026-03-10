@@ -26,6 +26,7 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get('body') or '{}')
     user_email = (body.get('email') or '').strip()
     message = (body.get('message') or '').strip()
+    subject_type = (body.get('subject_type') or 'Вопрос').strip()
 
     if not user_email or not message:
         return {
@@ -47,15 +48,18 @@ def handler(event: dict, context) -> dict:
     msg = MIMEMultipart('alternative')
     msg['From'] = smtp_user
     msg['To'] = SUPPORT_EMAIL
-    msg['Subject'] = f'Обратная связь от {user_email}'
+    msg['Subject'] = f'[{subject_type}] Обратная связь от {user_email}'
     msg['Reply-To'] = user_email
 
     text_body = f"Письмо от: {user_email}\n\n{message}"
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-      <h2 style="color: #202020; margin-bottom: 8px;">Новое обращение</h2>
+      <h2 style="color: #202020; margin-bottom: 8px;">Новое обращение — {subject_type}</h2>
       <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Обратная связь через сайт SovetPay</p>
       <div style="background: #f5f5f5; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #333;">
+          <strong>Тема:</strong> {subject_type}
+        </p>
         <p style="margin: 0; font-size: 14px; color: #333;">
           <strong>Email отправителя:</strong><br/>
           <a href="mailto:{user_email}" style="color: #3b82f6;">{user_email}</a>

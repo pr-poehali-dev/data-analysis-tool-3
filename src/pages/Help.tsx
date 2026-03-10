@@ -13,6 +13,7 @@ export const Help = () => {
   const user = authStore.getUser();
 
   const [email, setEmail] = useState(user?.email || "");
+  const [subjectType, setSubjectType] = useState("Вопрос");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -35,7 +36,7 @@ export const Help = () => {
       const res = await fetch(FEEDBACK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), message: message.trim() }),
+        body: JSON.stringify({ email: email.trim(), message: message.trim(), subject_type: subjectType }),
       });
 
       if (!res.ok) throw new Error("error");
@@ -108,6 +109,28 @@ export const Help = () => {
                   placeholder="example@mail.ru"
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Тема обращения
+                </label>
+                <div className="flex gap-2">
+                  {["Проблема", "Вопрос", "Предложение"].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setSubjectType(type)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        subjectType === type
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-500"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
