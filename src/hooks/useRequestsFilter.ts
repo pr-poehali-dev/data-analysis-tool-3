@@ -46,7 +46,12 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     if (!filtersApplied) return true;
     
     if (selectedCity && request.city !== selectedCity) return false;
-    if (selectedDistrict && request.district !== selectedDistrict) return false;
+    
+    if (selectedDistrict) {
+      const districts = Array.isArray(request.districts) ? request.districts : [];
+      if (!districts.includes(selectedDistrict)) return false;
+    }
+    
     if (selectedHousingType && request.housingType !== selectedHousingType) return false;
     
     if (selectedRentalPeriod) {
@@ -72,8 +77,10 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
       }
     }
     
-    const requestBudget = parseInt(request.budgetMax?.replace(/\D/g, '') || request.budget?.replace(/\D/g, '') || '0');
-    if (requestBudget > budget[0]) return false;
+    const budgetMax = parseInt(request.budgetMax?.replace(/\D/g, '') || '0');
+    const budgetVal = parseInt(request.budget?.replace(/\D/g, '') || '0');
+    const requestBudget = budgetMax || budgetVal;
+    if (requestBudget > 0 && requestBudget > budget[0]) return false;
     
     return true;
   });
