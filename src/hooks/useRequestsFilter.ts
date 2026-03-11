@@ -14,6 +14,7 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
   const [selectedRentalPeriod, setSelectedRentalPeriod] = useState<string | undefined>(undefined);
   const [selectedRoomsCount, setSelectedRoomsCount] = useState<string | undefined>(undefined);
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const [budgetChanged, setBudgetChanged] = useState(false);
 
   useEffect(() => {
     const updateFromCache = () => {
@@ -97,10 +98,12 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
       }
     }
     
-    const budgetMax = parseInt(request.budgetMax?.replace(/\D/g, '') || '0');
-    const budgetVal = parseInt(request.budget?.replace(/\D/g, '') || '0');
-    const requestBudget = budgetMax || budgetVal;
-    if (requestBudget > 0 && requestBudget > budget[0]) return false;
+    if (budgetChanged) {
+      const budgetMax = parseInt(request.budgetMax?.replace(/\D/g, '') || '0');
+      const budgetVal = parseInt(request.budget?.replace(/\D/g, '') || '0');
+      const requestBudget = budgetMax || budgetVal;
+      if (requestBudget > 0 && requestBudget > budget[0]) return false;
+    }
     
     return true;
   });
@@ -119,6 +122,11 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
 
   const handleApplyFilters = () => setFiltersApplied(true);
 
+  const handleBudgetChange = (value: number[]) => {
+    setBudget(value);
+    setBudgetChanged(true);
+  };
+
   const handleResetFilters = () => {
     setSelectedCity(undefined);
     setSelectedDistrict(undefined);
@@ -126,12 +134,13 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     setSelectedRentalPeriod(undefined);
     setSelectedRoomsCount(undefined);
     setBudget([50000]);
+    setBudgetChanged(false);
     setFiltersApplied(false);
   };
 
   return {
     budget,
-    setBudget,
+    setBudget: handleBudgetChange,
     currentPage,
     setCurrentPage,
     selectedCity,
