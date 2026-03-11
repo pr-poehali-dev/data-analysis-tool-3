@@ -78,12 +78,12 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     if (selectedRentalPeriod && request.rentalPeriod !== selectedRentalPeriod) return false;
     
     if (selectedRoomsCount) {
-      const requestRooms = parseInt(request.roomsCount?.replace(/\D/g, '') || '0');
+      const rc = request.roomsCount?.trim() || '';
       if (selectedRoomsCount === "4+") {
-        if (requestRooms < 4) return false;
+        const n = parseInt(rc);
+        if (isNaN(n) || n < 4) return false;
       } else {
-        const filterRooms = parseInt(selectedRoomsCount);
-        if (requestRooms !== filterRooms) return false;
+        if (rc !== selectedRoomsCount) return false;
       }
     }
     

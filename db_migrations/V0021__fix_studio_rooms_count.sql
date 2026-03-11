@@ -1,0 +1,1 @@
+UPDATE requests SET rooms_count = '1' WHERE rooms_count = 'Студия';
