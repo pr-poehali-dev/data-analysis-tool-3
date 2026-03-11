@@ -1,14 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /auth/
+Disallow: /dashboard
+Disallow: /create-request
+Disallow: /edit-request/
+Disallow: /edit-recommendation/
+Disallow: /suggest-property
+Disallow: /request-offers/
+
+Sitemap: https://sovetpay.ru/sitemap.xml
