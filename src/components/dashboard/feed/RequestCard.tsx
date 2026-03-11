@@ -1,4 +1,11 @@
 import { useState } from "react";
+
+const rentalPeriodLabel: Record<string, string> = {
+  "1-3": "1-3 месяца",
+  "3-6": "3-6 месяцев",
+  "6-12": "6-12 месяцев",
+  "12+": "Более года",
+};
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
@@ -130,7 +137,7 @@ export const RequestCard = ({ request, index, handleSuggestClick, suggestionsCou
 
         <div className="flex items-center gap-2 text-xs sm:text-sm">
           <Icon name="Calendar" size={14} className="text-muted-foreground flex-shrink-0" />
-          <span className="text-foreground truncate">{request.rentalPeriod}</span>
+          <span className="text-foreground truncate">{rentalPeriodLabel[request.rentalPeriod] ?? request.rentalPeriod}</span>
         </div>
 
         <div className="pt-2 sm:pt-3 border-t border-border">

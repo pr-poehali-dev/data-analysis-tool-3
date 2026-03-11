@@ -35,12 +35,7 @@ const housingTypes = [
 
 const roomsCounts = ["1", "2", "3", "4", "4+"];
 
-const rentalPeriods = [
-  "1-3 месяца",
-  "3-6 месяцев",
-  "6-12 месяцев",
-  "Более года",
-];
+const rentalPeriods = ["1-3", "3-6", "6-12", "12+"];
 
 export const EditRequest = () => {
   const navigate = useNavigate();

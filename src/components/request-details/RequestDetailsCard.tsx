@@ -1,4 +1,11 @@
 import { motion } from "framer-motion";
+
+const rentalPeriodLabel: Record<string, string> = {
+  "1-3": "1-3 месяца",
+  "3-6": "3-6 месяцев",
+  "6-12": "6-12 месяцев",
+  "12+": "Более года",
+};
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Request } from "@/store/requestsStore";
@@ -116,7 +123,7 @@ export const RequestDetailsCard = ({
               <Icon name="Calendar" size={16} className="text-primary sm:w-5 sm:h-5" />
               <h3 className="font-semibold text-foreground text-sm sm:text-base">Срок аренды</h3>
             </div>
-            <p className="text-base sm:text-lg text-foreground">{request.rentalPeriod}</p>
+            <p className="text-base sm:text-lg text-foreground">{rentalPeriodLabel[request.rentalPeriod] ?? request.rentalPeriod}</p>
           </div>
         </div>
       </div>
