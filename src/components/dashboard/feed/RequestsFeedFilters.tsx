@@ -175,7 +175,7 @@ export const RequestsFeedFilters = ({
           </label>
           <Input
             type="number"
-            value={budget[0]}
+            value={budget[0] || ""}
             onChange={(e) => {
               const value = parseInt(e.target.value) || 0;
               setBudget([Math.max(0, value)]);

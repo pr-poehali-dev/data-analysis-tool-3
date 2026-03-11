@@ -5,7 +5,7 @@ import { recommendationsStore } from "@/store/recommendationsStore";
 const ITEMS_PER_PAGE = 6;
 
 export const useRequestsFilter = (currentUserEmail?: string) => {
-  const [budget, setBudget] = useState([50000]);
+  const [budget, setBudget] = useState([0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
@@ -122,7 +122,7 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     setSelectedHousingType(undefined);
     setSelectedRentalPeriod(undefined);
     setSelectedRoomsCount(undefined);
-    setBudget([50000]);
+    setBudget([0]);
     setBudgetChanged(false);
     setFiltersApplied(false);
   };
