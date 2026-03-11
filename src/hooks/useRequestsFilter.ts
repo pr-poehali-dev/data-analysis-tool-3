@@ -75,18 +75,7 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     
     if (selectedHousingType && request.housingType !== selectedHousingType) return false;
     
-    if (selectedRentalPeriod) {
-      const requestMonths = parseInt(request.rentalPeriod);
-      if (selectedRentalPeriod === "1-3") {
-        if (isNaN(requestMonths) || requestMonths < 1 || requestMonths > 3) return false;
-      } else if (selectedRentalPeriod === "3-6") {
-        if (isNaN(requestMonths) || requestMonths < 3 || requestMonths > 6) return false;
-      } else if (selectedRentalPeriod === "6-12") {
-        if (isNaN(requestMonths) || requestMonths < 6 || requestMonths > 12) return false;
-      } else if (selectedRentalPeriod === "12+") {
-        if (isNaN(requestMonths) || requestMonths <= 12) return false;
-      }
-    }
+    if (selectedRentalPeriod && request.rentalPeriod !== selectedRentalPeriod) return false;
     
     if (selectedRoomsCount) {
       const requestRooms = parseInt(request.roomsCount?.replace(/\D/g, '') || '0');

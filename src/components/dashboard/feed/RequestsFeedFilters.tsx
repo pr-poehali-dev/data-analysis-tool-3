@@ -161,10 +161,10 @@ export const RequestsFeedFilters = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Любой срок</SelectItem>
-              <SelectItem value="1-3">1-3 месяца</SelectItem>
-              <SelectItem value="3-6">3-6 месяцев</SelectItem>
-              <SelectItem value="6-12">6-12 месяцев</SelectItem>
-              <SelectItem value="12+">Более года</SelectItem>
+              <SelectItem value="1-3 месяца">1-3 месяца</SelectItem>
+              <SelectItem value="3-6 месяцев">3-6 месяцев</SelectItem>
+              <SelectItem value="6-12 месяцев">6-12 месяцев</SelectItem>
+              <SelectItem value="Более года">Более года</SelectItem>
             </SelectContent>
           </Select>
         </div>
