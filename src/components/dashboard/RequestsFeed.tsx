@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Request } from "@/store/requestsStore";
-import { citiesWithDistricts, getCityOptions } from "@/data/citiesWithDistricts";
 import { useRequestsFilter } from "@/hooks/useRequestsFilter";
 import { RequestsFeedFilters } from "./feed/RequestsFeedFilters";
 import { RequestCard } from "./feed/RequestCard";
@@ -27,6 +26,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     currentRequests, totalPages,
     getSuggestionsCount,
     handleApplyFilters, handleResetFilters,
+    getCityOptions, citiesWithDistricts,
   } = useRequestsFilter(currentUserEmail);
 
   const handleSuggestClick = (request?: Request) => {

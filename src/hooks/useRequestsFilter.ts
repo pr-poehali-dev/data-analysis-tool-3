@@ -42,6 +42,26 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     setCurrentPage(1);
   }, [filtersApplied]);
 
+  const availableCities = Array.from(new Set(requests.map(r => r.city).filter(Boolean))).sort();
+  const availableDistricts = selectedCity
+    ? Array.from(new Set(
+        requests
+          .filter(r => r.city === selectedCity)
+          .flatMap(r => Array.isArray(r.districts) ? r.districts : [])
+          .filter(Boolean)
+      )).sort()
+    : [];
+
+  const getCityOptions = () => availableCities.map(city => ({ value: city, label: city }));
+  const citiesWithDistrictsFromData: Record<string, string[]> = Object.fromEntries(
+    availableCities.map(city => [
+      city,
+      Array.from(new Set(
+        requests.filter(r => r.city === city).flatMap(r => Array.isArray(r.districts) ? r.districts : [])
+      )).sort()
+    ])
+  );
+
   const filteredRequests = requests.filter(request => {
     if (!filtersApplied) return true;
     
@@ -129,6 +149,9 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
     getSuggestionsCount,
     handleApplyFilters,
     handleResetFilters,
+    getCityOptions,
+    citiesWithDistricts: citiesWithDistrictsFromData,
+    availableDistricts,
   };
 };
 
