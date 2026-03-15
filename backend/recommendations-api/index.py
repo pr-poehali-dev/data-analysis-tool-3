@@ -230,11 +230,19 @@ def handle_update(event):
     try:
         cur = conn.cursor()
 
-        cur.execute(f"SELECT user_id, owner_email FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+        cur.execute(f"""
+            SELECT r.user_id, r.owner_email, req.user_email
+            FROM {S}recommendations r
+            LEFT JOIN {S}requests req ON req.id = r.request_id
+            WHERE r.id = %s
+        """, (int(rec_id),))
         owner = cur.fetchone()
         if not owner:
             return response(404, {'error': 'Рекомендация не найдена'})
-        if auth_email != owner[0] and auth_email != owner[1]:
+        rec_author = owner[0]
+        owner_email = owner[1] or ''
+        request_owner_email = owner[2] or ''
+        if auth_email != rec_author and auth_email != owner_email and auth_email != request_owner_email:
             return response(403, {'error': 'Нет доступа к этой рекомендации'})
 
         now = datetime.now(timezone.utc)
