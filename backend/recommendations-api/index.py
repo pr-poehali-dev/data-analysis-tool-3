@@ -1,4 +1,4 @@
-"""API для управления рекомендациями недвижимости."""
+"""API для управления рекомендациями недвижимости. v2"""
 import json
 import os
 from datetime import datetime, timezone
@@ -230,11 +230,11 @@ def handle_update(event):
     try:
         cur = conn.cursor()
 
-        cur.execute(f"SELECT user_id FROM {S}recommendations WHERE id = %s", (int(rec_id),))
+        cur.execute(f"SELECT user_id, owner_email FROM {S}recommendations WHERE id = %s", (int(rec_id),))
         owner = cur.fetchone()
         if not owner:
             return response(404, {'error': 'Рекомендация не найдена'})
-        if auth_email != owner[0]:
+        if auth_email != owner[0] and auth_email != owner[1]:
             return response(403, {'error': 'Нет доступа к этой рекомендации'})
 
         now = datetime.now(timezone.utc)
