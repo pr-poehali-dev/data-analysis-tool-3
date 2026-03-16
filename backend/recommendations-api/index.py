@@ -233,7 +233,7 @@ def handle_update(event):
         cur.execute(f"""
             SELECT r.user_id, r.owner_email, req.user_email
             FROM {S}recommendations r
-            LEFT JOIN {S}requests req ON req.id = r.request_id
+            LEFT JOIN {S}requests req ON req.id::text = r.request_id
             WHERE r.id = %s
         """, (int(rec_id),))
         owner = cur.fetchone()
