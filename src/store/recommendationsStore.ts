@@ -148,11 +148,23 @@ class RecommendationsStore {
   }
 
   async updateRecommendation(recommendationId: string, updates: Partial<Omit<Recommendation, 'id' | 'userId' | 'createdAt'>>): Promise<void> {
-    const res = await fetch(API_URL, {
+    await authStore.ensureToken();
+    const body = JSON.stringify({ id: recommendationId, ...updates });
+    let res = await fetch(API_URL, {
       method: 'PUT',
       headers: authHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ id: recommendationId, ...updates }),
+      body,
     });
+    if (res.status === 401) {
+      const token = await authStore.ensureToken();
+      if (token) {
+        res = await fetch(API_URL, {
+          method: 'PUT',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body,
+        });
+      }
+    }
     const data = await res.json();
     if (data.recommendation) {
       const updated = parseRecommendation(data.recommendation);

@@ -300,6 +300,13 @@ export const authStore = {
     return false;
   },
 
+  ensureToken: async (): Promise<string | null> => {
+    if (currentAccessToken) return currentAccessToken;
+    const result = await doRefresh();
+    if (result === "ok") return currentAccessToken;
+    return null;
+  },
+
   restoreSession: async (): Promise<void> => {
     if (sessionRestored) return;
     if (restorePromise) return restorePromise;
