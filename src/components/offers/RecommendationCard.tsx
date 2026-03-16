@@ -139,53 +139,59 @@ export default function RecommendationCard({ recommendation, profile, request, c
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Статус:</span>
-              <Select
-                value={recommendation.status}
-                onValueChange={async (value) => {
-                  const newStatus = value as 'pending' | 'accepted' | 'rejected';
-                  await recommendationsStore.updateRecommendationStatus(
-                    recommendation.id, 
-                    newStatus
-                  );
-                  
-                  if (newStatus === 'accepted' && currentUser) {
-                    await messagesStore.fetchChatByRecommendation(recommendation.id);
-                    let chat = messagesStore.getChatByRecommendation(recommendation.id);
-                    
-                    if (!chat) {
-                      chat = await messagesStore.createChat({
-                        recommendationId: recommendation.id,
-                        requestId: request?.id || '',
-                        requestName: request?.name || '',
-                        recommenderEmail: recommendation.userId,
-                        recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
-                        recommenderPhoto: profile?.avatar_url || '',
-                        recommenderVkLink: profile?.vkLink || '',
-                        tenantEmail: currentUser.email,
-                        tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
-                        tenantPhoto: currentUser.photo || '',
-                        tenantVkLink: currentUser.vkLink || '',
-                      });
-                    }
-                    
-                    await messagesStore.sendSystemMessage(
-                      chat.id,
-                      '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
+              {currentUser ? (
+                <Select
+                  value={recommendation.status}
+                  onValueChange={async (value) => {
+                    const newStatus = value as 'pending' | 'accepted' | 'rejected';
+                    await recommendationsStore.updateRecommendationStatus(
+                      recommendation.id, 
+                      newStatus
                     );
                     
-                    navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
-                  }
-                }}
-              >
-                <SelectTrigger className="w-[150px] h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Ожидает</SelectItem>
-                  <SelectItem value="accepted">Принято</SelectItem>
-                  <SelectItem value="rejected">Отклонено</SelectItem>
-                </SelectContent>
-              </Select>
+                    if (newStatus === 'accepted') {
+                      await messagesStore.fetchChatByRecommendation(recommendation.id);
+                      let chat = messagesStore.getChatByRecommendation(recommendation.id);
+                      
+                      if (!chat) {
+                        chat = await messagesStore.createChat({
+                          recommendationId: recommendation.id,
+                          requestId: request?.id || '',
+                          requestName: request?.name || '',
+                          recommenderEmail: recommendation.userId,
+                          recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
+                          recommenderPhoto: profile?.avatar_url || '',
+                          recommenderVkLink: profile?.vkLink || '',
+                          tenantEmail: currentUser.email,
+                          tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
+                          tenantPhoto: currentUser.photo || '',
+                          tenantVkLink: currentUser.vkLink || '',
+                        });
+                      }
+                      
+                      await messagesStore.sendSystemMessage(
+                        chat.id,
+                        '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
+                      );
+                      
+                      navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[150px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Ожидает</SelectItem>
+                    <SelectItem value="accepted">Принято</SelectItem>
+                    <SelectItem value="rejected">Отклонено</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span className="text-sm text-foreground">
+                  {recommendation.status === 'accepted' ? 'Принято' : recommendation.status === 'rejected' ? 'Отклонено' : 'Ожидает'}
+                </span>
+              )}
             </div>
             {currentUser && (
               <Button
