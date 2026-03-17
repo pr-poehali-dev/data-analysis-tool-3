@@ -107,14 +107,14 @@ def handle_list(event):
                 SELECT {COLUMNS}, u.first_name, u.last_name
                 FROM {S}recommendations r
                 LEFT JOIN {S}users u ON u.email = r.user_id
-                WHERE r.id = %s
+                WHERE r.id = %s AND r.status != 'deleted'
             """, (int(rec_id),))
             row = cur.fetchone()
             if not row:
                 return response(404, {'error': 'Рекомендация не найдена'})
             return response(200, {'recommendation': row_to_dict(row, include_photos=True, has_user_name=True)})
 
-        conditions = []
+        conditions = ["r.status != 'deleted'"]
         values = []
 
         if user_id:
@@ -124,8 +124,8 @@ def handle_list(event):
             conditions.append("r.request_id = %s")
             values.append(request_id)
 
-        where = f" WHERE {' AND '.join(conditions)}" if conditions else ""
-        limit = " LIMIT 50" if not conditions else ""
+        where = f" WHERE {' AND '.join(conditions)}"
+        limit = " LIMIT 50" if not (user_id or request_id) else ""
         cur.execute(f"""
             SELECT {COLUMNS_SHORT}, u.first_name, u.last_name
             FROM {S}recommendations r

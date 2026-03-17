@@ -26,7 +26,7 @@ export interface Recommendation {
     comments: string;
   };
   photos: string[];
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'deleted';
   createdAt: Date;
 }
 
@@ -51,11 +51,11 @@ class RecommendationsStore {
   }
 
   getUserRecommendations(userId: string): Recommendation[] {
-    return this.cache.filter(r => r.userId === userId);
+    return this.cache.filter(r => r.userId === userId && r.status !== 'deleted');
   }
 
   getRecommendationsByRequestId(requestId: string): Recommendation[] {
-    return this.cache.filter(r => r.requestId === requestId);
+    return this.cache.filter(r => r.requestId === requestId && r.status !== 'deleted');
   }
 
   getRecommendationById(recommendationId: string): Recommendation | undefined {
