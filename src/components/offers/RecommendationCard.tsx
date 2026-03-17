@@ -150,31 +150,38 @@ export default function RecommendationCard({ recommendation, profile, request, c
                     );
                     
                     if (newStatus === 'accepted') {
-                      await messagesStore.fetchChatByRecommendation(recommendation.id);
-                      let chat = messagesStore.getChatByRecommendation(recommendation.id);
-                      
-                      if (!chat) {
-                        chat = await messagesStore.createChat({
-                          recommendationId: recommendation.id,
-                          requestId: request?.id || '',
-                          requestName: request?.name || '',
-                          recommenderEmail: recommendation.userId,
-                          recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
-                          recommenderPhoto: profile?.avatar_url || '',
-                          recommenderVkLink: profile?.vkLink || '',
-                          tenantEmail: currentUser.email,
-                          tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
-                          tenantPhoto: currentUser.photo || '',
-                          tenantVkLink: currentUser.vkLink || '',
-                        });
+                      try {
+                        const fetched = await messagesStore.fetchChatByRecommendation(recommendation.id);
+                        let chat = fetched || messagesStore.getChatByRecommendation(recommendation.id);
+                        
+                        if (!chat) {
+                          chat = await messagesStore.createChat({
+                            recommendationId: recommendation.id,
+                            requestId: request?.id || '',
+                            requestName: request?.name || '',
+                            recommenderEmail: recommendation.userId,
+                            recommenderName: recommendation.userName || recommendation.userId.split('@')[0],
+                            recommenderPhoto: profile?.avatar_url || '',
+                            recommenderVkLink: profile?.vkLink || '',
+                            tenantEmail: currentUser.email,
+                            tenantName: `${currentUser.firstName} ${currentUser.lastName}`,
+                            tenantPhoto: currentUser.photo || '',
+                            tenantVkLink: currentUser.vkLink || '',
+                          });
+                        }
+                        
+                        try {
+                          await messagesStore.sendSystemMessage(
+                            chat.id,
+                            '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
+                          );
+                        } catch (msgErr) { console.warn('[chat] system msg failed:', msgErr); }
+                        
+                        navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
+                      } catch (err) {
+                        console.error('[RecommendationCard] navigate to chat failed:', err);
+                        navigate("/dashboard", { state: { activeSection: "messages" } });
                       }
-                      
-                      await messagesStore.sendSystemMessage(
-                        chat.id,
-                        '✅ Предложение принято! Самое время обсудить детали и задать все интересующие вопросы друг другу.'
-                      );
-                      
-                      navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
                     }
                   }}
                 >
