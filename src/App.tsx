@@ -75,7 +75,8 @@ const AppContent = () => {
     
     authStore.setUser(userData);
     setUser(userData);
-    navigate("/");
+    // Новый пользователь после регистрации сразу попадает на создание заявки
+    navigate("/create-request");
   };
 
   if (!sessionReady) {
