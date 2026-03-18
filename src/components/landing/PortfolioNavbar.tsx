@@ -8,7 +8,7 @@ import Icon from "@/components/ui/icon";
 
 const dashboardMenuItems = [
   { id: "feed", label: "Лента заявок", icon: "List" },
-  { id: "requests", label: "Мои заявки", icon: "FileText" },
+  { id: "requests", label: "Найти жильё", icon: "FileText" },
   { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp" },
   { id: "messages", label: "Сообщения", icon: "MessageSquare" },
   { id: "documents", label: "Документы", icon: "FolderOpen" },
