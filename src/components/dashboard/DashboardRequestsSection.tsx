@@ -81,6 +81,7 @@ export const DashboardRequestsSection = ({ userRequests }: DashboardRequestsSect
         <div className="bg-white border border-border rounded-xl p-6 sm:p-8 text-center">
           <Icon name="FileText" size={40} className="mx-auto mb-3 text-muted-foreground" />
           <p className="text-base sm:text-lg text-muted-foreground">У вас пока нет активных заявок</p>
+          <p className="text-sm text-muted-foreground mt-1">Создайте заявку для получения предложений жилья</p>
           <Button 
             className="mt-4 sm:mt-6 w-full sm:w-auto" 
             onClick={(e) => {
