@@ -336,7 +336,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 {isSubmitting ? "Регистрация..." : "Продолжить"}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
-                Регистрируясь, вы принимаете Условия обработки персональных данных и Политику конфиденциальности SovetPay
+                Регистрируясь, вы принимаете{" "}
+                <a href="https://sovetpay.ru/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Условия обработки персональных данных</a>
+                {" "}и{" "}
+                <a href="https://sovetpay.ru/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Политику конфиденциальности</a>
+                {" "}SovetPay
               </p>
             </form>
           </motion.div>
