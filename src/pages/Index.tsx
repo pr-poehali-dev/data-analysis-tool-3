@@ -93,7 +93,7 @@ const Index = ({ onRegistrationSuccess }: IndexProps) => {
       <Footer onRegisterClick={handleRegistrationClick} hiddenOnMobile />
 
       <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <RegistrationForm onSuccess={handleRegistrationComplete} />
         </DialogContent>
       </Dialog>
