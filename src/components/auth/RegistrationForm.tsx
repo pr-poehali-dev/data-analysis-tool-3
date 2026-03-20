@@ -214,7 +214,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
         {step === "form" && (
           <motion.div
@@ -224,16 +224,16 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-3">
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold text-foreground mb-1">
                 Регистрация
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Быстрая регистрация через соцсети или заполните форму
               </p>
             </div>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 mb-4">
               <YandexLoginButton
                 onClick={handleYandexLogin}
                 isLoading={yandexLoading}
@@ -255,7 +255,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
               />
             </div>
 
-            <div className="relative mb-6">
+            <div className="relative mb-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
@@ -264,14 +264,14 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               {registerError && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                   {registerError}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <Label htmlFor="firstName">Имя</Label>
                   <Input
                     id="firstName"
@@ -281,7 +281,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="lastName">Фамилия</Label>
                   <Input
                     id="lastName"
@@ -292,7 +292,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="phone">Номер телефона</Label>
                 <Input
                   id="phone"
@@ -303,7 +303,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -317,7 +317,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="password">Пароль</Label>
                 <Input
                   id="password"
@@ -332,7 +332,6 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-[#155eef] hover:bg-[#155eef]/90 text-white"
-                size="lg"
               >
                 {isSubmitting ? "Регистрация..." : "Продолжить"}
               </Button>
