@@ -23,6 +23,9 @@ import TelegramCallback from "./pages/TelegramCallback";
 import VkCallback from "./pages/VkCallback";
 import GoogleCallback from "./pages/GoogleCallback";
 import { authStore } from "./store/authStore";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLayout from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +122,11 @@ const AppContent = () => {
       <Route path="/auth/telegram/callback" element={<TelegramCallback />} />
       <Route path="/auth/vk/callback" element={<VkCallback />} />
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
+      {/* Админ-панель — изолированный layout, не пересекается с основным сайтом */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+      </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
