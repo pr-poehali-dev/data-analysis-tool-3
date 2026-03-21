@@ -4,6 +4,14 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { documentsStore, SavedDocument } from "@/store/documentsStore";
 import { authStore } from "@/store/authStore";
 import { generateDOCXLazy } from "./rental-agreement/DOCXGeneratorLazy";
@@ -15,8 +23,11 @@ interface DocumentsListProps {
   onCreateNew: () => void;
 }
 
+const CONSENT_KEY = "sovetpay_passport_consent_given";
+
 export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
   const [documents, setDocuments] = useState<SavedDocument[]>([]);
+  const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
@@ -99,23 +110,74 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
     }
   };
 
+  const handleCreateNew = () => {
+    const consentGiven = localStorage.getItem(CONSENT_KEY);
+    if (!consentGiven) {
+      setShowConsentDialog(true);
+    } else {
+      onCreateNew();
+    }
+  };
+
+  const handleConsentAgree = () => {
+    localStorage.setItem(CONSENT_KEY, "true");
+    setShowConsentDialog(false);
+    onCreateNew();
+  };
+
+  const handleConsentDecline = () => {
+    setShowConsentDialog(false);
+  };
+
   if (documents.length === 0) {
     return (
-      <div className="bg-white border border-border rounded-xl p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="FileText" size={32} className="text-primary" />
+      <>
+        <div className="bg-white border border-border rounded-xl p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="FileText" size={32} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">У вас пока нет документов</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Создайте свой первый договор аренды
+            </p>
+            <Button onClick={handleCreateNew}>
+              <Icon name="Plus" size={16} className="mr-2" />
+              Создать договор
+            </Button>
           </div>
-          <h3 className="text-xl font-semibold text-foreground mb-2">У вас пока нет документов</h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            Создайте свой первый договор аренды
-          </p>
-          <Button onClick={onCreateNew}>
-            <Icon name="Plus" size={16} className="mr-2" />
-            Создать договор
-          </Button>
         </div>
-      </div>
+
+        <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Согласие на обработку персональных данных</DialogTitle>
+              <DialogDescription asChild>
+                <div className="text-sm text-muted-foreground space-y-3 mt-2">
+                  <p>
+                    Для создания договора аренды на нашей платформе необходимо дополнительно подтвердить обработку ваших персональных данных.
+                  </p>
+                  <p>
+                    Я даю согласие на обработку следующих моих персональных данных, предоставляемых мной добровольно с целью повышения уровня доверия и верификации:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Серия и номер паспорта;</li>
+                    <li>Дата выдачи паспорта и наименование выдавшего органа.</li>
+                  </ul>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+              <Button variant="outline" onClick={handleConsentDecline} className="w-full sm:w-auto">
+                Не даю согласие
+              </Button>
+              <Button onClick={handleConsentAgree} className="w-full sm:w-auto">
+                Даю согласие
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -123,7 +185,7 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg sm:text-xl font-semibold text-foreground">Сохраненные документы</h3>
-        <Button onClick={onCreateNew} className="w-full sm:w-auto">
+        <Button onClick={handleCreateNew} className="w-full sm:w-auto">
           <Icon name="Plus" size={16} className="mr-2" />
           Новый договор
         </Button>
@@ -266,6 +328,36 @@ export const DocumentsList = ({ onEdit, onCreateNew }: DocumentsListProps) => {
           </motion.div>
         ))}
       </div>
+
+      <Dialog open={showConsentDialog} onOpenChange={setShowConsentDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Согласие на обработку персональных данных</DialogTitle>
+            <DialogDescription asChild>
+              <div className="text-sm text-muted-foreground space-y-3 mt-2">
+                <p>
+                  Для создания договора аренды на нашей платформе необходимо дополнительно подтвердить обработку ваших персональных данных.
+                </p>
+                <p>
+                  Я даю согласие на обработку следующих моих персональных данных, предоставляемых мной добровольно с целью повышения уровня доверия и верификации:
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Серия и номер паспорта;</li>
+                  <li>Дата выдачи паспорта и наименование выдавшего органа.</li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <Button variant="outline" onClick={handleConsentDecline} className="w-full sm:w-auto">
+              Не даю согласие
+            </Button>
+            <Button onClick={handleConsentAgree} className="w-full sm:w-auto">
+              Даю согласие
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
