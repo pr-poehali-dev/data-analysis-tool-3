@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Запрос без токена — отказ",
+      "method": "GET",
+      "path": "/?action=stats",
+      "expectedStatus": 403,
+      "expectedBody": {"error": "Доступ запрещён"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный токен — отказ",
+      "method": "GET",
+      "path": "/?action=registrations",
+      "headers": {"X-Admin-Token": "invalid.token.here"},
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

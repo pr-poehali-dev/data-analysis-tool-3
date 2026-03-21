@@ -11,7 +11,7 @@ def create_jwt(payload: dict, secret: str) -> str:
     header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode()).rstrip(b"=").decode()
     body = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
     signature_input = f"{header}.{body}".encode()
-    signature = hmac.new(secret.encode(), signature_input, hashlib.sha256).digest()
+    signature = hmac.digest(secret.encode(), signature_input, hashlib.sha256)
     sig = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
     return f"{header}.{body}.{sig}"
 
@@ -24,7 +24,7 @@ def verify_jwt(token: str, secret: str) -> dict | None:
             return None
         header, body, sig = parts
         signature_input = f"{header}.{body}".encode()
-        expected_sig = hmac.new(secret.encode(), signature_input, hashlib.sha256).digest()
+        expected_sig = hmac.digest(secret.encode(), signature_input, hashlib.sha256)
         expected_sig_b64 = base64.urlsafe_b64encode(expected_sig).rstrip(b"=").decode()
         if not hmac.compare_digest(sig, expected_sig_b64):
             return None
@@ -33,7 +33,7 @@ def verify_jwt(token: str, secret: str) -> dict | None:
         if payload.get("exp", 0) < time.time():
             return None
         return payload
-    except Exception:
+    except (ValueError, KeyError, TypeError, AttributeError):
         return None
 
 
