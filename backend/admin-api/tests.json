@@ -43,6 +43,34 @@
       "path": "/?action=unknown",
       "expectedStatus": 403,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список заявок без токена — отказ",
+      "method": "GET",
+      "path": "/?action=requests",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список рекомендаций без токена — отказ",
+      "method": "GET",
+      "path": "/?action=recommendations",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Изменение статуса заявки без токена — отказ",
+      "method": "POST",
+      "path": "/?action=update_request_status",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Удаление рекомендации без токена — отказ",
+      "method": "POST",
+      "path": "/?action=delete_recommendation",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
     }
   ]
 }

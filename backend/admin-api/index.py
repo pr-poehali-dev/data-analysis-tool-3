@@ -56,12 +56,20 @@ def handler(event: dict, context) -> dict:
     """
     Единая точка входа для всех запросов администратора.
     Требует заголовок X-Admin-Token с валидным JWT.
-    GET  ?action=stats          — общая статистика для дашборда.
-    GET  ?action=registrations  — регистрации за последние 30 дней (для графика).
-    GET  ?action=activity       — последние действия на платформе.
-    GET  ?action=users          — список пользователей с поиском, фильтром, пагинацией.
-    GET  ?action=user&id=X      — детальная карточка одного пользователя.
-    POST ?action=block_user     — заблокировать/разблокировать пользователя.
+    GET  ?action=stats                  — общая статистика для дашборда.
+    GET  ?action=registrations          — регистрации за последние 30 дней (для графика).
+    GET  ?action=activity               — последние действия на платформе.
+    GET  ?action=users                  — список пользователей с поиском, фильтром, пагинацией.
+    GET  ?action=user&id=X              — детальная карточка одного пользователя.
+    POST ?action=block_user             — заблокировать/разблокировать пользователя.
+    GET  ?action=requests               — список заявок с поиском, фильтром, пагинацией.
+    GET  ?action=request&id=X           — детальная карточка заявки.
+    POST ?action=update_request_status  — изменить статус заявки.
+    POST ?action=delete_request         — удалить заявку.
+    GET  ?action=recommendations        — список рекомендаций с поиском, фильтром, пагинацией.
+    GET  ?action=recommendation&id=X    — детальная карточка рекомендации.
+    POST ?action=update_rec_status      — изменить статус рекомендации.
+    POST ?action=delete_recommendation  — удалить рекомендацию.
     """
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS_HEADERS, "body": ""}
@@ -88,6 +96,26 @@ def handler(event: dict, context) -> dict:
     elif action == "block_user" and method == "POST":
         body = json.loads(event.get("body") or "{}")
         return handle_block_user(body)
+    elif action == "requests":
+        return handle_requests(query)
+    elif action == "request":
+        return handle_request(query)
+    elif action == "update_request_status" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_update_request_status(body)
+    elif action == "delete_request" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_delete_request(body)
+    elif action == "recommendations":
+        return handle_recommendations(query)
+    elif action == "recommendation":
+        return handle_recommendation(query)
+    elif action == "update_rec_status" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_update_rec_status(body)
+    elif action == "delete_recommendation" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_delete_recommendation(body)
 
     return json_response({"error": "Укажите параметр action"}, 400)
 
@@ -412,3 +440,406 @@ def handle_block_user(body: dict) -> dict:
 
     action_text = "заблокирован" if block else "разблокирован"
     return json_response({"success": True, "message": f"Пользователь {action_text}"})
+
+
+# ─── ЗАЯВКИ ───────────────────────────────────────────────────────────────────
+
+REQUEST_STATUSES = ("active", "in_progress", "archived")
+
+
+def handle_requests(query: dict) -> dict:
+    """
+    Возвращает список заявок с поиском, фильтром по статусу, пагинацией.
+    Параметры: search, status, page, limit
+    """
+    search = query.get("search", "").strip()
+    status = query.get("status", "").strip()
+    page = max(1, int(query.get("page", 1)))
+    limit = min(50, max(1, int(query.get("limit", 20))))
+    offset = (page - 1) * limit
+
+    conditions = []
+    if search:
+        safe = search.replace("'", "''")
+        conditions.append(
+            f"(LOWER(COALESCE(r.name,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(r.city,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(r.user_email,'')) LIKE LOWER('%{safe}%'))"
+        )
+    if status and status in REQUEST_STATUSES:
+        conditions.append(f"r.status = '{status}'")
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.requests r {where}")
+    total = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT
+            r.id, r.name, r.user_id, r.user_email,
+            r.city, r.budget_min, r.budget_max, r.budget,
+            r.housing_type, r.rooms_count, r.rental_period, r.move_in_date,
+            r.reward, r.status, r.created_at, r.updated_at,
+            r.who_will_live, r.has_pets,
+            COALESCE(u.first_name || ' ' || u.last_name, u.name, r.user_email) AS author_name,
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
+        FROM {SCHEMA}.requests r
+        LEFT JOIN {SCHEMA}.users u ON u.id = r.user_id
+        {where}
+        ORDER BY r.created_at DESC
+        LIMIT {limit} OFFSET {offset}
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    requests_list = []
+    for row in rows:
+        requests_list.append({
+            "id": row[0],
+            "name": row[1],
+            "user_id": row[2],
+            "user_email": row[3],
+            "city": row[4],
+            "budget_min": row[5],
+            "budget_max": row[6],
+            "budget": row[7],
+            "housing_type": row[8],
+            "rooms_count": row[9],
+            "rental_period": row[10],
+            "move_in_date": row[11],
+            "reward": row[12],
+            "status": row[13],
+            "created_at": str(row[14]) if row[14] else None,
+            "updated_at": str(row[15]) if row[15] else None,
+            "who_will_live": row[16],
+            "has_pets": row[17],
+            "author_name": row[18],
+            "offers_count": row[19],
+        })
+
+    return json_response({
+        "requests": requests_list,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit if total > 0 else 1,
+    })
+
+
+def handle_request(query: dict) -> dict:
+    """Возвращает детальную карточку заявки по id"""
+    req_id = query.get("id", "")
+    if not req_id or not str(req_id).isdigit():
+        return json_response({"error": "Укажите корректный id заявки"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"""
+        SELECT
+            r.id, r.name, r.user_id, r.user_email,
+            r.city, r.location, r.budget_min, r.budget_max, r.budget,
+            r.housing_type, r.rooms_count, r.rental_period, r.move_in_date,
+            r.reward, r.bonus, r.who_will_live, r.about_yourself,
+            r.has_pets, r.districts, r.status, r.created_at, r.updated_at,
+            COALESCE(u.first_name || ' ' || u.last_name, u.name, r.user_email) AS author_name,
+            u.phone AS author_phone, u.avatar_url AS author_avatar,
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
+        FROM {SCHEMA}.requests r
+        LEFT JOIN {SCHEMA}.users u ON u.id = r.user_id
+        WHERE r.id = {int(req_id)}
+    """)
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not row:
+        return json_response({"error": "Заявка не найдена"}, 404)
+
+    return json_response({
+        "request": {
+            "id": row[0],
+            "name": row[1],
+            "user_id": row[2],
+            "user_email": row[3],
+            "city": row[4],
+            "location": row[5],
+            "budget_min": row[6],
+            "budget_max": row[7],
+            "budget": row[8],
+            "housing_type": row[9],
+            "rooms_count": row[10],
+            "rental_period": row[11],
+            "move_in_date": row[12],
+            "reward": row[13],
+            "bonus": row[14],
+            "who_will_live": row[15],
+            "about_yourself": row[16],
+            "has_pets": row[17],
+            "districts": row[18] if row[18] else [],
+            "status": row[19],
+            "created_at": str(row[20]) if row[20] else None,
+            "updated_at": str(row[21]) if row[21] else None,
+            "author_name": row[22],
+            "author_phone": row[23],
+            "author_avatar": row[24],
+            "offers_count": row[25],
+        }
+    })
+
+
+def handle_update_request_status(body: dict) -> dict:
+    """
+    Изменяет статус заявки.
+    body: { request_id: int, status: str }
+    """
+    req_id = body.get("request_id")
+    new_status = body.get("status", "")
+
+    if not req_id or not isinstance(req_id, int):
+        return json_response({"error": "Укажите request_id"}, 400)
+    if new_status not in REQUEST_STATUSES:
+        return json_response({"error": f"Статус должен быть одним из: {', '.join(REQUEST_STATUSES)}"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"""
+        UPDATE {SCHEMA}.requests
+        SET status = '{new_status}', updated_at = NOW()
+        WHERE id = {int(req_id)}
+        RETURNING id
+    """)
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not updated:
+        return json_response({"error": "Заявка не найдена"}, 404)
+
+    return json_response({"success": True, "message": "Статус заявки обновлён"})
+
+
+def handle_delete_request(body: dict) -> dict:
+    """
+    Удаляет заявку по id.
+    body: { request_id: int }
+    """
+    req_id = body.get("request_id")
+    if not req_id or not isinstance(req_id, int):
+        return json_response({"error": "Укажите request_id"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {SCHEMA}.requests WHERE id = {int(req_id)} RETURNING id")
+    deleted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        return json_response({"error": "Заявка не найдена"}, 404)
+
+    return json_response({"success": True, "message": "Заявка удалена"})
+
+
+# ─── РЕКОМЕНДАЦИИ ─────────────────────────────────────────────────────────────
+
+REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
+
+
+def handle_recommendations(query: dict) -> dict:
+    """
+    Возвращает список рекомендаций с поиском, фильтром по статусу, пагинацией.
+    Параметры: search, status, page, limit
+    """
+    search = query.get("search", "").strip()
+    status = query.get("status", "").strip()
+    page = max(1, int(query.get("page", 1)))
+    limit = min(50, max(1, int(query.get("limit", 20))))
+    offset = (page - 1) * limit
+
+    conditions = []
+    if search:
+        safe = search.replace("'", "''")
+        conditions.append(
+            f"(LOWER(COALESCE(rec.address,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(rec.request_name,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(rec.owner_email,'')) LIKE LOWER('%{safe}%'))"
+        )
+    if status and status in REC_STATUSES:
+        conditions.append(f"rec.status = '{status}'")
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.recommendations rec {where}")
+    total = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT
+            rec.id, rec.address, rec.rooms, rec.rent, rec.status,
+            rec.request_id, rec.request_name, rec.owner_email,
+            rec.created_at, rec.updated_at,
+            rec.has_furniture, rec.has_appliances, rec.area, rec.floor, rec.total_floors,
+            COALESCE(u.first_name || ' ' || u.last_name, u.name, u.email) AS author_name,
+            u.id AS author_user_id
+        FROM {SCHEMA}.recommendations rec
+        LEFT JOIN {SCHEMA}.users u ON u.id::text = rec.user_id
+        {where}
+        ORDER BY rec.created_at DESC
+        LIMIT {limit} OFFSET {offset}
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    recs = []
+    for row in rows:
+        recs.append({
+            "id": row[0],
+            "address": row[1],
+            "rooms": row[2],
+            "rent": row[3],
+            "status": row[4],
+            "request_id": row[5],
+            "request_name": row[6],
+            "owner_email": row[7],
+            "created_at": str(row[8]) if row[8] else None,
+            "updated_at": str(row[9]) if row[9] else None,
+            "has_furniture": row[10],
+            "has_appliances": row[11],
+            "area": row[12],
+            "floor": row[13],
+            "total_floors": row[14],
+            "author_name": row[15],
+            "author_user_id": row[16],
+        })
+
+    return json_response({
+        "recommendations": recs,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit if total > 0 else 1,
+    })
+
+
+def handle_recommendation(query: dict) -> dict:
+    """Возвращает детальную карточку рекомендации по id"""
+    rec_id = query.get("id", "")
+    if not rec_id or not str(rec_id).isdigit():
+        return json_response({"error": "Укажите корректный id рекомендации"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"""
+        SELECT
+            rec.id, rec.address, rec.rooms, rec.rent, rec.status,
+            rec.request_id, rec.request_name, rec.owner_email, rec.invite_message,
+            rec.area, rec.floor, rec.total_floors, rec.has_furniture, rec.has_appliances,
+            rec.property_comments, rec.photos, rec.coordinates_lat, rec.coordinates_lng,
+            rec.created_at, rec.updated_at,
+            COALESCE(u.first_name || ' ' || u.last_name, u.name, u.email) AS author_name,
+            u.id AS author_user_id, u.email AS author_email, u.phone AS author_phone
+        FROM {SCHEMA}.recommendations rec
+        LEFT JOIN {SCHEMA}.users u ON u.id::text = rec.user_id
+        WHERE rec.id = {int(rec_id)}
+    """)
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not row:
+        return json_response({"error": "Рекомендация не найдена"}, 404)
+
+    return json_response({
+        "recommendation": {
+            "id": row[0],
+            "address": row[1],
+            "rooms": row[2],
+            "rent": row[3],
+            "status": row[4],
+            "request_id": row[5],
+            "request_name": row[6],
+            "owner_email": row[7],
+            "invite_message": row[8],
+            "area": row[9],
+            "floor": row[10],
+            "total_floors": row[11],
+            "has_furniture": row[12],
+            "has_appliances": row[13],
+            "property_comments": row[14],
+            "photos": row[15] if row[15] else [],
+            "coordinates_lat": row[16],
+            "coordinates_lng": row[17],
+            "created_at": str(row[18]) if row[18] else None,
+            "updated_at": str(row[19]) if row[19] else None,
+            "author_name": row[20],
+            "author_user_id": row[21],
+            "author_email": row[22],
+            "author_phone": row[23],
+        }
+    })
+
+
+def handle_update_rec_status(body: dict) -> dict:
+    """
+    Изменяет статус рекомендации.
+    body: { recommendation_id: int, status: str }
+    """
+    rec_id = body.get("recommendation_id")
+    new_status = body.get("status", "")
+
+    if not rec_id or not isinstance(rec_id, int):
+        return json_response({"error": "Укажите recommendation_id"}, 400)
+    if new_status not in REC_STATUSES:
+        return json_response({"error": f"Статус должен быть одним из: {', '.join(REC_STATUSES)}"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"""
+        UPDATE {SCHEMA}.recommendations
+        SET status = '{new_status}', updated_at = NOW()
+        WHERE id = {int(rec_id)}
+        RETURNING id
+    """)
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not updated:
+        return json_response({"error": "Рекомендация не найдена"}, 404)
+
+    return json_response({"success": True, "message": "Статус рекомендации обновлён"})
+
+
+def handle_delete_recommendation(body: dict) -> dict:
+    """
+    Удаляет рекомендацию по id.
+    body: { recommendation_id: int }
+    """
+    rec_id = body.get("recommendation_id")
+    if not rec_id or not isinstance(rec_id, int):
+        return json_response({"error": "Укажите recommendation_id"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {SCHEMA}.recommendations WHERE id = {int(rec_id)} RETURNING id")
+    deleted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        return json_response({"error": "Рекомендация не найдена"}, 404)
+
+    return json_response({"success": True, "message": "Рекомендация удалена"})

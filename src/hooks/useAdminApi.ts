@@ -93,6 +93,98 @@ export interface UsersFilter {
   limit?: number;
 }
 
+export interface AdminRequest {
+  id: number;
+  name: string;
+  user_id: number | null;
+  user_email: string;
+  city: string | null;
+  budget_min: string | null;
+  budget_max: string | null;
+  budget: string | null;
+  housing_type: string | null;
+  rooms_count: string | null;
+  rental_period: string | null;
+  move_in_date: string | null;
+  reward: string | null;
+  status: string;
+  created_at: string | null;
+  updated_at: string | null;
+  who_will_live: string | null;
+  has_pets: string | null;
+  author_name: string | null;
+  offers_count: number;
+}
+
+export interface AdminRequestDetail extends AdminRequest {
+  location: string | null;
+  bonus: string | null;
+  about_yourself: string | null;
+  districts: string[];
+  author_phone: string | null;
+  author_avatar: string | null;
+}
+
+export interface RequestsResponse {
+  requests: AdminRequest[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface RequestsFilter {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminRecommendation {
+  id: number;
+  address: string | null;
+  rooms: string | null;
+  rent: string | null;
+  status: string;
+  request_id: string | null;
+  request_name: string | null;
+  owner_email: string;
+  created_at: string | null;
+  updated_at: string | null;
+  has_furniture: boolean;
+  has_appliances: boolean;
+  area: string | null;
+  floor: string | null;
+  total_floors: string | null;
+  author_name: string | null;
+  author_user_id: number | null;
+}
+
+export interface AdminRecommendationDetail extends AdminRecommendation {
+  invite_message: string | null;
+  property_comments: string | null;
+  photos: string[];
+  coordinates_lat: number | null;
+  coordinates_lng: number | null;
+  author_email: string | null;
+  author_phone: string | null;
+}
+
+export interface RecommendationsResponse {
+  recommendations: AdminRecommendation[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface RecommendationsFilter {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const adminApi = {
   async getStats(): Promise<DashboardStats> {
     const res = await adminFetch("stats");
@@ -144,5 +236,75 @@ export const adminApi = {
   async blockUser(userId: number, block: boolean, reason?: string): Promise<void> {
     const res = await adminPost("block_user", { user_id: userId, block, reason: reason || "" });
     if (!res.ok) throw new Error("Ошибка при изменении статуса пользователя");
+  },
+
+  async getRequests(filter: RequestsFilter = {}): Promise<RequestsResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "requests");
+    if (filter.search) params.set("search", filter.search);
+    if (filter.status) params.set("status", filter.status);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки заявок");
+    return res.json();
+  },
+
+  async getRequest(id: number): Promise<AdminRequestDetail> {
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?action=request&id=${id}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки заявки");
+    const data = await res.json();
+    return data.request;
+  },
+
+  async updateRequestStatus(requestId: number, status: string): Promise<void> {
+    const res = await adminPost("update_request_status", { request_id: requestId, status });
+    if (!res.ok) throw new Error("Ошибка при изменении статуса заявки");
+  },
+
+  async deleteRequest(requestId: number): Promise<void> {
+    const res = await adminPost("delete_request", { request_id: requestId });
+    if (!res.ok) throw new Error("Ошибка при удалении заявки");
+  },
+
+  async getRecommendations(filter: RecommendationsFilter = {}): Promise<RecommendationsResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "recommendations");
+    if (filter.search) params.set("search", filter.search);
+    if (filter.status) params.set("status", filter.status);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки рекомендаций");
+    return res.json();
+  },
+
+  async getRecommendation(id: number): Promise<AdminRecommendationDetail> {
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?action=recommendation&id=${id}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки рекомендации");
+    const data = await res.json();
+    return data.recommendation;
+  },
+
+  async updateRecStatus(recommendationId: number, status: string): Promise<void> {
+    const res = await adminPost("update_rec_status", { recommendation_id: recommendationId, status });
+    if (!res.ok) throw new Error("Ошибка при изменении статуса рекомендации");
+  },
+
+  async deleteRecommendation(recommendationId: number): Promise<void> {
+    const res = await adminPost("delete_recommendation", { recommendation_id: recommendationId });
+    if (!res.ok) throw new Error("Ошибка при удалении рекомендации");
   },
 };
