@@ -120,6 +120,13 @@
       "path": "/?action=reply_feedback",
       "expectedStatus": 403,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Аналитика без токена — отказ",
+      "method": "GET",
+      "path": "/?action=analytics",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
     }
   ]
 }

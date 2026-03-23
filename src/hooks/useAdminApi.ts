@@ -285,6 +285,27 @@ export interface FeedbackFilter {
   limit?: number;
 }
 
+export interface AnalyticsData {
+  cities: { city: string; count: number }[];
+  conversion: {
+    total_requests: number;
+    total_recommendations: number;
+    total_escrow: number;
+    req_to_rec_pct: number;
+    rec_to_deal_pct: number;
+    req_to_deal_pct: number;
+  };
+  averages: {
+    avg_budget: number;
+    avg_rent: number;
+    avg_commission: number;
+  };
+  housing_types: { type: string; count: number }[];
+  rental_periods: { period: string; count: number }[];
+  monthly_dynamics: { month: string; requests: number; users: number }[];
+  user_roles: { role: string; count: number }[];
+}
+
 export const adminApi = {
   async getStats(): Promise<DashboardStats> {
     const res = await adminFetch("stats");
@@ -481,5 +502,11 @@ export const adminApi = {
   async replyFeedback(feedbackId: number, reply: string): Promise<void> {
     const res = await adminPost("reply_feedback", { feedback_id: feedbackId, reply });
     if (!res.ok) throw new Error("Ошибка при отправке ответа");
+  },
+
+  async getAnalytics(): Promise<AnalyticsData> {
+    const res = await adminFetch("analytics");
+    if (!res.ok) throw new Error("Ошибка загрузки аналитики");
+    return res.json();
   },
 };
