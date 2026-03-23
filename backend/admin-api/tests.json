@@ -22,6 +22,27 @@
       "headers": {"X-Admin-Token": "invalid.token.here"},
       "expectedStatus": 403,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список пользователей без токена — отказ",
+      "method": "GET",
+      "path": "/?action=users",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Блокировка без токена — отказ",
+      "method": "POST",
+      "path": "/?action=block_user",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неизвестный action без токена — отказ",
+      "method": "GET",
+      "path": "/?action=unknown",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
     }
   ]
 }
