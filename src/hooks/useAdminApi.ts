@@ -185,6 +185,48 @@ export interface RecommendationsFilter {
   limit?: number;
 }
 
+export interface AdminEscrow {
+  id: number;
+  request_name: string;
+  status: string;
+  tenant_name: string;
+  tenant_email: string;
+  recommender_name: string;
+  recommender_email: string;
+  rent_amount: number;
+  commission_amount: number;
+  created_at: string | null;
+  completed_at: string | null;
+  chat_id: string | null;
+  recommendation_id: string | null;
+}
+
+export interface AdminEscrowDetail extends AdminEscrow {
+  history: { status: string; label: string; date: string | null }[];
+}
+
+export interface EscrowSummary {
+  frozen_amount: number;
+  completed_amount: number;
+  total_amount: number;
+}
+
+export interface EscrowResponse {
+  transactions: AdminEscrow[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+  summary: EscrowSummary;
+}
+
+export interface EscrowFilter {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const adminApi = {
   async getStats(): Promise<DashboardStats> {
     const res = await adminFetch("stats");
@@ -306,5 +348,35 @@ export const adminApi = {
   async deleteRecommendation(recommendationId: number): Promise<void> {
     const res = await adminPost("delete_recommendation", { recommendation_id: recommendationId });
     if (!res.ok) throw new Error("Ошибка при удалении рекомендации");
+  },
+
+  async getEscrow(filter: EscrowFilter = {}): Promise<EscrowResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "escrow");
+    if (filter.search) params.set("search", filter.search);
+    if (filter.status) params.set("status", filter.status);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки сделок");
+    return res.json();
+  },
+
+  async getEscrowDetail(id: number): Promise<AdminEscrowDetail> {
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?action=escrow_detail&id=${id}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки сделки");
+    const data = await res.json();
+    return data.transaction;
+  },
+
+  async updateEscrowStatus(escrowId: number, status: string): Promise<void> {
+    const res = await adminPost("update_escrow_status", { escrow_id: escrowId, status });
+    if (!res.ok) throw new Error("Ошибка при изменении статуса сделки");
   },
 };

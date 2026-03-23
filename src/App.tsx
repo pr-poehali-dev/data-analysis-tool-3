@@ -28,6 +28,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminRequests from "./pages/admin/AdminRequests";
 import AdminRecommendations from "./pages/admin/AdminRecommendations";
+import AdminEscrow from "./pages/admin/AdminEscrow";
 import AdminLayout from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
@@ -132,6 +133,7 @@ const AppContent = () => {
         <Route path="users" element={<AdminUsers />} />
         <Route path="requests" element={<AdminRequests />} />
         <Route path="recommendations" element={<AdminRecommendations />} />
+        <Route path="escrow" element={<AdminEscrow />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

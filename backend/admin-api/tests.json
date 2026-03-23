@@ -71,6 +71,27 @@
       "path": "/?action=delete_recommendation",
       "expectedStatus": 403,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список сделок без токена — отказ",
+      "method": "GET",
+      "path": "/?action=escrow",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Детали сделки без токена — отказ",
+      "method": "GET",
+      "path": "/?action=escrow_detail&id=1",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Смена статуса сделки без токена — отказ",
+      "method": "POST",
+      "path": "/?action=update_escrow_status",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
     }
   ]
 }
