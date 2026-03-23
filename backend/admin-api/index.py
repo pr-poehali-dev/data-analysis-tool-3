@@ -4,7 +4,10 @@ import hmac
 import hashlib
 import base64
 import time
+import smtplib
 import psycopg2
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -73,6 +76,11 @@ def handler(event: dict, context) -> dict:
     GET  ?action=escrow                 — список сделок с поиском, фильтром по статусу, пагинацией.
     GET  ?action=escrow_detail&id=X     — детальная карточка сделки с историей.
     POST ?action=update_escrow_status   — ручная смена статуса сделки администратором.
+    GET  ?action=reviews                — список отзывов с поиском, фильтром по рейтингу, пагинацией.
+    POST ?action=delete_review          — удалить отзыв.
+    GET  ?action=feedback               — список обращений обратной связи с фильтром/пагинацией.
+    POST ?action=mark_feedback_read     — пометить обращение как прочитанное.
+    POST ?action=reply_feedback         — ответить на обращение по email и пометить прочитанным.
     """
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS_HEADERS, "body": ""}
@@ -126,6 +134,19 @@ def handler(event: dict, context) -> dict:
     elif action == "update_escrow_status" and method == "POST":
         body = json.loads(event.get("body") or "{}")
         return handle_update_escrow_status(body)
+    elif action == "reviews":
+        return handle_reviews(query)
+    elif action == "delete_review" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_delete_review(body)
+    elif action == "feedback":
+        return handle_feedback(query)
+    elif action == "mark_feedback_read" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_mark_feedback_read(body)
+    elif action == "reply_feedback" and method == "POST":
+        body = json.loads(event.get("body") or "{}")
+        return handle_reply_feedback(body)
 
     return json_response({"error": "Укажите параметр action"}, 400)
 
@@ -1075,3 +1096,288 @@ def handle_update_escrow_status(body: dict) -> dict:
         "success": True,
         "message": f"Статус сделки изменён на «{ESCROW_STATUS_LABELS.get(new_status, new_status)}»",
     })
+
+
+# ─── ОТЗЫВЫ ───────────────────────────────────────────────────────────────────
+
+def handle_reviews(query: dict) -> dict:
+    """
+    Возвращает список отзывов с поиском, фильтром по рейтингу, пагинацией.
+    Параметры: search, rating, page, limit
+    """
+    search = query.get("search", "").strip()
+    rating = query.get("rating", "").strip()
+    page = max(1, int(query.get("page", 1)))
+    limit = min(50, max(1, int(query.get("limit", 20))))
+    offset = (page - 1) * limit
+
+    conditions = []
+    if search:
+        safe = search.replace("'", "''")
+        conditions.append(
+            f"(LOWER(COALESCE(reviewer_name,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(reviewer_email,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(reviewee_name,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(comment,'')) LIKE LOWER('%{safe}%'))"
+        )
+    if rating and rating.isdigit() and 1 <= int(rating) <= 5:
+        conditions.append(f"rating = {int(rating)}")
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.reviews {where}")
+    total = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT
+            id, reviewer_name, reviewer_email, reviewer_photo,
+            reviewee_name, reviewee_email, reviewee_photo,
+            rating, comment, created_at,
+            chat_id, recommendation_id
+        FROM {SCHEMA}.reviews
+        {where}
+        ORDER BY created_at DESC
+        LIMIT {limit} OFFSET {offset}
+    """)
+    rows = cur.fetchall()
+
+    # Средний рейтинг
+    cur.execute(f"SELECT COALESCE(ROUND(AVG(rating)::numeric, 2), 0) FROM {SCHEMA}.reviews")
+    avg_rating = float(cur.fetchone()[0])
+
+    cur.close()
+    conn.close()
+
+    reviews = []
+    for row in rows:
+        reviews.append({
+            "id": row[0],
+            "reviewer_name": row[1],
+            "reviewer_email": row[2],
+            "reviewer_photo": row[3],
+            "reviewee_name": row[4],
+            "reviewee_email": row[5],
+            "reviewee_photo": row[6],
+            "rating": row[7],
+            "comment": row[8],
+            "created_at": str(row[9]) if row[9] else None,
+            "chat_id": row[10],
+            "recommendation_id": row[11],
+        })
+
+    return json_response({
+        "reviews": reviews,
+        "total": total,
+        "avg_rating": avg_rating,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit if total > 0 else 1,
+    })
+
+
+def handle_delete_review(body: dict) -> dict:
+    """
+    Удаляет отзыв по id.
+    body: { review_id: int }
+    """
+    review_id = body.get("review_id")
+    if not review_id or not isinstance(review_id, int):
+        return json_response({"error": "Укажите review_id"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {SCHEMA}.reviews WHERE id = {int(review_id)} RETURNING id")
+    deleted = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        return json_response({"error": "Отзыв не найден"}, 404)
+
+    return json_response({"success": True, "message": "Отзыв удалён"})
+
+
+# ─── ОБРАТНАЯ СВЯЗЬ ───────────────────────────────────────────────────────────
+
+def handle_feedback(query: dict) -> dict:
+    """
+    Возвращает список обращений обратной связи с фильтром по статусу и пагинацией.
+    Параметры: status (new|read|replied|all), search, page, limit
+    """
+    status = query.get("status", "all").strip()
+    search = query.get("search", "").strip()
+    page = max(1, int(query.get("page", 1)))
+    limit = min(50, max(1, int(query.get("limit", 20))))
+    offset = (page - 1) * limit
+
+    conditions = []
+    if search:
+        safe = search.replace("'", "''")
+        conditions.append(
+            f"(LOWER(COALESCE(email,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(message,'')) LIKE LOWER('%{safe}%') "
+            f"OR LOWER(COALESCE(subject_type,'')) LIKE LOWER('%{safe}%'))"
+        )
+    if status and status != "all":
+        safe_status = status.replace("'", "''")
+        conditions.append(f"status = '{safe_status}'")
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages {where}")
+    total = cur.fetchone()[0]
+
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages WHERE status = 'new'")
+    unread_count = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT id, email, subject_type, message, status, admin_reply, replied_at, created_at
+        FROM {SCHEMA}.feedback_messages
+        {where}
+        ORDER BY created_at DESC
+        LIMIT {limit} OFFSET {offset}
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    messages = []
+    for row in rows:
+        messages.append({
+            "id": row[0],
+            "email": row[1],
+            "subject_type": row[2],
+            "message": row[3],
+            "status": row[4],
+            "admin_reply": row[5],
+            "replied_at": str(row[6]) if row[6] else None,
+            "created_at": str(row[7]) if row[7] else None,
+        })
+
+    return json_response({
+        "messages": messages,
+        "total": total,
+        "unread_count": unread_count,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit if total > 0 else 1,
+    })
+
+
+def handle_mark_feedback_read(body: dict) -> dict:
+    """
+    Помечает обращение как прочитанное.
+    body: { feedback_id: int }
+    """
+    feedback_id = body.get("feedback_id")
+    if not feedback_id or not isinstance(feedback_id, int):
+        return json_response({"error": "Укажите feedback_id"}, 400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"""
+        UPDATE {SCHEMA}.feedback_messages
+        SET status = 'read'
+        WHERE id = {int(feedback_id)} AND status = 'new'
+        RETURNING id
+    """)
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return json_response({"success": True, "updated": updated is not None})
+
+
+def handle_reply_feedback(body: dict) -> dict:
+    """
+    Отправляет ответ на email пользователя и помечает обращение как отвеченное.
+    body: { feedback_id: int, reply: str }
+    """
+    feedback_id = body.get("feedback_id")
+    reply_text = (body.get("reply") or "").strip()
+
+    if not feedback_id or not isinstance(feedback_id, int):
+        return json_response({"error": "Укажите feedback_id"}, 400)
+    if not reply_text:
+        return json_response({"error": "Текст ответа не может быть пустым"}, 400)
+
+    # Получаем исходное обращение
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(f"""
+        SELECT id, email, subject_type, message
+        FROM {SCHEMA}.feedback_messages
+        WHERE id = {int(feedback_id)}
+    """)
+    row = cur.fetchone()
+
+    if not row:
+        cur.close()
+        conn.close()
+        return json_response({"error": "Обращение не найдено"}, 404)
+
+    user_email = row[1]
+    subject_type = row[2]
+    original_message = row[3]
+
+    # Отправляем email
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+
+    if not smtp_user or not smtp_password:
+        cur.close()
+        conn.close()
+        return json_response({"error": "SMTP не настроен"}, 500)
+
+    safe_reply = reply_text.replace("'", "''")
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = smtp_user
+    msg["To"] = user_email
+    msg["Subject"] = f"Re: [{subject_type}] Ваше обращение в SovetPay"
+    msg["Reply-To"] = smtp_user
+
+    text_body = f"Здравствуйте!\n\nОтвет на ваше обращение:\n\n{reply_text}\n\n---\nВаше обращение:\n{original_message}"
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+      <h2 style="color: #202020; margin-bottom: 8px;">Ответ на ваше обращение</h2>
+      <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Команда SovetPay</p>
+      <div style="border-left: 3px solid #3b82f6; padding-left: 16px; margin-bottom: 24px;">
+        <p style="margin: 0; font-size: 15px; color: #333; white-space: pre-wrap;">{reply_text}</p>
+      </div>
+      <div style="background: #f5f5f5; border-radius: 8px; padding: 16px;">
+        <p style="margin: 0 0 8px; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.05em;">Ваше обращение</p>
+        <p style="margin: 0; font-size: 13px; color: #666; white-space: pre-wrap;">{original_message}</p>
+      </div>
+    </div>
+    """
+
+    msg.attach(MIMEText(text_body, "plain", "utf-8"))
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.send_message(msg)
+
+    # Обновляем запись в БД
+    cur.execute(f"""
+        UPDATE {SCHEMA}.feedback_messages
+        SET status = 'replied',
+            admin_reply = '{safe_reply}',
+            replied_at = NOW()
+        WHERE id = {int(feedback_id)}
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return json_response({"success": True, "message": f"Ответ отправлен на {user_email}"})

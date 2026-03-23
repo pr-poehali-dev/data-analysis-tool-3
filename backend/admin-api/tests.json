@@ -92,6 +92,34 @@
       "path": "/?action=update_escrow_status",
       "expectedStatus": 403,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список отзывов без токена — отказ",
+      "method": "GET",
+      "path": "/?action=reviews",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Удаление отзыва без токена — отказ",
+      "method": "POST",
+      "path": "/?action=delete_review",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Список обращений без токена — отказ",
+      "method": "GET",
+      "path": "/?action=feedback",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Ответ на обращение без токена — отказ",
+      "method": "POST",
+      "path": "/?action=reply_feedback",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
     }
   ]
 }

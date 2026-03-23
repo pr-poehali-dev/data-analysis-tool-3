@@ -227,6 +227,64 @@ export interface EscrowFilter {
   limit?: number;
 }
 
+export interface AdminReview {
+  id: number;
+  reviewer_name: string;
+  reviewer_email: string;
+  reviewer_photo: string | null;
+  reviewee_name: string;
+  reviewee_email: string;
+  reviewee_photo: string | null;
+  rating: number;
+  comment: string | null;
+  created_at: string | null;
+  chat_id: string | null;
+  recommendation_id: string | null;
+}
+
+export interface ReviewsResponse {
+  reviews: AdminReview[];
+  total: number;
+  avg_rating: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface ReviewsFilter {
+  search?: string;
+  rating?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface FeedbackMessage {
+  id: number;
+  email: string;
+  subject_type: string;
+  message: string;
+  status: "new" | "read" | "replied";
+  admin_reply: string | null;
+  replied_at: string | null;
+  created_at: string | null;
+}
+
+export interface FeedbackResponse {
+  messages: FeedbackMessage[];
+  total: number;
+  unread_count: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface FeedbackFilter {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const adminApi = {
   async getStats(): Promise<DashboardStats> {
     const res = await adminFetch("stats");
@@ -378,5 +436,50 @@ export const adminApi = {
   async updateEscrowStatus(escrowId: number, status: string): Promise<void> {
     const res = await adminPost("update_escrow_status", { escrow_id: escrowId, status });
     if (!res.ok) throw new Error("Ошибка при изменении статуса сделки");
+  },
+
+  async getReviews(filter: ReviewsFilter = {}): Promise<ReviewsResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "reviews");
+    if (filter.search) params.set("search", filter.search);
+    if (filter.rating) params.set("rating", filter.rating);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки отзывов");
+    return res.json();
+  },
+
+  async deleteReview(reviewId: number): Promise<void> {
+    const res = await adminPost("delete_review", { review_id: reviewId });
+    if (!res.ok) throw new Error("Ошибка при удалении отзыва");
+  },
+
+  async getFeedback(filter: FeedbackFilter = {}): Promise<FeedbackResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "feedback");
+    if (filter.search) params.set("search", filter.search);
+    if (filter.status) params.set("status", filter.status);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки обратной связи");
+    return res.json();
+  },
+
+  async markFeedbackRead(feedbackId: number): Promise<void> {
+    const res = await adminPost("mark_feedback_read", { feedback_id: feedbackId });
+    if (!res.ok) throw new Error("Ошибка при изменении статуса обращения");
+  },
+
+  async replyFeedback(feedbackId: number, reply: string): Promise<void> {
+    const res = await adminPost("reply_feedback", { feedback_id: feedbackId, reply });
+    if (!res.ok) throw new Error("Ошибка при отправке ответа");
   },
 };

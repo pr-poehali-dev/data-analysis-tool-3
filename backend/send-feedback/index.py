@@ -1,11 +1,29 @@
 import json
 import os
 import smtplib
+import psycopg2
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
 SUPPORT_EMAIL = "sovetpay@gmail.com"
+SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
+
+
+def save_to_db(email: str, subject_type: str, message: str) -> None:
+    """Сохраняет сообщение обратной связи в БД. Ошибки не прерывают основной поток."""
+    safe_email = email.replace("'", "''")
+    safe_subject = subject_type.replace("'", "''")
+    safe_message = message.replace("'", "''")
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    cur = conn.cursor()
+    cur.execute(
+        f"INSERT INTO {SCHEMA}.feedback_messages (email, subject_type, message, status) "
+        f"VALUES ('{safe_email}', '{safe_subject}', '{safe_message}', 'new')"
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 def handler(event: dict, context) -> dict:
@@ -75,10 +93,18 @@ def handler(event: dict, context) -> dict:
     msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
     msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
+    # Отправляем email — основная логика, не трогаем
     with smtplib.SMTP('smtp.gmail.com', 587) as server:
         server.starttls()
         server.login(smtp_user, smtp_password)
         server.send_message(msg)
+
+    # Сохраняем в БД после успешной отправки.
+    # Ошибка сохранения не должна ломать ответ пользователю — перехватываем молча.
+    try:
+        save_to_db(user_email, subject_type, message)
+    except Exception:
+        pass
 
     return {
         'statusCode': 200,
