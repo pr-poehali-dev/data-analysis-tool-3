@@ -378,8 +378,8 @@ def handle_user(query: dict) -> dict:
             created_at, last_login_at,
             telegram_username, vk_link, email_verified,
             (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE r.user_id = u.id) AS requests_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.user_id = u.id) AS recommendations_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_id = u.id) AS reviews_count
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.owner_email = u.email) AS recommendations_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_email = u.email) AS reviews_count
         FROM {SCHEMA}.users u
         WHERE id = {int(user_id)}
     """)
