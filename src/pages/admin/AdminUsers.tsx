@@ -151,7 +151,7 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="flex h-full min-h-screen">
+    <div className="flex h-full">
       {/* Основная область */}
       <div className="flex-1 p-6 overflow-auto">
         <div className="mb-6">

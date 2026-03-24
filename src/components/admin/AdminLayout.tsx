@@ -34,7 +34,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-muted/20">
+    <div className="h-screen flex bg-muted/20">
       {/* Боковое меню */}
       <aside className="w-56 shrink-0 bg-background border-r flex flex-col">
         <div className="px-4 py-5 border-b flex items-center gap-2">
@@ -77,7 +77,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Основное содержимое */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-hidden flex flex-col">
         <Outlet />
       </main>
     </div>
