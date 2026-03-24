@@ -310,7 +310,7 @@ def handle_users(query: dict) -> dict:
             avatar_url, is_blocked, blocked_at, blocked_reason,
             created_at, last_login_at,
             (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE r.user_id = u.id) AS requests_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.user_id = u.id) AS recommendations_count
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.owner_email = u.email) AS recommendations_count
         FROM {SCHEMA}.users u
         {where}
         ORDER BY created_at DESC
