@@ -222,7 +222,6 @@ export default function AdminUsers() {
                 <thead>
                   <tr className="border-b bg-muted/40">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Пользователь</th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Роль</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Заявок</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Дата регистрации</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Статус</th>
@@ -250,9 +249,6 @@ export default function AdminUsers() {
                             <div className="text-xs text-muted-foreground">{user.email || user.phone || "—"}</div>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {ROLE_LABELS[user.role] || user.role}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {user.requests_count}
