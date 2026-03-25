@@ -163,8 +163,8 @@ export default function AdminReviews() {
           <div className="text-center py-20 text-muted-foreground">Отзывы не найдены</div>
         ) : (
           <>
-            <div className="rounded-lg border bg-background overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border bg-background overflow-x-auto">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-muted/40">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Автор</th>

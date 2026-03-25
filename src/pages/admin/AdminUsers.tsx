@@ -217,8 +217,8 @@ export default function AdminUsers() {
           <div className="text-center py-20 text-muted-foreground">Пользователи не найдены</div>
         ) : (
           <>
-            <div className="rounded-lg border bg-background overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border bg-background overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead>
                   <tr className="border-b bg-muted/40">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Пользователь</th>

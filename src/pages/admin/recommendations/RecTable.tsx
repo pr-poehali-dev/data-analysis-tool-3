@@ -30,8 +30,8 @@ export default function RecTable({ recs, loading, error, selected, onRowClick }:
   }
 
   return (
-    <div className="rounded-lg border bg-background overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="rounded-lg border bg-background overflow-x-auto">
+      <table className="w-full text-sm min-w-[580px]">
         <thead>
           <tr className="border-b bg-muted/40">
             <th className="text-left px-4 py-3 font-medium text-muted-foreground">Объект</th>
