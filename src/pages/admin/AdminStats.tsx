@@ -131,7 +131,7 @@ export default function AdminStats() {
   }));
 
   return (
-    <div className="p-6 space-y-10 overflow-auto">
+    <div className="p-4 md:p-6 space-y-8 md:space-y-10 overflow-auto">
       <div>
         <h1 className="text-xl font-semibold text-foreground">Статистика</h1>
         <p className="text-sm text-muted-foreground mt-1">Аналитика работы платформы</p>
@@ -165,7 +165,7 @@ export default function AdminStats() {
       {/* ── Конверсия ── */}
       <section>
         <SectionTitle>Конверсия: заявка → рекомендация → сделка</SectionTitle>
-        <div className="rounded-lg border bg-background p-6 space-y-5 max-w-lg">
+        <div className="rounded-lg border bg-background p-4 md:p-6 space-y-5 max-w-lg">
           <ConversionStep
             label="Заявок"
             count={conversion.total_requests}
@@ -194,7 +194,7 @@ export default function AdminStats() {
       {dynamicsFormatted.length > 0 && (
         <section>
           <SectionTitle>Динамика за последние 12 месяцев</SectionTitle>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="rounded-lg border bg-background p-3 md:p-4">
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={dynamicsFormatted} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
@@ -237,19 +237,20 @@ export default function AdminStats() {
       {cities.length > 0 && (
         <section>
           <SectionTitle>Заявки по городам (топ-10)</SectionTitle>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="rounded-lg border bg-background p-4 overflow-x-auto">
+            <div className="min-w-[300px]">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={cities}
                 layout="vertical"
-                margin={{ top: 0, right: 20, left: 80, bottom: 0 }}
+                margin={{ top: 0, right: 16, left: 70, bottom: 0 }}
               >
-                <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+                <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
                 <YAxis
                   type="category"
                   dataKey="city"
-                  tick={{ fontSize: 11 }}
-                  width={80}
+                  tick={{ fontSize: 10 }}
+                  width={70}
                 />
                 <Tooltip
                   formatter={(value: number) => [value, "Заявок"]}
@@ -258,6 +259,7 @@ export default function AdminStats() {
                 <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
         </section>
       )}

@@ -82,7 +82,7 @@ export default function AdminDashboard() {
     : [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Дашборд</h1>
         <p className="text-muted-foreground mt-1">Общая статистика платформы</p>
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       )}
 
       {/* График регистраций */}
-      <div className="bg-background border rounded-xl p-6">
+      <div className="bg-background border rounded-xl p-4 md:p-6">
         <h2 className="text-base font-semibold text-foreground mb-4">Регистрации за последние 30 дней</h2>
         {loading ? (
           <div className="h-52 animate-pulse bg-muted rounded-lg" />
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={registrations} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <AreaChart data={registrations} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
               <defs>
                 <linearGradient id="regGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
@@ -138,8 +138,8 @@ export default function AdminDashboard() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+              <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={32} />
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 labelFormatter={(v) => `Дата: ${v}`}
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Лента последних действий */}
-      <div className="bg-background border rounded-xl p-6">
+      <div className="bg-background border rounded-xl p-4 md:p-6">
         <h2 className="text-base font-semibold text-foreground mb-4">Последние действия</h2>
         {loading ? (
           <div className="space-y-3">
@@ -171,17 +171,19 @@ export default function AdminDashboard() {
         ) : (
           <div className="space-y-2">
             {activity.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 py-2 border-b last:border-0">
+              <div key={idx} className="flex items-start gap-3 py-2 border-b last:border-0">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${ACTIVITY_COLORS[item.type] || "bg-gray-100 text-gray-600"}`}>
                   <Icon name={ACTIVITY_ICONS[item.type] || "Activity"} size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5">
+                    <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      {formatDateTime(item.created_at)}
+                    </span>
+                  </div>
                   <p className="text-xs text-muted-foreground">{item.action}</p>
                 </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                  {formatDateTime(item.created_at)}
-                </span>
               </div>
             ))}
           </div>
