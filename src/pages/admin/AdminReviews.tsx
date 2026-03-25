@@ -125,7 +125,7 @@ export default function AdminReviews() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 flex-1 min-w-[220px]">
+          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
             <Input
               placeholder="Поиск по имени, email, тексту..."
               value={searchInput}
@@ -138,7 +138,7 @@ export default function AdminReviews() {
             </Button>
           </div>
           <Select defaultValue="all" onValueChange={handleRatingFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Рейтинг" />
             </SelectTrigger>
             <SelectContent>

@@ -168,7 +168,7 @@ export default function AdminUsers() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 flex-1 min-w-[220px]">
+          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
             <Input
               placeholder="Поиск по имени, email, телефону..."
               value={searchInput}
@@ -182,7 +182,7 @@ export default function AdminUsers() {
           </div>
 
           <Select defaultValue="all" onValueChange={handleRoleChange}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Роль" />
             </SelectTrigger>
             <SelectContent>
@@ -194,7 +194,7 @@ export default function AdminUsers() {
           </Select>
 
           <Select defaultValue="all" onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
             <SelectContent>
