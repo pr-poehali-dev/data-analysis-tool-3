@@ -57,6 +57,7 @@ export default function AdminFeedback() {
   const [error, setError] = useState<string | null>(null);
 
   const [selected, setSelected] = useState<FeedbackMessage | null>(null);
+  const [mobilePanel, setMobilePanel] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
   const [replySuccess, setReplySuccess] = useState(false);
@@ -86,8 +87,14 @@ export default function AdminFeedback() {
   const handleStatusFilter = (value: string) => setFilter((f) => ({ ...f, status: value, page: 1 }));
   const handlePage = (newPage: number) => setFilter((f) => ({ ...f, page: newPage }));
 
+  const closePanelMobile = () => {
+    setMobilePanel(false);
+    setSelected(null);
+  };
+
   const openPanel = async (msg: FeedbackMessage) => {
     setSelected(msg);
+    setMobilePanel(true);
     setReplyText("");
     setReplySuccess(false);
     // Помечаем как прочитанное, если новое
@@ -130,8 +137,8 @@ export default function AdminFeedback() {
 
   return (
     <div className="flex h-full min-h-screen">
-      {/* Основная область */}
-      <div className="flex-1 p-6 overflow-auto">
+      {/* Основная область — скрываем на мобильных когда открыта панель */}
+      <div className={`flex-1 p-6 overflow-auto ${mobilePanel ? "hidden md:block" : "block"}`}>
         <div className="mb-6">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold text-foreground">Обратная связь</h1>
@@ -229,11 +236,23 @@ export default function AdminFeedback() {
 
       {/* Боковая панель */}
       {selected && (
-        <aside className="w-96 shrink-0 border-l bg-background overflow-auto">
+        <aside className={`
+          bg-background overflow-auto border-l
+          md:w-96 md:shrink-0 md:static md:block
+          ${mobilePanel ? "fixed inset-0 z-30 w-full" : "hidden md:block"}
+        `}>
           <div className="flex items-center justify-between px-5 py-4 border-b">
-            <span className="font-medium text-sm">Обращение</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={closePanelMobile}
+                className="md:hidden text-muted-foreground hover:text-foreground transition-colors mr-1"
+              >
+                <Icon name="ArrowLeft" size={18} />
+              </button>
+              <span className="font-medium text-sm">Обращение</span>
+            </div>
             <button
-              onClick={() => setSelected(null)}
+              onClick={() => { setSelected(null); setMobilePanel(false); }}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Icon name="X" size={16} />

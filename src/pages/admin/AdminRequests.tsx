@@ -70,6 +70,7 @@ export default function AdminRequests() {
 
   const [selected, setSelected] = useState<AdminRequestDetail | null>(null);
   const [panelLoading, setPanelLoading] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState(false);
 
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -111,6 +112,7 @@ export default function AdminRequests() {
     setPanelLoading(true);
     setSelected(null);
     setDeleteConfirm(false);
+    setMobilePanel(true);
     try {
       const detail = await adminApi.getRequest(req.id);
       setSelected(detail);
@@ -119,6 +121,11 @@ export default function AdminRequests() {
     } finally {
       setPanelLoading(false);
     }
+  };
+
+  const closePanelMobile = () => {
+    setMobilePanel(false);
+    setSelected(null);
   };
 
   const handleStatusChange = async (newStatus: string) => {
@@ -156,8 +163,8 @@ export default function AdminRequests() {
 
   return (
     <div className="flex h-full min-h-screen">
-      {/* Основная область */}
-      <div className="flex-1 p-6 overflow-auto">
+      {/* Основная область — скрываем на мобильных когда открыта панель */}
+      <div className={`flex-1 p-6 overflow-auto ${mobilePanel ? "hidden md:block" : "block"}`}>
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-foreground">Заявки</h1>
           <p className="text-sm text-muted-foreground mt-1">Всего: {total}</p>
@@ -280,11 +287,23 @@ export default function AdminRequests() {
 
       {/* Боковая панель */}
       {(selected || panelLoading) && (
-        <aside className="w-80 shrink-0 border-l bg-background overflow-auto">
+        <aside className={`
+          bg-background overflow-auto border-l
+          md:w-80 md:shrink-0 md:static md:block
+          ${mobilePanel ? "fixed inset-0 z-30 w-full" : "hidden md:block"}
+        `}>
           <div className="flex items-center justify-between px-5 py-4 border-b">
-            <span className="font-medium text-sm">Детали заявки</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={closePanelMobile}
+                className="md:hidden text-muted-foreground hover:text-foreground transition-colors mr-1"
+              >
+                <Icon name="ArrowLeft" size={18} />
+              </button>
+              <span className="font-medium text-sm">Детали заявки</span>
+            </div>
             <button
-              onClick={() => setSelected(null)}
+              onClick={() => { setSelected(null); setMobilePanel(false); }}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Icon name="X" size={16} />
