@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: "/admin/reviews", label: "Отзывы", icon: "Star" },
   { to: "/admin/feedback", label: "Обратная связь", icon: "MessageSquare" },
   { to: "/admin/stats", label: "Статистика", icon: "BarChart2" },
+  { to: "/admin/audit-log", label: "Журнал действий", icon: "ClipboardList" },
 ];
 
 export default function AdminLayout() {

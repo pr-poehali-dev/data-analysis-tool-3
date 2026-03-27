@@ -306,6 +306,29 @@ export interface AnalyticsData {
   user_roles: { role: string; count: number }[];
 }
 
+export interface AuditLogEntry {
+  id: number;
+  action: string;
+  entity_type: string | null;
+  entity_id: number | null;
+  details: Record<string, unknown>;
+  created_at: string | null;
+}
+
+export interface AuditLogResponse {
+  entries: AuditLogEntry[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface AuditLogFilter {
+  action_filter?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const adminApi = {
   async getStats(): Promise<DashboardStats> {
     const res = await adminFetch("stats");
@@ -507,6 +530,20 @@ export const adminApi = {
   async getAnalytics(): Promise<AnalyticsData> {
     const res = await adminFetch("analytics");
     if (!res.ok) throw new Error("Ошибка загрузки аналитики");
+    return res.json();
+  },
+
+  async getAuditLog(filter: AuditLogFilter = {}): Promise<AuditLogResponse> {
+    const params = new URLSearchParams();
+    params.set("action", "audit_log");
+    if (filter.action_filter) params.set("action_filter", filter.action_filter);
+    if (filter.page) params.set("page", String(filter.page));
+    if (filter.limit) params.set("limit", String(filter.limit));
+    const token = adminStore.getToken() || "";
+    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+      headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+    });
+    if (!res.ok) throw new Error("Ошибка загрузки журнала");
     return res.json();
   },
 };

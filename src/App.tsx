@@ -33,6 +33,7 @@ import AdminEscrow from "./pages/admin/AdminEscrow";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminStats from "./pages/admin/AdminStats";
+import AdminAuditLog from "./pages/admin/AdminAuditLog";
 import AdminLayout from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
@@ -142,6 +143,7 @@ const AppContent = () => {
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="feedback" element={<AdminFeedback />} />
         <Route path="stats" element={<AdminStats />} />
+        <Route path="audit-log" element={<AdminAuditLog />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
