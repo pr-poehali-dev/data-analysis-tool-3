@@ -10,12 +10,17 @@ import psycopg2
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
-    "Content-Type": "application/json"
-}
+ALLOWED_ORIGINS = ["https://sovetpay.ru", "https://www.sovetpay.ru"]
+
+def get_cors_headers(event: dict) -> dict:
+    origin = (event.get("headers") or {}).get("origin") or (event.get("headers") or {}).get("Origin", "")
+    allowed_origin = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
+    return {
+        "Access-Control-Allow-Origin": allowed_origin,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
+        "Content-Type": "application/json"
+    }
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
 
@@ -48,10 +53,12 @@ def get_db():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
+_current_event: dict = {}
+
 def json_response(data: dict, status: int = 200) -> dict:
     return {
         "statusCode": status,
-        "headers": CORS_HEADERS,
+        "headers": get_cors_headers(_current_event),
         "body": json.dumps(data, default=str, ensure_ascii=False)
     }
 
@@ -84,8 +91,11 @@ def handler(event: dict, context) -> dict:
     POST ?action=reply_feedback         — ответить на обращение по email и пометить прочитанным.
     GET  ?action=analytics              — расширенная аналитика: города, конверсия, бюджет, типы жилья, срок аренды.
     """
+    global _current_event
+    _current_event = event
+
     if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS_HEADERS, "body": ""}
+        return {"statusCode": 200, "headers": get_cors_headers(event), "body": ""}
 
     headers = event.get("headers") or {}
     token = headers.get("X-Admin-Token") or headers.get("x-admin-token") or ""
