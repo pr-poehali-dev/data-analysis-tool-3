@@ -116,18 +116,30 @@ def verify_jwt(token: str, secret: str) -> dict | None:
         return None
 
 
+def get_token_from_cookie(event: dict) -> str:
+    """Извлекает admin_token из заголовка X-Cookie (проксированный Cookie)"""
+    headers = event.get("headers") or {}
+    cookie_header = headers.get("X-Cookie", "") or headers.get("x-cookie", "") or headers.get("Cookie", "") or headers.get("cookie", "")
+    for part in cookie_header.split(";"):
+        part = part.strip()
+        if part.startswith("admin_token="):
+            return part[len("admin_token="):]
+    return ""
+
+
 def handler(event: dict, context) -> dict:
     """
     Авторизация администратора с bcrypt-хешированием пароля и защитой от брутфорса.
-    POST / — вход по логину и паролю, возвращает JWT токен.
-    POST /verify — проверяет валидность JWT токена.
-    POST /generate-hash — временный эндпоинт: генерирует bcrypt-хеш из ADMIN_PASSWORD.
-                          Используется один раз для получения хеша. Защищён ADMIN_JWT_SECRET.
+    POST / — вход по логину и паролю, устанавливает httpOnly cookie с JWT токеном.
+    POST /verify — проверяет токен из cookie (X-Cookie) или тела запроса.
+    POST /logout — очищает cookie токена.
     """
+    site_url = os.environ.get("SITE_URL", "https://sovetpay.ru")
     cors_headers = {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": site_url,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie",
+        "Access-Control-Allow-Credentials": "true",
         "Content-Type": "application/json"
     }
 
@@ -142,10 +154,17 @@ def handler(event: dict, context) -> dict:
     admin_password_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
 
-    # POST /verify — проверка токена
+    # POST /logout — очищаем cookie
+    if method == "POST" and path.endswith("/logout"):
+        logout_headers = {**cors_headers, "X-Set-Cookie": "admin_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"}
+        return {"statusCode": 200, "headers": logout_headers, "body": json.dumps({"ok": True})}
+
+    # POST /verify — проверка токена из cookie или тела запроса
     if method == "POST" and path.endswith("/verify"):
-        body = json.loads(event.get("body") or "{}")
-        token = body.get("token", "")
+        token = get_token_from_cookie(event)
+        if not token:
+            body = json.loads(event.get("body") or "{}")
+            token = body.get("token", "")
         payload = verify_jwt(token, jwt_secret)
         if payload:
             return {
@@ -158,9 +177,6 @@ def handler(event: dict, context) -> dict:
             "headers": cors_headers,
             "body": json.dumps({"valid": False, "error": "Токен недействителен или истёк"})
         }
-
-
-
 
     # POST / — вход по логину и паролю
     if method == "POST":
@@ -204,11 +220,13 @@ def handler(event: dict, context) -> dict:
             "exp": int(time.time()) + 8 * 3600
         }
         token = create_jwt(payload, jwt_secret)
+        cookie_value = f"admin_token={token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=28800"
 
+        login_headers = {**cors_headers, "X-Set-Cookie": cookie_value}
         return {
             "statusCode": 200,
-            "headers": cors_headers,
-            "body": json.dumps({"token": token})
+            "headers": login_headers,
+            "body": json.dumps({"ok": True, "token": token})
         }
 
     return {

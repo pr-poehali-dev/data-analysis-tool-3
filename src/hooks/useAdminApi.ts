@@ -1,27 +1,23 @@
-import { adminStore } from "@/store/adminStore";
-
 const ADMIN_API_URL = "https://functions.poehali.dev/fdf4da58-d05b-4439-b49f-b49f4acba9f7";
 
 async function adminFetch(action: string, options?: RequestInit): Promise<Response> {
-  const token = adminStore.getToken() || "";
   return fetch(`${ADMIN_API_URL}?action=${action}`, {
     method: "GET",
+    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Token": token,
       ...(options?.headers || {}),
     },
   });
 }
 
 async function adminPost(action: string, body: object): Promise<Response> {
-  const token = adminStore.getToken() || "";
   return fetch(`${ADMIN_API_URL}?action=${action}`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Token": token,
     },
     body: JSON.stringify(body),
   });

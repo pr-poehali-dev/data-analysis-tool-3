@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { adminApi, DashboardStats, RegistrationDay, ActivityItem } from "@/hooks/useAdminApi";
-import { adminStore } from "@/store/adminStore";
 import Icon from "@/components/ui/icon";
 
 const ACTIVITY_ICONS: Record<string, string> = {
@@ -44,11 +43,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!adminStore.isAuthenticated()) {
-      navigate("/admin/login", { replace: true });
-      return;
-    }
-
     const load = async () => {
       setLoading(true);
       setError("");

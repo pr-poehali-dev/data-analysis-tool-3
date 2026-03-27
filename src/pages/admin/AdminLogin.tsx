@@ -23,18 +23,18 @@ export default function AdminLogin() {
     try {
       const res = await fetch(ADMIN_AUTH_URL, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login: login.trim(), password: password.trim() }),
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data.token) {
+      if (!res.ok || !data.ok) {
         setError(data.error || "Неверный логин или пароль");
         return;
       }
 
-      adminStore.setToken(data.token);
       navigate("/admin/dashboard");
     } catch {
       setError("Ошибка соединения. Попробуйте ещё раз.");
