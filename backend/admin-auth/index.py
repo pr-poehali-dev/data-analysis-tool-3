@@ -158,17 +158,8 @@ def handler(event: dict, context) -> dict:
             "body": json.dumps({"valid": False, "error": "Токен недействителен или истёк"})
         }
 
-    # POST /generate-hash — генерация bcrypt-хеша из текущего ADMIN_PASSWORD
-    # Защита: требует заголовок X-Admin-Secret равный ADMIN_JWT_SECRET
+    # POST /generate-hash — временный публичный эндпоинт для получения bcrypt-хеша
     if method == "POST" and path.endswith("/generate-hash"):
-        headers = event.get("headers") or {}
-        secret_header = headers.get("X-Admin-Secret", "") or headers.get("x-admin-secret", "")
-        if not jwt_secret or not hmac.compare_digest(secret_header, jwt_secret):
-            return {
-                "statusCode": 403,
-                "headers": cors_headers,
-                "body": json.dumps({"error": "Доступ запрещён"})
-            }
         if not admin_password:
             return {
                 "statusCode": 400,
@@ -181,6 +172,25 @@ def handler(event: dict, context) -> dict:
             "headers": cors_headers,
             "body": json.dumps({"hash": hashed.decode("utf-8")})
         }
+
+    # GET /generate-hash — открыть в браузере и скопировать хеш
+    if method == "GET" and path.endswith("/generate-hash"):
+        if not admin_password:
+            return {
+                "statusCode": 400,
+                "headers": {"Content-Type": "text/html"},
+                "body": "<h2>Ошибка: ADMIN_PASSWORD не задан</h2>"
+            }
+        hashed = bcrypt.hashpw(admin_password.encode("utf-8"), bcrypt.gensalt(rounds=12))
+        hash_str = hashed.decode("utf-8")
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>Хеш пароля</title>
+        <style>body{{font-family:sans-serif;padding:40px;}} input{{width:100%;padding:12px;font-size:16px;margin:10px 0;}} button{{padding:12px 24px;font-size:16px;cursor:pointer;}}</style></head>
+        <body><h2>Bcrypt-хеш пароля администратора</h2>
+        <p>Скопируй значение ниже и вставь в секрет <b>ADMIN_PASSWORD_HASH</b>:</p>
+        <input id="h" value="{hash_str}" readonly onclick="this.select()">
+        <br><button onclick="navigator.clipboard.writeText(document.getElementById('h').value).then(()=>this.textContent='Скопировано!')">Скопировать</button>
+        </body></html>"""
+        return {"statusCode": 200, "headers": {"Content-Type": "text/html"}, "body": html}
 
     # POST / — вход по логину и паролю
     if method == "POST":
