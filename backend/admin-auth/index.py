@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import time
 import base64
+import bcrypt
 import psycopg2
 
 # Настройки защиты от брутфорса
@@ -26,18 +27,13 @@ def get_client_ip(event: dict) -> str:
         or (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
         or "unknown"
     )
-    # X-Forwarded-For может содержать цепочку IP — берём первый (реальный клиент)
     return ip.split(",")[0].strip()
 
 
 def is_ip_blocked(conn, ip: str) -> bool:
-    """
-    Проверяет, заблокирован ли IP.
-    IP блокируется если за последние WINDOW_MINUTES было >= MAX_ATTEMPTS неудачных попыток.
-    """
+    """Проверяет, заблокирован ли IP по числу неудачных попыток за окно WINDOW_MINUTES"""
     window_start = time.time() - WINDOW_MINUTES * 60
     window_ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(window_start))
-
     cur = conn.cursor()
     cur.execute(
         "SELECT COUNT(*) FROM admin_login_attempts "
@@ -50,14 +46,12 @@ def is_ip_blocked(conn, ip: str) -> bool:
 
 
 def record_attempt(conn, ip: str, success: bool):
-    """Записывает попытку входа в БД и чистит старые записи (старше 24ч)"""
+    """Записывает попытку входа и чистит старые записи (старше 24ч)"""
     cur = conn.cursor()
-    # Записываем попытку
     cur.execute(
         "INSERT INTO admin_login_attempts (ip_address, success) VALUES (%s, %s)",
         (ip, success)
     )
-    # Чистим записи старше 24 часов, чтобы таблица не росла бесконечно
     cutoff_ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time() - 86400))
     cur.execute(
         "DELETE FROM admin_login_attempts WHERE attempted_at < %s",
@@ -76,6 +70,18 @@ def reset_attempts(conn, ip: str):
     )
     conn.commit()
     cur.close()
+
+
+def check_password(password: str, admin_password_plain: str, admin_password_hash: str) -> bool:
+    """
+    Проверяет пароль.
+    Если задан ADMIN_PASSWORD_HASH — использует bcrypt.
+    Иначе — fallback на сравнение plain text через hmac (старый способ).
+    """
+    if admin_password_hash:
+        return bcrypt.checkpw(password.encode("utf-8"), admin_password_hash.encode("utf-8"))
+    # Fallback: plain text (для обратной совместимости пока не задан хеш)
+    return hmac.compare_digest(password, admin_password_plain)
 
 
 def create_jwt(payload: dict, secret: str) -> str:
@@ -111,10 +117,11 @@ def verify_jwt(token: str, secret: str) -> dict | None:
 
 def handler(event: dict, context) -> dict:
     """
-    Авторизация администратора с защитой от брутфорса.
-    POST / — принимает логин и пароль, возвращает JWT токен.
-             Блокирует IP на 30 минут после 5 неудачных попыток за 15 минут.
+    Авторизация администратора с bcrypt-хешированием пароля и защитой от брутфорса.
+    POST / — вход по логину и паролю, возвращает JWT токен.
     POST /verify — проверяет валидность JWT токена.
+    POST /generate-hash — временный эндпоинт: генерирует bcrypt-хеш из ADMIN_PASSWORD.
+                          Используется один раз для получения хеша. Защищён ADMIN_JWT_SECRET.
     """
     cors_headers = {
         "Access-Control-Allow-Origin": "*",
@@ -131,9 +138,10 @@ def handler(event: dict, context) -> dict:
 
     admin_login = os.environ.get("ADMIN_LOGIN", "")
     admin_password = os.environ.get("ADMIN_PASSWORD", "")
+    admin_password_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
 
-    # POST /verify — проверка токена (без ограничений, только чтение)
+    # POST /verify — проверка токена
     if method == "POST" and path.endswith("/verify"):
         body = json.loads(event.get("body") or "{}")
         token = body.get("token", "")
@@ -150,13 +158,36 @@ def handler(event: dict, context) -> dict:
             "body": json.dumps({"valid": False, "error": "Токен недействителен или истёк"})
         }
 
+    # POST /generate-hash — генерация bcrypt-хеша из текущего ADMIN_PASSWORD
+    # Защита: требует заголовок X-Admin-Secret равный ADMIN_JWT_SECRET
+    if method == "POST" and path.endswith("/generate-hash"):
+        headers = event.get("headers") or {}
+        secret_header = headers.get("X-Admin-Secret", "") or headers.get("x-admin-secret", "")
+        if not jwt_secret or not hmac.compare_digest(secret_header, jwt_secret):
+            return {
+                "statusCode": 403,
+                "headers": cors_headers,
+                "body": json.dumps({"error": "Доступ запрещён"})
+            }
+        if not admin_password:
+            return {
+                "statusCode": 400,
+                "headers": cors_headers,
+                "body": json.dumps({"error": "ADMIN_PASSWORD не задан"})
+            }
+        hashed = bcrypt.hashpw(admin_password.encode("utf-8"), bcrypt.gensalt(rounds=12))
+        return {
+            "statusCode": 200,
+            "headers": cors_headers,
+            "body": json.dumps({"hash": hashed.decode("utf-8")})
+        }
+
     # POST / — вход по логину и паролю
     if method == "POST":
         client_ip = get_client_ip(event)
         conn = get_db_conn()
 
         try:
-            # Проверяем, не заблокирован ли IP
             if is_ip_blocked(conn, client_ip):
                 return {
                     "statusCode": 429,
@@ -171,10 +202,9 @@ def handler(event: dict, context) -> dict:
             password = body.get("password", "").strip()
 
             login_ok = hmac.compare_digest(login, admin_login)
-            password_ok = hmac.compare_digest(password, admin_password)
+            password_ok = check_password(password, admin_password, admin_password_hash)
 
             if not (login_ok and password_ok):
-                # Записываем неудачную попытку
                 record_attempt(conn, client_ip, success=False)
                 return {
                     "statusCode": 401,
@@ -182,14 +212,12 @@ def handler(event: dict, context) -> dict:
                     "body": json.dumps({"error": "Неверный логин или пароль"})
                 }
 
-            # Успешный вход — сбрасываем счётчик и записываем успех
             reset_attempts(conn, client_ip)
             record_attempt(conn, client_ip, success=True)
 
         finally:
             conn.close()
 
-        # Токен действует 8 часов
         payload = {
             "role": "admin",
             "iat": int(time.time()),
