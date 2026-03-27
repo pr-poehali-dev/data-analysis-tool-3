@@ -10,11 +10,13 @@ import psycopg2
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-ALLOWED_ORIGINS = ["https://sovetpay.ru", "https://www.sovetpay.ru"]
-
 def get_cors_headers(event: dict) -> dict:
     origin = (event.get("headers") or {}).get("origin") or (event.get("headers") or {}).get("Origin", "")
-    allowed_origin = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
+    is_allowed = (
+        origin in ["https://sovetpay.ru", "https://www.sovetpay.ru"]
+        or origin.endswith(".poehali.dev")
+    )
+    allowed_origin = origin if is_allowed else "https://sovetpay.ru"
     return {
         "Access-Control-Allow-Origin": allowed_origin,
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",

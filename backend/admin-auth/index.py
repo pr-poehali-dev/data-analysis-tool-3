@@ -134,9 +134,12 @@ def handler(event: dict, context) -> dict:
     POST /verify — проверяет токен из cookie (X-Cookie) или тела запроса.
     POST /logout — очищает cookie токена.
     """
-    allowed_origins = ["https://sovetpay.ru", "https://www.sovetpay.ru"]
     req_origin = (event.get("headers") or {}).get("origin") or (event.get("headers") or {}).get("Origin", "")
-    cors_origin = req_origin if req_origin in allowed_origins else allowed_origins[0]
+    is_allowed = (
+        req_origin in ["https://sovetpay.ru", "https://www.sovetpay.ru"]
+        or req_origin.endswith(".poehali.dev")
+    )
+    cors_origin = req_origin if is_allowed else "https://sovetpay.ru"
     cors_headers = {
         "Access-Control-Allow-Origin": cors_origin,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
