@@ -161,22 +161,6 @@ def handler(event: dict, context) -> dict:
 
 
 
-    # GET /?action=genhash — временная страница для получения bcrypt-хеша
-    query = event.get("queryStringParameters") or {}
-    if method == "GET" and query.get("action") == "genhash":
-        if not admin_password:
-            return {"statusCode": 400, "headers": {"Content-Type": "text/html; charset=utf-8"}, "body": "<h2>Ошибка: ADMIN_PASSWORD не задан</h2>"}
-        hashed = bcrypt.hashpw(admin_password.encode("utf-8"), bcrypt.gensalt(rounds=12))
-        hash_str = hashed.decode("utf-8")
-        html = (
-            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Хеш пароля</title></head><body>"
-            "<h2>Скопируй строку ниже и вставь в секрет ADMIN_PASSWORD_HASH:</h2>"
-            "<p style='font-size:18px;font-family:monospace;background:#f0f0f0;padding:16px;word-break:break-all;'>"
-            + hash_str +
-            "</p><p>Выдели текст мышкой целиком и нажми Ctrl+C (или Cmd+C на Mac)</p>"
-            "</body></html>"
-        )
-        return {"statusCode": 200, "headers": {"Content-Type": "text/html; charset=utf-8"}, "body": html}
 
     # POST / — вход по логину и паролю
     if method == "POST":
