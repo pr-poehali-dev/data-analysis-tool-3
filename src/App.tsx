@@ -17,6 +17,7 @@ import { RequestOffers } from "./pages/RequestOffers";
 import { RequestDetails } from "./pages/RequestDetails";
 import { HowItWorks } from "./pages/HowItWorks";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { TermsOfUse } from "./pages/TermsOfUse";
 import { Help } from "./pages/Help";
 import YandexCallback from "./pages/YandexCallback";
 import TelegramCallback from "./pages/TelegramCallback";
@@ -118,6 +119,7 @@ const AppContent = () => {
       <Route path="/feed" element={<Feed />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-use" element={<TermsOfUse />} />
       <Route path="/help" element={<Help />} />
       <Route path="/create-request" element={<CreateRequest />} />
       <Route path="/edit-request/:requestId" element={<EditRequest />} />
