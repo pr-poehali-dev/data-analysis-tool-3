@@ -281,16 +281,18 @@ def handle_users(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe_search = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(first_name,'') || ' ' || COALESCE(last_name,'')) LIKE LOWER('%{safe_search}%') "
-            f"OR LOWER(COALESCE(email,'')) LIKE LOWER('%{safe_search}%') "
-            f"OR LOWER(COALESCE(phone,'')) LIKE LOWER('%{safe_search}%'))"
+            "(LOWER(COALESCE(first_name,'') || ' ' || COALESCE(last_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(phone,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like])
     if role:
-        safe_role = role.replace("'", "''")
-        conditions.append(f"role = '{safe_role}'")
+        conditions.append("role = %s")
+        params.append(role)
     if status == "active":
         conditions.append("is_blocked = false")
     elif status == "blocked":
@@ -301,7 +303,7 @@ def handle_users(query: dict) -> dict:
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.users {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.users {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
@@ -315,7 +317,7 @@ def handle_users(query: dict) -> dict:
         {where}
         ORDER BY created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
 
     cur.close()
@@ -381,8 +383,8 @@ def handle_user(query: dict) -> dict:
             (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.owner_email = u.email) AS recommendations_count,
             (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_email = u.email) AS reviews_count
         FROM {SCHEMA}.users u
-        WHERE id = {int(user_id)}
-    """)
+        WHERE id = %s
+    """, (int(user_id),))
     row = cur.fetchone()
 
     cur.close()
@@ -442,7 +444,6 @@ def handle_block_user(body: dict) -> dict:
     if block is None:
         return json_response({"error": "Укажите block (true/false)"}, 400)
 
-    safe_reason = str(reason).replace("'", "''") if reason else ""
     conn = get_db()
     cur = conn.cursor()
 
@@ -451,19 +452,19 @@ def handle_block_user(body: dict) -> dict:
             UPDATE {SCHEMA}.users
             SET is_blocked = true,
                 blocked_at = NOW(),
-                blocked_reason = '{safe_reason}'
-            WHERE id = {int(user_id)}
+                blocked_reason = %s
+            WHERE id = %s
             RETURNING id
-        """)
+        """, (str(reason) if reason else "", int(user_id)))
     else:
         cur.execute(f"""
             UPDATE {SCHEMA}.users
             SET is_blocked = false,
                 blocked_at = NULL,
                 blocked_reason = NULL
-            WHERE id = {int(user_id)}
+            WHERE id = %s
             RETURNING id
-        """)
+        """, (int(user_id),))
 
     updated = cur.fetchone()
     conn.commit()
@@ -494,22 +495,25 @@ def handle_requests(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(r.name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(r.city,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(r.user_email,'')) LIKE LOWER('%{safe}%'))"
+            "(LOWER(COALESCE(r.name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(r.city,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(r.user_email,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like])
     if status and status in REQUEST_STATUSES:
-        conditions.append(f"r.status = '{status}'")
+        conditions.append("r.status = %s")
+        params.append(status)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.requests r {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.requests r {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
@@ -526,7 +530,7 @@ def handle_requests(query: dict) -> dict:
         {where}
         ORDER BY r.created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -586,8 +590,8 @@ def handle_request(query: dict) -> dict:
             (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
         FROM {SCHEMA}.requests r
         LEFT JOIN {SCHEMA}.users u ON u.id = r.user_id
-        WHERE r.id = {int(req_id)}
-    """)
+        WHERE r.id = %s
+    """, (int(req_id),))
     row = cur.fetchone()
     cur.close()
     conn.close()
@@ -644,10 +648,10 @@ def handle_update_request_status(body: dict) -> dict:
     cur = conn.cursor()
     cur.execute(f"""
         UPDATE {SCHEMA}.requests
-        SET status = '{new_status}', updated_at = NOW()
-        WHERE id = {int(req_id)}
+        SET status = %s, updated_at = NOW()
+        WHERE id = %s
         RETURNING id
-    """)
+    """, (new_status, int(req_id)))
     updated = cur.fetchone()
     conn.commit()
     cur.close()
@@ -670,7 +674,7 @@ def handle_delete_request(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.requests WHERE id = {int(req_id)} RETURNING id")
+    cur.execute(f"DELETE FROM {SCHEMA}.requests WHERE id = %s RETURNING id", (int(req_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -699,22 +703,25 @@ def handle_recommendations(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(rec.address,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(rec.request_name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(rec.owner_email,'')) LIKE LOWER('%{safe}%'))"
+            "(LOWER(COALESCE(rec.address,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(rec.request_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(rec.owner_email,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like])
     if status and status in REC_STATUSES:
-        conditions.append(f"rec.status = '{status}'")
+        conditions.append("rec.status = %s")
+        params.append(status)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.recommendations rec {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.recommendations rec {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
@@ -730,7 +737,7 @@ def handle_recommendations(query: dict) -> dict:
         {where}
         ORDER BY rec.created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -786,8 +793,8 @@ def handle_recommendation(query: dict) -> dict:
             u.id AS author_user_id, u.email AS author_email, u.phone AS author_phone
         FROM {SCHEMA}.recommendations rec
         LEFT JOIN {SCHEMA}.users u ON u.id::text = rec.user_id
-        WHERE rec.id = {int(rec_id)}
-    """)
+        WHERE rec.id = %s
+    """, (int(rec_id),))
     row = cur.fetchone()
     cur.close()
     conn.close()
@@ -842,10 +849,10 @@ def handle_update_rec_status(body: dict) -> dict:
     cur = conn.cursor()
     cur.execute(f"""
         UPDATE {SCHEMA}.recommendations
-        SET status = '{new_status}', updated_at = NOW()
-        WHERE id = {int(rec_id)}
+        SET status = %s, updated_at = NOW()
+        WHERE id = %s
         RETURNING id
-    """)
+    """, (new_status, int(rec_id)))
     updated = cur.fetchone()
     conn.commit()
     cur.close()
@@ -868,7 +875,7 @@ def handle_delete_recommendation(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.recommendations WHERE id = {int(rec_id)} RETURNING id")
+    cur.execute(f"DELETE FROM {SCHEMA}.recommendations WHERE id = %s RETURNING id", (int(rec_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -905,24 +912,27 @@ def handle_escrow(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(e.request_name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(e.tenant_email,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(e.tenant_name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(e.recommender_email,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(e.recommender_name,'')) LIKE LOWER('%{safe}%'))"
+            "(LOWER(COALESCE(e.request_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(e.tenant_email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(e.tenant_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(e.recommender_email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(e.recommender_name,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like, like, like])
     if status and status in ESCROW_STATUSES:
-        conditions.append(f"e.status = '{status}'")
+        conditions.append("e.status = %s")
+        params.append(status)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.escrow_transactions e {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.escrow_transactions e {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
@@ -937,7 +947,7 @@ def handle_escrow(query: dict) -> dict:
         {where}
         ORDER BY e.created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
 
     # Суммарная статистика по суммам
@@ -1003,8 +1013,8 @@ def handle_escrow_detail(query: dict) -> dict:
             e.created_at, e.completed_at,
             e.chat_id, e.recommendation_id
         FROM {SCHEMA}.escrow_transactions e
-        WHERE e.id = {int(escrow_id)}
-    """)
+        WHERE e.id = %s
+    """, (int(escrow_id),))
     row = cur.fetchone()
     cur.close()
     conn.close()
@@ -1084,10 +1094,10 @@ def handle_update_escrow_status(body: dict) -> dict:
     cur = conn.cursor()
     cur.execute(f"""
         UPDATE {SCHEMA}.escrow_transactions
-        SET status = '{new_status}'{completed_at_sql}
-        WHERE id = {int(escrow_id)}
+        SET status = %s{completed_at_sql}
+        WHERE id = %s
         RETURNING id
-    """)
+    """, (new_status, int(escrow_id)))
     updated = cur.fetchone()
     conn.commit()
     cur.close()
@@ -1116,23 +1126,26 @@ def handle_reviews(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(reviewer_name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(reviewer_email,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(reviewee_name,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(comment,'')) LIKE LOWER('%{safe}%'))"
+            "(LOWER(COALESCE(reviewer_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(reviewer_email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(reviewee_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(comment,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like, like])
     if rating and rating.isdigit() and 1 <= int(rating) <= 5:
-        conditions.append(f"rating = {int(rating)}")
+        conditions.append("rating = %s")
+        params.append(int(rating))
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.reviews {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.reviews {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
@@ -1145,7 +1158,7 @@ def handle_reviews(query: dict) -> dict:
         {where}
         ORDER BY created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
 
     # Средний рейтинг
@@ -1193,7 +1206,7 @@ def handle_delete_review(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.reviews WHERE id = {int(review_id)} RETURNING id")
+    cur.execute(f"DELETE FROM {SCHEMA}.reviews WHERE id = %s RETURNING id", (int(review_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -1219,23 +1232,25 @@ def handle_feedback(query: dict) -> dict:
     offset = (page - 1) * limit
 
     conditions = []
+    params = []
     if search:
-        safe = search.replace("'", "''")
         conditions.append(
-            f"(LOWER(COALESCE(email,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(message,'')) LIKE LOWER('%{safe}%') "
-            f"OR LOWER(COALESCE(subject_type,'')) LIKE LOWER('%{safe}%'))"
+            "(LOWER(COALESCE(email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(message,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(subject_type,'')) LIKE LOWER(%s))"
         )
+        like = f"%{search}%"
+        params.extend([like, like, like])
     if status and status != "all":
-        safe_status = status.replace("'", "''")
-        conditions.append(f"status = '{safe_status}'")
+        conditions.append("status = %s")
+        params.append(status)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages {where}")
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages WHERE status = 'new'")
@@ -1247,7 +1262,7 @@ def handle_feedback(query: dict) -> dict:
         {where}
         ORDER BY created_at DESC
         LIMIT {limit} OFFSET {offset}
-    """)
+    """, params)
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -1289,9 +1304,9 @@ def handle_mark_feedback_read(body: dict) -> dict:
     cur.execute(f"""
         UPDATE {SCHEMA}.feedback_messages
         SET status = 'read'
-        WHERE id = {int(feedback_id)} AND status = 'new'
+        WHERE id = %s AND status = 'new'
         RETURNING id
-    """)
+    """, (int(feedback_id),))
     updated = cur.fetchone()
     conn.commit()
     cur.close()
@@ -1319,8 +1334,8 @@ def handle_reply_feedback(body: dict) -> dict:
     cur.execute(f"""
         SELECT id, email, subject_type, message
         FROM {SCHEMA}.feedback_messages
-        WHERE id = {int(feedback_id)}
-    """)
+        WHERE id = %s
+    """, (int(feedback_id),))
     row = cur.fetchone()
 
     if not row:
@@ -1340,8 +1355,6 @@ def handle_reply_feedback(body: dict) -> dict:
         cur.close()
         conn.close()
         return json_response({"error": "SMTP не настроен"}, 500)
-
-    safe_reply = reply_text.replace("'", "''")
 
     msg = MIMEMultipart("alternative")
     msg["From"] = smtp_user
@@ -1376,10 +1389,10 @@ def handle_reply_feedback(body: dict) -> dict:
     cur.execute(f"""
         UPDATE {SCHEMA}.feedback_messages
         SET status = 'replied',
-            admin_reply = '{safe_reply}',
+            admin_reply = %s,
             replied_at = NOW()
-        WHERE id = {int(feedback_id)}
-    """)
+        WHERE id = %s
+    """, (reply_text, int(feedback_id)))
     conn.commit()
     cur.close()
     conn.close()
