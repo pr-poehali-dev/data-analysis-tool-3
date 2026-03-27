@@ -161,8 +161,9 @@ def handler(event: dict, context) -> dict:
 
 
 
-    # GET /generate-hash — временная страница для получения bcrypt-хеша
-    if method == "GET" and path.endswith("/generate-hash"):
+    # GET /?action=genhash — временная страница для получения bcrypt-хеша
+    query = event.get("queryStringParameters") or {}
+    if method == "GET" and query.get("action") == "genhash":
         if not admin_password:
             return {"statusCode": 400, "headers": {"Content-Type": "text/html; charset=utf-8"}, "body": "<h2>Ошибка: ADMIN_PASSWORD не задан</h2>"}
         hashed = bcrypt.hashpw(admin_password.encode("utf-8"), bcrypt.gensalt(rounds=12))
