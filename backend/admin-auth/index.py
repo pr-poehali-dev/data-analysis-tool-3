@@ -144,7 +144,10 @@ def handler(event: dict, context) -> dict:
         "Access-Control-Allow-Origin": cors_origin,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
     }
 
     if event.get("httpMethod") == "OPTIONS":

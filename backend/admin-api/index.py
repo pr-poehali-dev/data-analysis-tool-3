@@ -21,7 +21,10 @@ def get_cors_headers(event: dict) -> dict:
         "Access-Control-Allow-Origin": allowed_origin,
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
     }
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
