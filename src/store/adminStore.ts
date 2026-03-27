@@ -1,48 +1,28 @@
-const ADMIN_AUTH_URL = "https://functions.poehali.dev/f95fb7eb-1686-4a09-83f0-31116870baa3";
+// Хранилище сессии администратора (sessionStorage — закрывается вместе с вкладкой)
+const TOKEN_KEY = "admin_token";
 
 export const adminStore = {
-  async verifySession(): Promise<boolean> {
-    try {
-      const res = await fetch(`${ADMIN_AUTH_URL}/verify`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      return data.valid === true;
-    } catch (e) {
-      return false;
-    }
-  },
-
-  async logout(): Promise<void> {
-    try {
-      await fetch(`${ADMIN_AUTH_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (e) {
-      console.error("Logout error", e);
-    }
-  },
-
-  // Stub-методы для обратной совместимости — токен больше не хранится в JS
   getToken(): string | null {
-    return null;
+    return sessionStorage.getItem(TOKEN_KEY);
   },
 
-  setToken(_token: string): void {
-    // токен хранится в httpOnly cookie, не в JS
+  setToken(token: string): void {
+    sessionStorage.setItem(TOKEN_KEY, token);
   },
 
   clearToken(): void {
-    // очистка через logout()
+    sessionStorage.removeItem(TOKEN_KEY);
   },
 
   isAuthenticated(): boolean {
-    return false;
+    return !!sessionStorage.getItem(TOKEN_KEY);
+  },
+
+  async verifySession(): Promise<boolean> {
+    return this.isAuthenticated();
+  },
+
+  async logout(): Promise<void> {
+    this.clearToken();
   },
 };

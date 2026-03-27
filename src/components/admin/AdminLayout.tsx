@@ -19,16 +19,11 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    adminStore.verifySession().then((valid) => {
-      if (!valid) {
-        navigate("/admin/login", { replace: true });
-      } else {
-        setChecking(false);
-      }
-    });
+    if (!adminStore.isAuthenticated()) {
+      navigate("/admin/login", { replace: true });
+    }
   }, [navigate]);
 
   // Закрываем drawer при смене маршрута
@@ -36,12 +31,12 @@ export default function AdminLayout() {
     setDrawerOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = async () => {
-    await adminStore.logout();
+  const handleLogout = () => {
+    adminStore.clearToken();
     navigate("/admin/login", { replace: true });
   };
 
-  if (checking) {
+  if (!adminStore.isAuthenticated()) {
     return null;
   }
 
