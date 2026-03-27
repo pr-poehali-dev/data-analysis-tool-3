@@ -160,6 +160,24 @@ def handler(event: dict, context) -> dict:
 
 
 
+    # GET /generate-hash — временная страница для получения bcrypt-хеша
+    if method == "GET" and path.endswith("/generate-hash"):
+        if not admin_password:
+            return {"statusCode": 400, "headers": {"Content-Type": "text/html"}, "body": "<h2>Ошибка: ADMIN_PASSWORD не задан</h2>"}
+        hashed = bcrypt.hashpw(admin_password.encode("utf-8"), bcrypt.gensalt(rounds=12))
+        hash_str = hashed.decode("utf-8")
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>Хеш пароля</title>
+<style>body{{font-family:sans-serif;padding:40px;max-width:700px;}}
+input{{width:100%;padding:12px;font-size:15px;margin:10px 0;box-sizing:border-box;}}
+button{{padding:12px 28px;font-size:16px;cursor:pointer;background:#2563eb;color:#fff;border:none;border-radius:6px;}}
+</style></head><body>
+<h2>Bcrypt-хеш пароля администратора</h2>
+<p>Нажми кнопку — значение скопируется в буфер обмена. Затем вставь его в секрет <b>ADMIN_PASSWORD_HASH</b>.</p>
+<input id="h" value="{hash_str}" readonly onclick="this.select()">
+<br><button onclick="navigator.clipboard.writeText('{hash_str}').then(()=>this.textContent='✅ Скопировано!')">Скопировать</button>
+</body></html>"""
+        return {"statusCode": 200, "headers": {"Content-Type": "text/html"}, "body": html}
+
     # POST / — вход по логину и паролю
     if method == "POST":
         client_ip = get_client_ip(event)
