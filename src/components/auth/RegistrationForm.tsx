@@ -337,7 +337,9 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
               </Button>
               <p className="text-xs text-muted-foreground text-center px-4">
                 Регистрируясь, вы принимаете{" "}
-                <a href="https://sovetpay.ru/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Условия обработки персональных данных</a>
+                <a href="https://sovetpay.ru/terms-of-use" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Условия пользования</a>
+                {", "}
+                <a href="https://sovetpay.ru/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">обработки персональных данных</a>
                 {" "}и{" "}
                 <a href="https://sovetpay.ru/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Политику конфиденциальности</a>
                 {" "}SovetPay
