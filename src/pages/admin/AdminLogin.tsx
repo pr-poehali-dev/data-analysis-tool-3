@@ -36,7 +36,8 @@ export default function AdminLogin() {
       }
 
       navigate("/admin/dashboard");
-    } catch {
+    } catch (e) {
+      console.error("AdminLogin fetch error:", e);
       setError("Ошибка соединения. Попробуйте ещё раз.");
     } finally {
       setLoading(false);
