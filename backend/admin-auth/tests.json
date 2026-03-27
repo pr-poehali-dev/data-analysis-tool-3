@@ -1,7 +1,14 @@
 {
   "tests": [
     {
-      "name": "Неверный логин/пароль",
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный логин/пароль — возвращает 401",
       "method": "POST",
       "path": "/",
       "body": {"login": "wrong", "password": "wrong"},
@@ -10,10 +17,10 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "OPTIONS preflight",
-      "method": "OPTIONS",
+      "name": "Метод GET — не поддерживается",
+      "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
+      "expectedStatus": 405,
       "bodyMatcher": "partial"
     }
   ]

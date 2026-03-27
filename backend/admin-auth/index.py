@@ -4,6 +4,78 @@ import hmac
 import hashlib
 import time
 import base64
+import psycopg2
+
+# Настройки защиты от брутфорса
+MAX_ATTEMPTS = 5          # максимум неудачных попыток
+WINDOW_MINUTES = 15       # окно наблюдения (минут)
+BLOCK_MINUTES = 30        # длительность блокировки (минут)
+
+
+def get_db_conn():
+    """Возвращает соединение с PostgreSQL"""
+    return psycopg2.connect(os.environ["DATABASE_URL"])
+
+
+def get_client_ip(event: dict) -> str:
+    """Извлекает IP-адрес клиента из запроса"""
+    headers = event.get("headers") or {}
+    ip = (
+        headers.get("X-Forwarded-For", "")
+        or headers.get("x-forwarded-for", "")
+        or (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
+        or "unknown"
+    )
+    # X-Forwarded-For может содержать цепочку IP — берём первый (реальный клиент)
+    return ip.split(",")[0].strip()
+
+
+def is_ip_blocked(conn, ip: str) -> bool:
+    """
+    Проверяет, заблокирован ли IP.
+    IP блокируется если за последние WINDOW_MINUTES было >= MAX_ATTEMPTS неудачных попыток.
+    """
+    window_start = time.time() - WINDOW_MINUTES * 60
+    window_ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(window_start))
+
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT COUNT(*) FROM admin_login_attempts "
+        "WHERE ip_address = %s AND attempted_at >= %s AND success = FALSE",
+        (ip, window_ts)
+    )
+    count = cur.fetchone()[0]
+    cur.close()
+    return count >= MAX_ATTEMPTS
+
+
+def record_attempt(conn, ip: str, success: bool):
+    """Записывает попытку входа в БД и чистит старые записи (старше 24ч)"""
+    cur = conn.cursor()
+    # Записываем попытку
+    cur.execute(
+        "INSERT INTO admin_login_attempts (ip_address, success) VALUES (%s, %s)",
+        (ip, success)
+    )
+    # Чистим записи старше 24 часов, чтобы таблица не росла бесконечно
+    cutoff_ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time() - 86400))
+    cur.execute(
+        "DELETE FROM admin_login_attempts WHERE attempted_at < %s",
+        (cutoff_ts,)
+    )
+    conn.commit()
+    cur.close()
+
+
+def reset_attempts(conn, ip: str):
+    """Сбрасывает счётчик неудачных попыток для IP после успешного входа"""
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM admin_login_attempts WHERE ip_address = %s AND success = FALSE",
+        (ip,)
+    )
+    conn.commit()
+    cur.close()
 
 
 def create_jwt(payload: dict, secret: str) -> str:
@@ -39,8 +111,9 @@ def verify_jwt(token: str, secret: str) -> dict | None:
 
 def handler(event: dict, context) -> dict:
     """
-    Авторизация администратора.
+    Авторизация администратора с защитой от брутфорса.
     POST / — принимает логин и пароль, возвращает JWT токен.
+             Блокирует IP на 30 минут после 5 неудачных попыток за 15 минут.
     POST /verify — проверяет валидность JWT токена.
     """
     cors_headers = {
@@ -60,7 +133,7 @@ def handler(event: dict, context) -> dict:
     admin_password = os.environ.get("ADMIN_PASSWORD", "")
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
 
-    # POST /verify — проверка токена
+    # POST /verify — проверка токена (без ограничений, только чтение)
     if method == "POST" and path.endswith("/verify"):
         body = json.loads(event.get("body") or "{}")
         token = body.get("token", "")
@@ -79,19 +152,42 @@ def handler(event: dict, context) -> dict:
 
     # POST / — вход по логину и паролю
     if method == "POST":
-        body = json.loads(event.get("body") or "{}")
-        login = body.get("login", "").strip()
-        password = body.get("password", "").strip()
+        client_ip = get_client_ip(event)
+        conn = get_db_conn()
 
-        login_ok = hmac.compare_digest(login, admin_login)
-        password_ok = hmac.compare_digest(password, admin_password)
+        try:
+            # Проверяем, не заблокирован ли IP
+            if is_ip_blocked(conn, client_ip):
+                return {
+                    "statusCode": 429,
+                    "headers": cors_headers,
+                    "body": json.dumps({
+                        "error": f"Слишком много попыток входа. Попробуйте через {BLOCK_MINUTES} минут."
+                    })
+                }
 
-        if not (login_ok and password_ok):
-            return {
-                "statusCode": 401,
-                "headers": cors_headers,
-                "body": json.dumps({"error": "Неверный логин или пароль"})
-            }
+            body = json.loads(event.get("body") or "{}")
+            login = body.get("login", "").strip()
+            password = body.get("password", "").strip()
+
+            login_ok = hmac.compare_digest(login, admin_login)
+            password_ok = hmac.compare_digest(password, admin_password)
+
+            if not (login_ok and password_ok):
+                # Записываем неудачную попытку
+                record_attempt(conn, client_ip, success=False)
+                return {
+                    "statusCode": 401,
+                    "headers": cors_headers,
+                    "body": json.dumps({"error": "Неверный логин или пароль"})
+                }
+
+            # Успешный вход — сбрасываем счётчик и записываем успех
+            reset_attempts(conn, client_ip)
+            record_attempt(conn, client_ip, success=True)
+
+        finally:
+            conn.close()
 
         # Токен действует 8 часов
         payload = {
