@@ -55,6 +55,21 @@ def get_db():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
+def audit_log(action: str, entity_type: str, entity_id, details: dict = None):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute(
+            f"INSERT INTO {SCHEMA}.admin_audit_log (action, entity_type, entity_id, details) VALUES (%s, %s, %s, %s)",
+            (action, entity_type, entity_id, json.dumps(details or {}, ensure_ascii=False))
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception:
+        pass
+
+
 _current_event: dict = {}
 
 def json_response(data: dict, status: int = 200) -> dict:
@@ -487,6 +502,7 @@ def handle_block_user(body: dict) -> dict:
         return json_response({"error": "Пользователь не найден"}, 404)
 
     action_text = "заблокирован" if block else "разблокирован"
+    audit_log("block_user" if block else "unblock_user", "user", user_id, {"reason": reason})
     return json_response({"success": True, "message": f"Пользователь {action_text}"})
 
 
@@ -672,6 +688,7 @@ def handle_update_request_status(body: dict) -> dict:
     if not updated:
         return json_response({"error": "Заявка не найдена"}, 404)
 
+    audit_log("update_request_status", "request", req_id, {"status": new_status})
     return json_response({"success": True, "message": "Статус заявки обновлён"})
 
 
@@ -695,6 +712,7 @@ def handle_delete_request(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Заявка не найдена"}, 404)
 
+    audit_log("delete_request", "request", req_id, {})
     return json_response({"success": True, "message": "Заявка удалена"})
 
 
@@ -873,6 +891,7 @@ def handle_update_rec_status(body: dict) -> dict:
     if not updated:
         return json_response({"error": "Рекомендация не найдена"}, 404)
 
+    audit_log("update_rec_status", "recommendation", rec_id, {"status": new_status})
     return json_response({"success": True, "message": "Статус рекомендации обновлён"})
 
 
@@ -896,6 +915,7 @@ def handle_delete_recommendation(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Рекомендация не найдена"}, 404)
 
+    audit_log("delete_recommendation", "recommendation", rec_id, {})
     return json_response({"success": True, "message": "Рекомендация удалена"})
 
 
@@ -1118,6 +1138,7 @@ def handle_update_escrow_status(body: dict) -> dict:
     if not updated:
         return json_response({"error": "Сделка не найдена"}, 404)
 
+    audit_log("update_escrow_status", "escrow", escrow_id, {"status": new_status})
     return json_response({
         "success": True,
         "message": f"Статус сделки изменён на «{ESCROW_STATUS_LABELS.get(new_status, new_status)}»",
@@ -1227,6 +1248,7 @@ def handle_delete_review(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Отзыв не найден"}, 404)
 
+    audit_log("delete_review", "review", review_id, {})
     return json_response({"success": True, "message": "Отзыв удалён"})
 
 
@@ -1324,6 +1346,8 @@ def handle_mark_feedback_read(body: dict) -> dict:
     cur.close()
     conn.close()
 
+    if updated:
+        audit_log("mark_feedback_read", "feedback", feedback_id, {})
     return json_response({"success": True, "updated": updated is not None})
 
 
@@ -1409,6 +1433,7 @@ def handle_reply_feedback(body: dict) -> dict:
     cur.close()
     conn.close()
 
+    audit_log("reply_feedback", "feedback", feedback_id, {"email": user_email})
     return json_response({"success": True, "message": f"Ответ отправлен на {user_email}"})
 
 
