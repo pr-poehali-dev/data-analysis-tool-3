@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi, AuditLogEntry, AuditLogResponse } from "@/hooks/useAdminApi";
 import Icon from "@/components/ui/icon";
+import AdminPagination from "@/components/admin/AdminPagination";
 import {
   formatDateShort as formatDateTime,
   ACTION_LABELS,
@@ -147,27 +148,7 @@ export default function AdminAuditLog() {
             </div>
 
             {/* Пагинация */}
-            {data.pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 rounded-lg text-sm bg-muted text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  Назад
-                </button>
-                <span className="text-sm text-muted-foreground">
-                  {page} / {data.pages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
-                  disabled={page === data.pages}
-                  className="px-3 py-1.5 rounded-lg text-sm bg-muted text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  Вперёд
-                </button>
-              </div>
-            )}
+            <AdminPagination page={page} pages={data.pages} onPage={setPage} />
           </>
         )}
       </div>

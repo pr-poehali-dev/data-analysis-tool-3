@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { adminApi, FeedbackMessage, FeedbackFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -18,6 +16,11 @@ import {
   FEEDBACK_STATUS_BADGE as STATUS_BADGE,
   FEEDBACK_SUBJECT_BADGE as SUBJECT_BADGE,
 } from "@/lib/admin";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import AdminLoadingState from "@/components/admin/AdminLoadingState";
+import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
+import StatusBadge from "@/components/admin/StatusBadge";
 
 export default function AdminFeedback() {
   const [filter, setFilter] = useState<FeedbackFilter>({ search: "", status: "all", page: 1, limit: 20 });
@@ -126,18 +129,12 @@ export default function AdminFeedback() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
-            <Input
-              placeholder="Поиск по email, теме, тексту..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1"
-            />
-            <Button variant="outline" size="icon" onClick={handleSearch}>
-              <Icon name="Search" size={16} />
-            </Button>
-          </div>
+          <AdminSearchBar
+            value={searchInput}
+            placeholder="Поиск по email, теме, тексту..."
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+          />
           <Select defaultValue="all" onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Статус" />
@@ -152,15 +149,7 @@ export default function AdminFeedback() {
         </div>
 
         {/* Список */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">
-            <Icon name="Loader2" size={24} className="animate-spin mr-2" />Загрузка...
-          </div>
-        ) : error ? (
-          <div className="text-center py-20 text-destructive">{error}</div>
-        ) : messages.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">Обращений не найдено</div>
-        ) : (
+        <AdminLoadingState loading={loading} error={error} empty={messages.length === 0} emptyText="Обращений не найдено">
           <>
             <div className="space-y-2">
               {messages.map((msg) => (
@@ -175,12 +164,8 @@ export default function AdminFeedback() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-sm text-foreground">{msg.email}</span>
-                        <Badge variant="outline" className={`text-xs ${SUBJECT_BADGE[msg.subject_type] || ""}`}>
-                          {msg.subject_type}
-                        </Badge>
-                        <Badge variant="outline" className={`text-xs ${STATUS_BADGE[msg.status] || ""}`}>
-                          {STATUS_LABELS[msg.status] || msg.status}
-                        </Badge>
+                        <StatusBadge status={msg.subject_type} labels={{[msg.subject_type]: msg.subject_type}} styles={SUBJECT_BADGE} />
+                        <StatusBadge status={msg.status} labels={STATUS_LABELS} styles={STATUS_BADGE} />
                       </div>
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{msg.message}</p>
                     </div>
@@ -192,56 +177,20 @@ export default function AdminFeedback() {
               ))}
             </div>
 
-            {pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-5">
-                <Button variant="outline" size="sm" disabled={(filter.page || 1) <= 1} onClick={() => handlePage((filter.page || 1) - 1)}>
-                  <Icon name="ChevronLeft" size={16} />
-                </Button>
-                <span className="text-sm text-muted-foreground">Страница {filter.page || 1} из {pages}</span>
-                <Button variant="outline" size="sm" disabled={(filter.page || 1) >= pages} onClick={() => handlePage((filter.page || 1) + 1)}>
-                  <Icon name="ChevronRight" size={16} />
-                </Button>
-              </div>
-            )}
+            <AdminPagination page={filter.page || 1} pages={pages} onPage={handlePage} />
           </>
-        )}
+        </AdminLoadingState>
       </div>
 
       {/* Боковая панель */}
       {selected && (
-        <aside className={`
-          bg-background overflow-auto border-l
-          md:w-96 md:shrink-0 md:static md:block
-          ${mobilePanel ? "fixed inset-0 z-30 w-full" : "hidden md:block"}
-        `}>
-          <div className="flex items-center justify-between px-5 py-4 border-b">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={closePanelMobile}
-                className="md:hidden text-muted-foreground hover:text-foreground transition-colors mr-1"
-              >
-                <Icon name="ArrowLeft" size={18} />
-              </button>
-              <span className="font-medium text-sm">Обращение</span>
-            </div>
-            <button
-              onClick={() => { setSelected(null); setMobilePanel(false); }}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Icon name="X" size={16} />
-            </button>
-          </div>
-
+        <AdminDetailPanel title="Обращение" mobileOpen={mobilePanel} onClose={closePanelMobile}>
           <div className="p-5 space-y-5">
             {/* Мета */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="outline" className={`text-xs ${SUBJECT_BADGE[selected.subject_type] || ""}`}>
-                  {selected.subject_type}
-                </Badge>
-                <Badge variant="outline" className={`text-xs ${STATUS_BADGE[selected.status] || ""}`}>
-                  {STATUS_LABELS[selected.status] || selected.status}
-                </Badge>
+                <StatusBadge status={selected.subject_type} labels={{[selected.subject_type]: selected.subject_type}} styles={SUBJECT_BADGE} />
+                <StatusBadge status={selected.status} labels={STATUS_LABELS} styles={STATUS_BADGE} />
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Icon name="Mail" size={14} className="text-muted-foreground" />
@@ -308,7 +257,7 @@ export default function AdminFeedback() {
               </Button>
             </div>
           </div>
-        </aside>
+        </AdminDetailPanel>
       )}
     </div>
   );

@@ -7,8 +7,6 @@ import {
   EscrowSummary,
 } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -24,6 +22,11 @@ import {
   ESCROW_STATUS_BADGE as STATUS_BADGE,
   ESCROW_STATUSES,
 } from "@/lib/admin";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import AdminLoadingState from "@/components/admin/AdminLoadingState";
+import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
+import StatusBadge from "@/components/admin/StatusBadge";
 
 export default function AdminEscrow() {
   const [filter, setFilter] = useState<EscrowFilter>({
@@ -156,18 +159,12 @@ export default function AdminEscrow() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
-            <Input
-              placeholder="Поиск по заявке, арендатору, рекомендателю..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1"
-            />
-            <Button variant="outline" size="icon" onClick={handleSearch}>
-              <Icon name="Search" size={16} />
-            </Button>
-          </div>
+          <AdminSearchBar
+            value={searchInput}
+            placeholder="Поиск по заявке, арендатору, рекомендателю..."
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+          />
 
           <Select defaultValue="all" onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-full sm:w-44">
@@ -185,16 +182,7 @@ export default function AdminEscrow() {
         </div>
 
         {/* Таблица */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">
-            <Icon name="Loader2" size={24} className="animate-spin mr-2" />
-            Загрузка...
-          </div>
-        ) : error ? (
-          <div className="text-center py-20 text-destructive">{error}</div>
-        ) : transactions.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">Сделки не найдены</div>
-        ) : (
+        <AdminLoadingState loading={loading} error={error} empty={transactions.length === 0} emptyText="Сделки не найдены">
           <>
             <div className="rounded-lg border bg-background overflow-x-auto">
               <table className="w-full text-sm min-w-[680px]">
@@ -236,12 +224,7 @@ export default function AdminEscrow() {
                         {formatDate(tx.created_at)}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${STATUS_BADGE[tx.status] || ""}`}
-                        >
-                          {STATUS_LABELS[tx.status] || tx.status}
-                        </Badge>
+                        <StatusBadge status={tx.status} labels={STATUS_LABELS} styles={STATUS_BADGE} />
                       </td>
                     </tr>
                   ))}
@@ -249,58 +232,14 @@ export default function AdminEscrow() {
               </table>
             </div>
 
-            {pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={(filter.page || 1) <= 1}
-                  onClick={() => handlePage((filter.page || 1) - 1)}
-                >
-                  <Icon name="ChevronLeft" size={16} />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Страница {filter.page || 1} из {pages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={(filter.page || 1) >= pages}
-                  onClick={() => handlePage((filter.page || 1) + 1)}
-                >
-                  <Icon name="ChevronRight" size={16} />
-                </Button>
-              </div>
-            )}
+            <AdminPagination page={filter.page || 1} pages={pages} onPage={handlePage} />
           </>
-        )}
+        </AdminLoadingState>
       </div>
 
       {/* Боковая панель */}
       {(selected || panelLoading) && (
-        <aside className={`
-          bg-background overflow-auto border-l
-          md:w-80 md:shrink-0 md:static md:block
-          ${mobilePanel ? "fixed inset-0 z-30 w-full" : "hidden md:block"}
-        `}>
-          <div className="flex items-center justify-between px-5 py-4 border-b">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={closePanelMobile}
-                className="md:hidden text-muted-foreground hover:text-foreground transition-colors mr-1"
-              >
-                <Icon name="ArrowLeft" size={18} />
-              </button>
-              <span className="font-medium text-sm">Детали сделки</span>
-            </div>
-            <button
-              onClick={() => { setSelected(null); setMobilePanel(false); }}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Icon name="X" size={16} />
-            </button>
-          </div>
-
+        <AdminDetailPanel title="Детали сделки" mobileOpen={mobilePanel} onClose={closePanelMobile}>
           {panelLoading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">
               <Icon name="Loader2" size={20} className="animate-spin mr-2" />
@@ -312,12 +251,7 @@ export default function AdminEscrow() {
               <div>
                 <div className="font-semibold text-foreground">{selected.request_name}</div>
                 <div className="text-xs text-muted-foreground mt-1">Сделка #{selected.id}</div>
-                <Badge
-                  variant="outline"
-                  className={`text-xs mt-2 ${STATUS_BADGE[selected.status] || ""}`}
-                >
-                  {STATUS_LABELS[selected.status] || selected.status}
-                </Badge>
+                <StatusBadge status={selected.status} labels={STATUS_LABELS} styles={STATUS_BADGE} className="mt-2" />
               </div>
 
               {/* Финансы */}
@@ -409,7 +343,7 @@ export default function AdminEscrow() {
               </div>
             </div>
           ) : null}
-        </aside>
+        </AdminDetailPanel>
       )}
     </div>
   );

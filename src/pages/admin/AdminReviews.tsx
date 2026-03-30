@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { adminApi, AdminReview, ReviewsFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
@@ -22,6 +21,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import Icon from "@/components/ui/icon";
 import { formatDate } from "@/lib/admin";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import AdminLoadingState from "@/components/admin/AdminLoadingState";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -113,18 +115,12 @@ export default function AdminReviews() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
-            <Input
-              placeholder="Поиск по имени, email, тексту..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1"
-            />
-            <Button variant="outline" size="icon" onClick={handleSearch}>
-              <Icon name="Search" size={16} />
-            </Button>
-          </div>
+          <AdminSearchBar
+            value={searchInput}
+            placeholder="Поиск по имени, email, тексту..."
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+          />
           <Select defaultValue="all" onValueChange={handleRatingFilter}>
             <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Рейтинг" />
@@ -141,15 +137,7 @@ export default function AdminReviews() {
         </div>
 
         {/* Таблица */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">
-            <Icon name="Loader2" size={24} className="animate-spin mr-2" />Загрузка...
-          </div>
-        ) : error ? (
-          <div className="text-center py-20 text-destructive">{error}</div>
-        ) : reviews.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">Отзывы не найдены</div>
-        ) : (
+        <AdminLoadingState loading={loading} error={error} empty={reviews.length === 0} emptyText="Отзывы не найдены">
           <>
             <div className="rounded-lg border bg-background overflow-x-auto">
               <table className="w-full text-sm min-w-[640px]">
@@ -221,19 +209,9 @@ export default function AdminReviews() {
               </table>
             </div>
 
-            {pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-5">
-                <Button variant="outline" size="sm" disabled={(filter.page || 1) <= 1} onClick={() => handlePage((filter.page || 1) - 1)}>
-                  <Icon name="ChevronLeft" size={16} />
-                </Button>
-                <span className="text-sm text-muted-foreground">Страница {filter.page || 1} из {pages}</span>
-                <Button variant="outline" size="sm" disabled={(filter.page || 1) >= pages} onClick={() => handlePage((filter.page || 1) + 1)}>
-                  <Icon name="ChevronRight" size={16} />
-                </Button>
-              </div>
-            )}
+            <AdminPagination page={filter.page || 1} pages={pages} onPage={handlePage} />
           </>
-        )}
+        </AdminLoadingState>
       </div>
 
       {/* Диалог удаления */}

@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 import { formatDate, ROLE_LABELS } from "@/lib/admin";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import AdminLoadingState from "@/components/admin/AdminLoadingState";
+import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 
 function getInitials(user: AdminUser): string {
   if (user.first_name || user.last_name) {
@@ -150,18 +154,12 @@ export default function AdminUsers() {
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-2 w-full sm:flex-1 sm:min-w-[220px]">
-            <Input
-              placeholder="Поиск по имени, email, телефону..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1"
-            />
-            <Button variant="outline" onClick={handleSearch} size="icon">
-              <Icon name="Search" size={16} />
-            </Button>
-          </div>
+          <AdminSearchBar
+            value={searchInput}
+            placeholder="Поиск по имени, email, телефону..."
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+          />
 
           <Select defaultValue="all" onValueChange={handleRoleChange}>
             <SelectTrigger className="w-full sm:w-44">
@@ -188,16 +186,7 @@ export default function AdminUsers() {
         </div>
 
         {/* Таблица */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">
-            <Icon name="Loader2" size={24} className="animate-spin mr-2" />
-            Загрузка...
-          </div>
-        ) : error ? (
-          <div className="text-center py-20 text-destructive">{error}</div>
-        ) : users.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">Пользователи не найдены</div>
-        ) : (
+        <AdminLoadingState loading={loading} error={error} empty={users.length === 0} emptyText="Пользователи не найдены">
           <>
             <div className="rounded-lg border bg-background overflow-x-auto">
               <table className="w-full text-sm min-w-[600px]">
@@ -252,58 +241,14 @@ export default function AdminUsers() {
             </div>
 
             {/* Пагинация */}
-            {pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={(filter.page || 1) <= 1}
-                  onClick={() => handlePageChange((filter.page || 1) - 1)}
-                >
-                  <Icon name="ChevronLeft" size={16} />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Страница {filter.page || 1} из {pages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={(filter.page || 1) >= pages}
-                  onClick={() => handlePageChange((filter.page || 1) + 1)}
-                >
-                  <Icon name="ChevronRight" size={16} />
-                </Button>
-              </div>
-            )}
+            <AdminPagination page={filter.page || 1} pages={pages} onPage={handlePageChange} />
           </>
-        )}
+        </AdminLoadingState>
       </div>
 
       {/* Боковая панель профиля */}
       {(selectedUser || panelLoading) && (
-        <aside className={`
-          bg-background overflow-auto border-l
-          md:w-80 md:shrink-0 md:static md:block
-          ${mobilePanel ? "fixed inset-0 z-30 w-full" : "hidden md:block"}
-        `}>
-          <div className="flex items-center justify-between px-5 py-4 border-b">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={closePanelMobile}
-                className="md:hidden text-muted-foreground hover:text-foreground transition-colors mr-1"
-              >
-                <Icon name="ArrowLeft" size={18} />
-              </button>
-              <span className="font-medium text-sm">Профиль</span>
-            </div>
-            <button
-              onClick={() => { setSelectedUser(null); setMobilePanel(false); }}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Icon name="X" size={16} />
-            </button>
-          </div>
-
+        <AdminDetailPanel title="Профиль" mobileOpen={mobilePanel} onClose={closePanelMobile}>
           {panelLoading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">
               <Icon name="Loader2" size={20} className="animate-spin mr-2" />
@@ -437,7 +382,7 @@ export default function AdminUsers() {
               </div>
             </div>
           ) : null}
-        </aside>
+        </AdminDetailPanel>
       )}
     </div>
   );
