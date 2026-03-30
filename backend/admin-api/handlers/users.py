@@ -18,11 +18,12 @@ def handle_users(query: dict) -> dict:
     if search:
         conditions.append(
             "(LOWER(COALESCE(first_name,'') || ' ' || COALESCE(last_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(name,'')) LIKE LOWER(%s) "
             "OR LOWER(COALESCE(email,'')) LIKE LOWER(%s) "
             "OR LOWER(COALESCE(phone,'')) LIKE LOWER(%s))"
         )
         like = f"%{search}%"
-        params.extend([like, like, like])
+        params.extend([like, like, like, like])
     if role:
         conditions.append("role = %s")
         params.append(role)
