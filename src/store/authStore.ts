@@ -174,11 +174,12 @@ async function doRefresh(): Promise<string> {
         firstName: u.firstName || u.name?.split(" ")[0] || "",
         lastName: u.lastName || u.name?.split(" ").slice(1).join(" ") || "",
         role: u.role || "tenant",
-        email: u.email || "",
+        email: u.email || (u.telegram_id ? `tg_${u.telegram_id}` : (u.id ? `tg_${u.id}` : "")),
         phone: u.phone || "",
         city: u.city || "",
         photo: u.avatar_url || "",
         vkLink: u.vkLink || "",
+        telegramUsername: u.telegramUsername || "",
       };
       currentUser = userData;
       safeSetItem(USER_KEY, JSON.stringify(userData));
