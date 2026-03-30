@@ -36,7 +36,12 @@ export function useAdminList<TItem, TFilter extends BaseFilter>({
   errorText = "Не удалось загрузить данные",
 }: UseAdminListOptions<TItem, TFilter>): UseAdminListResult<TItem, TFilter> {
   const [filter, setFilter] = useState<TFilter>(initialFilter);
-  const [searchInput, setSearchInput] = useState(initialFilter.search ?? "");
+  const [searchInput, setSearchInputState] = useState(initialFilter.search ?? "");
+  const searchInputRef = useRef(searchInput);
+  const setSearchInput = (v: string) => {
+    searchInputRef.current = v;
+    setSearchInputState(v);
+  };
   const [items, setItems] = useState<TItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -71,8 +76,8 @@ export function useAdminList<TItem, TFilter extends BaseFilter>({
   }, [filter, load]);
 
   const handleSearch = useCallback(() => {
-    setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-  }, [searchInput]);
+    setFilter((f) => ({ ...f, search: searchInputRef.current, page: 1 }));
+  }, []);
 
   const handleFilterChange = useCallback((key: keyof TFilter, value: string, allValue = "all") => {
     setFilter((f) => ({ ...f, [key]: value === allValue ? "" : value, page: 1 }));
