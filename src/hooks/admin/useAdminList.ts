@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface BaseFilter {
   search?: string;
@@ -44,22 +44,27 @@ export function useAdminList<TItem, TFilter extends BaseFilter>({
   const [error, setError] = useState<string | null>(null);
   const [extra, setExtra] = useState<Record<string, unknown>>({});
 
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
+  const errorTextRef = useRef(errorText);
+  errorTextRef.current = errorText;
+
   const load = useCallback(async (f: TFilter) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchFn(f);
+      const res = await fetchFnRef.current(f);
       const { items: resItems, total: resTotal, pages: resPages, ...rest } = res;
       setItems(resItems as TItem[]);
       setTotal(resTotal);
       setPages(resPages);
       setExtra(rest as Record<string, unknown>);
     } catch {
-      setError(errorText);
+      setError(errorTextRef.current);
     } finally {
       setLoading(false);
     }
-  }, [fetchFn, errorText]);
+  }, []);
 
   useEffect(() => {
     load(filter);
