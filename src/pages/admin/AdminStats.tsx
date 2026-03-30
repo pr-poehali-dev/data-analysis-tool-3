@@ -15,25 +15,12 @@ import {
   Legend,
 } from "recharts";
 import Icon from "@/components/ui/icon";
-
-const ROLE_LABELS: Record<string, string> = {
-  tenant: "Арендаторы",
-  recommender: "Рекомендатели",
-  landlord: "Арендодатели",
-};
-
-const PERIOD_LABELS: Record<string, string> = {
-  "1-3": "1–3 мес.",
-  "3-6": "3–6 мес.",
-  "6-12": "6–12 мес.",
-  "12+": "12+ мес.",
-};
-
-const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
-
-function formatMoney(v: number): string {
-  return v.toLocaleString("ru-RU") + " ₽";
-}
+import {
+  formatMoney,
+  ROLE_LABELS_PLURAL as ROLE_LABELS,
+  PERIOD_LABELS,
+  CHART_COLORS as COLORS,
+} from "@/lib/admin";
 
 function StatCard({
   label,

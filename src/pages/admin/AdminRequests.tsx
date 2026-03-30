@@ -26,33 +26,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Icon from "@/components/ui/icon";
-
-const STATUS_LABELS: Record<string, string> = {
-  active: "Активна",
-  in_progress: "В процессе",
-  archived: "Архив",
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  active: "text-green-600 border-green-200 bg-green-50",
-  in_progress: "text-blue-600 border-blue-200 bg-blue-50",
-  archived: "text-muted-foreground border-muted bg-muted/30",
-};
-
-const REQUEST_STATUSES = ["active", "in_progress", "archived"];
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+import {
+  formatDate,
+  REQUEST_STATUS_LABELS as STATUS_LABELS,
+  REQUEST_STATUS_BADGE as STATUS_BADGE,
+  REQUEST_STATUSES,
+} from "@/lib/admin";
 
 export default function AdminRequests() {
   const [filter, setFilter] = useState<RequestsFilter>({

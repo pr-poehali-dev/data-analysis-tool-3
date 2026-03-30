@@ -1,72 +1,15 @@
 import { useEffect, useState } from "react";
 import { adminApi, AuditLogEntry, AuditLogResponse } from "@/hooks/useAdminApi";
 import Icon from "@/components/ui/icon";
-
-const ACTION_LABELS: Record<string, string> = {
-  block_user: "Блокировка пользователя",
-  unblock_user: "Разблокировка пользователя",
-  update_request_status: "Смена статуса заявки",
-  delete_request: "Удаление заявки",
-  update_rec_status: "Смена статуса рекомендации",
-  delete_recommendation: "Удаление рекомендации",
-  update_escrow_status: "Смена статуса сделки",
-  delete_review: "Удаление отзыва",
-  mark_feedback_read: "Прочитано обращение",
-  reply_feedback: "Ответ на обращение",
-};
-
-const ACTION_ICONS: Record<string, string> = {
-  block_user: "UserX",
-  unblock_user: "UserCheck",
-  update_request_status: "RefreshCw",
-  delete_request: "Trash2",
-  update_rec_status: "RefreshCw",
-  delete_recommendation: "Trash2",
-  update_escrow_status: "RefreshCw",
-  delete_review: "Trash2",
-  mark_feedback_read: "MailOpen",
-  reply_feedback: "Reply",
-};
-
-const ACTION_COLORS: Record<string, string> = {
-  block_user: "bg-red-100 text-red-600",
-  unblock_user: "bg-green-100 text-green-600",
-  delete_request: "bg-red-100 text-red-600",
-  delete_recommendation: "bg-red-100 text-red-600",
-  delete_review: "bg-red-100 text-red-600",
-  update_request_status: "bg-blue-100 text-blue-600",
-  update_rec_status: "bg-blue-100 text-blue-600",
-  update_escrow_status: "bg-blue-100 text-blue-600",
-  mark_feedback_read: "bg-yellow-100 text-yellow-600",
-  reply_feedback: "bg-purple-100 text-purple-600",
-};
-
-const ENTITY_LABELS: Record<string, string> = {
-  user: "Пользователь",
-  request: "Заявка",
-  recommendation: "Рекомендация",
-  escrow: "Сделка",
-  review: "Отзыв",
-  feedback: "Обращение",
-};
+import {
+  formatDateShort as formatDateTime,
+  ACTION_LABELS,
+  ACTION_ICONS,
+  ACTION_COLORS,
+  ENTITY_LABELS,
+} from "@/lib/admin";
 
 const ALL_ACTIONS = Object.keys(ACTION_LABELS);
-
-function formatDateTime(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    const d = new Date(dateStr);
-    return d.toLocaleString("ru-RU", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 function DetailsBadge({ details }: { details: Record<string, unknown> }) {
   const entries = Object.entries(details).filter(([, v]) => v !== null && v !== "" && v !== undefined);

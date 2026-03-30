@@ -21,19 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Icon from "@/components/ui/icon";
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+import { formatDate } from "@/lib/admin";
 
 function StarRating({ rating }: { rating: number }) {
   return (

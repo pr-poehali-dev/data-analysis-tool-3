@@ -17,43 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Ожидает",
-  frozen: "Заморожена",
-  completed: "Завершена",
-  cancelled: "Отменена",
-  refunded: "Возврат",
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  pending: "text-yellow-600 border-yellow-200 bg-yellow-50",
-  frozen: "text-blue-600 border-blue-200 bg-blue-50",
-  completed: "text-green-600 border-green-200 bg-green-50",
-  cancelled: "text-destructive border-destructive/20 bg-destructive/5",
-  refunded: "text-orange-600 border-orange-200 bg-orange-50",
-};
-
-const ESCROW_STATUSES = ["pending", "frozen", "completed", "cancelled", "refunded"];
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "—";
-  }
-}
-
-function formatMoney(amount: number): string {
-  return amount.toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " ₽";
-}
+import {
+  formatDateTime as formatDate,
+  formatMoney,
+  ESCROW_STATUS_LABELS as STATUS_LABELS,
+  ESCROW_STATUS_BADGE as STATUS_BADGE,
+  ESCROW_STATUSES,
+} from "@/lib/admin";
 
 export default function AdminEscrow() {
   const [filter, setFilter] = useState<EscrowFilter>({

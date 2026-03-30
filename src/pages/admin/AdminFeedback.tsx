@@ -12,39 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-
-const STATUS_LABELS: Record<string, string> = {
-  new: "Новое",
-  read: "Прочитано",
-  replied: "Отвечено",
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  new: "text-blue-600 border-blue-200 bg-blue-50",
-  read: "text-muted-foreground border-muted bg-muted/30",
-  replied: "text-green-600 border-green-200 bg-green-50",
-};
-
-const SUBJECT_BADGE: Record<string, string> = {
-  Проблема: "text-destructive border-destructive/20 bg-destructive/5",
-  Вопрос: "text-yellow-600 border-yellow-200 bg-yellow-50",
-  Предложение: "text-blue-600 border-blue-200 bg-blue-50",
-};
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "—";
-  }
-}
+import {
+  formatDateTime as formatDate,
+  FEEDBACK_STATUS_LABELS as STATUS_LABELS,
+  FEEDBACK_STATUS_BADGE as STATUS_BADGE,
+  FEEDBACK_SUBJECT_BADGE as SUBJECT_BADGE,
+} from "@/lib/admin";
 
 export default function AdminFeedback() {
   const [filter, setFilter] = useState<FeedbackFilter>({ search: "", status: "all", page: 1, limit: 20 });

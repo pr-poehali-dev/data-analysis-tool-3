@@ -12,25 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-
-const ROLE_LABELS: Record<string, string> = {
-  tenant: "Арендатор",
-  recommender: "Рекомендатель",
-  landlord: "Арендодатель",
-};
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+import { formatDate, ROLE_LABELS } from "@/lib/admin";
 
 function getInitials(user: AdminUser): string {
   if (user.first_name || user.last_name) {
