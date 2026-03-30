@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import {
   adminApi,
   AdminRecommendation,
@@ -8,81 +8,51 @@ import {
 import RecFilters from "./recommendations/RecFilters";
 import RecTable from "./recommendations/RecTable";
 import RecDetailPanel from "./recommendations/RecDetailPanel";
+import { useAdminList } from "@/hooks/admin/useAdminList";
+import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 export default function AdminRecommendations() {
-  const [filter, setFilter] = useState<RecommendationsFilter>({
-    search: "",
-    status: "",
-    page: 1,
-    limit: 20,
+  const {
+    items: recs,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    setSearchInput,
+    setFilter,
+    handleSearch,
+    handleFilterChange,
+    handlePage,
+  } = useAdminList<AdminRecommendation, RecommendationsFilter>({
+    initialFilter: { search: "", status: "", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getRecommendations(f);
+      return { items: res.recommendations, total: res.total, pages: res.pages };
+    },
+    errorText: "Не удалось загрузить список рекомендаций",
   });
-  const [searchInput, setSearchInput] = useState("");
-  const [recs, setRecs] = useState<AdminRecommendation[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<AdminRecommendationDetail | null>(null);
-  const [panelLoading, setPanelLoading] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState(false);
+  const {
+    selected,
+    panelLoading,
+    mobilePanel,
+    setSelected,
+    openPanel: openPanelById,
+    closePanel: closePanelMobile,
+  } = useAdminPanel<AdminRecommendationDetail>({
+    fetchFn: (id) => adminApi.getRecommendation(id),
+    onOpen: () => { setDeleteConfirm(false); setPhotoIndex(0); },
+  });
+
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  const loadRecs = useCallback(async (f: RecommendationsFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getRecommendations(f);
-      setRecs(res.recommendations);
-      setTotal(res.total);
-      setPages(res.pages);
-    } catch (_e) {
-      setError("Не удалось загрузить список рекомендаций");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadRecs(filter);
-  }, [filter, loadRecs]);
-
-  const handleSearch = () =>
-    setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  const handleStatusFilter = (value: string) =>
-    setFilter((f) => ({ ...f, status: value === "all" ? "" : value, page: 1 }));
-
-  const handlePage = (newPage: number) =>
-    setFilter((f) => ({ ...f, page: newPage }));
-
-  const openPanel = async (rec: AdminRecommendation) => {
-    setPanelLoading(true);
-    setSelected(null);
-    setDeleteConfirm(false);
-    setPhotoIndex(0);
-    setMobilePanel(true);
-    try {
-      const detail = await adminApi.getRecommendation(rec.id);
-      setSelected(detail);
-    } catch (_e) {
-      console.error("Ошибка загрузки рекомендации", _e);
-    } finally {
-      setPanelLoading(false);
-    }
-  };
-
-  const closePanelMobile = () => {
-    setMobilePanel(false);
-    setSelected(null);
-  };
+  const handleStatusFilter = (value: string) => handleFilterChange("status", value);
+  const openPanel = (rec: AdminRecommendation) => openPanelById(rec.id);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
@@ -91,9 +61,7 @@ export default function AdminRecommendations() {
       await adminApi.updateRecStatus(selected.id, newStatus);
       const updated = await adminApi.getRecommendation(selected.id);
       setSelected(updated);
-      setRecs((prev) =>
-        prev.map((r) => (r.id === updated.id ? { ...r, status: updated.status } : r))
-      );
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);
     } finally {
@@ -106,10 +74,9 @@ export default function AdminRecommendations() {
     setDeleteLoading(true);
     try {
       await adminApi.deleteRecommendation(selected.id);
-      setRecs((prev) => prev.filter((r) => r.id !== selected.id));
-      setTotal((t) => t - 1);
-      setSelected(null);
+      closePanelMobile();
       setDeleteConfirm(false);
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления", _e);
     } finally {
@@ -132,7 +99,7 @@ export default function AdminRecommendations() {
           pages={pages}
           onSearchInputChange={setSearchInput}
           onSearch={handleSearch}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter") handleSearch(); }}
           onStatusFilter={handleStatusFilter}
           onPage={handlePage}
         />

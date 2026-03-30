@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import {
   adminApi,
   AdminEscrow,
@@ -27,80 +27,51 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { useAdminList } from "@/hooks/admin/useAdminList";
+import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 export default function AdminEscrow() {
-  const [filter, setFilter] = useState<EscrowFilter>({
-    search: "",
-    status: "",
-    page: 1,
-    limit: 20,
+  const {
+    items: transactions,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    extra,
+    setSearchInput,
+    handleSearch,
+    handleFilterChange,
+    handlePage,
+  } = useAdminList<AdminEscrow, EscrowFilter>({
+    initialFilter: { search: "", status: "", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getEscrow(f);
+      return { items: res.transactions, total: res.total, pages: res.pages, summary: res.summary };
+    },
+    errorText: "Не удалось загрузить список сделок",
   });
-  const [searchInput, setSearchInput] = useState("");
-  const [transactions, setTransactions] = useState<AdminEscrow[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [summary, setSummary] = useState<EscrowSummary | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<AdminEscrowDetail | null>(null);
-  const [panelLoading, setPanelLoading] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState(false);
+  const summary = (extra.summary as EscrowSummary | null) ?? null;
+
+  const {
+    selected,
+    panelLoading,
+    mobilePanel,
+    setSelected,
+    openPanel: openPanelById,
+    closePanel: closePanelMobile,
+  } = useAdminPanel<AdminEscrowDetail>({
+    fetchFn: (id) => adminApi.getEscrowDetail(id),
+    onOpen: () => setStatusMessage(null),
+  });
+
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const loadEscrow = useCallback(async (f: EscrowFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getEscrow(f);
-      setTransactions(res.transactions);
-      setTotal(res.total);
-      setPages(res.pages);
-      setSummary(res.summary);
-    } catch (_e) {
-      setError("Не удалось загрузить список сделок");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadEscrow(filter);
-  }, [filter, loadEscrow]);
-
-  const handleSearch = () =>
-    setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  const handleStatusFilter = (value: string) =>
-    setFilter((f) => ({ ...f, status: value === "all" ? "" : value, page: 1 }));
-
-  const handlePage = (newPage: number) =>
-    setFilter((f) => ({ ...f, page: newPage }));
-
-  const openPanel = async (tx: AdminEscrow) => {
-    setPanelLoading(true);
-    setSelected(null);
-    setStatusMessage(null);
-    setMobilePanel(true);
-    try {
-      const detail = await adminApi.getEscrowDetail(tx.id);
-      setSelected(detail);
-    } catch (_e) {
-      console.error("Ошибка загрузки сделки", _e);
-    } finally {
-      setPanelLoading(false);
-    }
-  };
-
-  const closePanelMobile = () => {
-    setMobilePanel(false);
-    setSelected(null);
-  };
+  const handleStatusFilter = (value: string) => handleFilterChange("status", value);
+  const openPanel = (tx: AdminEscrow) => openPanelById(tx.id);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
@@ -110,11 +81,6 @@ export default function AdminEscrow() {
       await adminApi.updateEscrowStatus(selected.id, newStatus);
       const updated = await adminApi.getEscrowDetail(selected.id);
       setSelected(updated);
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.id === updated.id ? { ...t, status: updated.status, completed_at: updated.completed_at } : t
-        )
-      );
       setStatusMessage(`Статус изменён на «${STATUS_LABELS[newStatus]}»`);
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);

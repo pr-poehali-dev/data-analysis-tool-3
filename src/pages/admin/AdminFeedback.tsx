@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { adminApi, FeedbackMessage, FeedbackFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,16 +21,33 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { useAdminList } from "@/hooks/admin/useAdminList";
 
 export default function AdminFeedback() {
-  const [filter, setFilter] = useState<FeedbackFilter>({ search: "", status: "all", page: 1, limit: 20 });
-  const [searchInput, setSearchInput] = useState("");
-  const [messages, setMessages] = useState<FeedbackMessage[]>([]);
-  const [total, setTotal] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    items: messages,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    extra,
+    setSearchInput,
+    setFilter,
+    handleSearch,
+    handleFilterChange,
+    handlePage,
+  } = useAdminList<FeedbackMessage, FeedbackFilter>({
+    initialFilter: { search: "", status: "all", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getFeedback(f);
+      return { items: res.messages, total: res.total, pages: res.pages, unread_count: res.unread_count };
+    },
+    errorText: "Не удалось загрузить обращения",
+  });
+
+  const unreadCount = (extra.unread_count as number) ?? 0;
 
   const [selected, setSelected] = useState<FeedbackMessage | null>(null);
   const [mobilePanel, setMobilePanel] = useState(false);
@@ -38,30 +55,7 @@ export default function AdminFeedback() {
   const [replyLoading, setReplyLoading] = useState(false);
   const [replySuccess, setReplySuccess] = useState(false);
 
-  const loadFeedback = useCallback(async (f: FeedbackFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getFeedback(f);
-      setMessages(res.messages);
-      setTotal(res.total);
-      setUnreadCount(res.unread_count);
-      setPages(res.pages);
-    } catch (_e) {
-      setError("Не удалось загрузить обращения");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadFeedback(filter);
-  }, [filter, loadFeedback]);
-
-  const handleSearch = () => setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Enter") handleSearch(); };
-  const handleStatusFilter = (value: string) => setFilter((f) => ({ ...f, status: value, page: 1 }));
-  const handlePage = (newPage: number) => setFilter((f) => ({ ...f, page: newPage }));
+  const handleStatusFilter = (value: string) => handleFilterChange("status", value, "");
 
   const closePanelMobile = () => {
     setMobilePanel(false);
@@ -73,15 +67,11 @@ export default function AdminFeedback() {
     setMobilePanel(true);
     setReplyText("");
     setReplySuccess(false);
-    // Помечаем как прочитанное, если новое
     if (msg.status === "new") {
       try {
         await adminApi.markFeedbackRead(msg.id);
-        setMessages((prev) =>
-          prev.map((m) => (m.id === msg.id ? { ...m, status: "read" } : m))
-        );
+        setFilter((f) => ({ ...f }));
         setSelected((prev) => prev ? { ...prev, status: "read" } : prev);
-        setUnreadCount((c) => Math.max(0, c - 1));
       } catch (_e) {
         console.error("Ошибка пометки прочитанным", _e);
       }
@@ -101,7 +91,7 @@ export default function AdminFeedback() {
         replied_at: new Date().toISOString(),
       };
       setSelected(updatedMsg);
-      setMessages((prev) => prev.map((m) => (m.id === selected.id ? updatedMsg : m)));
+      setFilter((f) => ({ ...f }));
       setReplyText("");
       setReplySuccess(true);
     } catch (_e) {

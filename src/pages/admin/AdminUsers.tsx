@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { adminApi, AdminUser, AdminUserDetail, UsersFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
+import { useAdminList } from "@/hooks/admin/useAdminList";
+import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 function getInitials(user: AdminUser): string {
   if (user.first_name || user.last_name) {
@@ -26,86 +28,48 @@ function getInitials(user: AdminUser): string {
 }
 
 export default function AdminUsers() {
-  const [filter, setFilter] = useState<UsersFilter>({
-    search: "",
-    role: "",
-    status: "all",
-    page: 1,
-    limit: 20,
+  const {
+    items: users,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    setSearchInput,
+    setFilter,
+    handleSearch,
+    handleFilterChange,
+    handlePage: handlePageChange,
+  } = useAdminList<AdminUser, UsersFilter>({
+    initialFilter: { search: "", role: "", status: "all", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getUsers(f);
+      return { items: res.users, total: res.total, pages: res.pages };
+    },
+    errorText: "Не удалось загрузить список пользователей",
   });
-  const [searchInput, setSearchInput] = useState("");
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [selectedUser, setSelectedUser] = useState<AdminUserDetail | null>(null);
-  const [panelLoading, setPanelLoading] = useState(false);
+  const {
+    selected: selectedUser,
+    panelLoading,
+    mobilePanel,
+    setSelected: setSelectedUser,
+    openPanel,
+    closePanel: closePanelMobile,
+  } = useAdminPanel<AdminUserDetail>({
+    fetchFn: (id) => adminApi.getUser(id),
+    onOpen: () => { setShowBlockForm(false); setBlockReason(""); },
+  });
+
   const [blockLoading, setBlockLoading] = useState(false);
   const [blockReason, setBlockReason] = useState("");
   const [showBlockForm, setShowBlockForm] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState(false);
 
-  const loadUsers = useCallback(async (f: UsersFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getUsers(f);
-      setUsers(res.users);
-      setTotal(res.total);
-      setPages(res.pages);
-    } catch {
-      setError("Не удалось загрузить список пользователей");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const handleRoleChange = (value: string) => handleFilterChange("role", value);
+  const handleStatusChange = (value: string) => handleFilterChange("status", value, "");
 
-  useEffect(() => {
-    loadUsers(filter);
-  }, [filter, loadUsers]);
-
-  const handleSearch = () => {
-    setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  const handleRoleChange = (value: string) => {
-    setFilter((f) => ({ ...f, role: value === "all" ? "" : value, page: 1 }));
-  };
-
-  const handleStatusChange = (value: string) => {
-    setFilter((f) => ({ ...f, status: value as UsersFilter["status"], page: 1 }));
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setFilter((f) => ({ ...f, page: newPage }));
-  };
-
-  const openUserPanel = async (user: AdminUser) => {
-    setPanelLoading(true);
-    setSelectedUser(null);
-    setShowBlockForm(false);
-    setBlockReason("");
-    setMobilePanel(true);
-    try {
-      const detail = await adminApi.getUser(user.id);
-      setSelectedUser(detail);
-    } catch {
-      setSelectedUser(null);
-    } finally {
-      setPanelLoading(false);
-    }
-  };
-
-  const closePanelMobile = () => {
-    setMobilePanel(false);
-    setSelectedUser(null);
-  };
+  const openUserPanel = (user: AdminUser) => openPanel(user.id);
 
   const handleBlock = async () => {
     if (!selectedUser) return;
@@ -116,9 +80,7 @@ export default function AdminUsers() {
       setSelectedUser(updated);
       setShowBlockForm(false);
       setBlockReason("");
-      setUsers((prev) =>
-        prev.map((u) => (u.id === updated.id ? { ...u, is_blocked: true } : u))
-      );
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка блокировки", _e);
     } finally {
@@ -133,9 +95,7 @@ export default function AdminUsers() {
       await adminApi.blockUser(selectedUser.id, false);
       const updated = await adminApi.getUser(selectedUser.id);
       setSelectedUser(updated);
-      setUsers((prev) =>
-        prev.map((u) => (u.id === updated.id ? { ...u, is_blocked: false } : u))
-      );
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка разблокировки", _e);
     } finally {

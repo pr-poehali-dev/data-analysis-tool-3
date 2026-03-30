@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import {
   adminApi,
   AdminRequest,
@@ -35,80 +35,49 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { useAdminList } from "@/hooks/admin/useAdminList";
+import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 export default function AdminRequests() {
-  const [filter, setFilter] = useState<RequestsFilter>({
-    search: "",
-    status: "",
-    page: 1,
-    limit: 20,
+  const {
+    items: requests,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    setSearchInput,
+    setFilter,
+    handleSearch,
+    handleFilterChange,
+    handlePage,
+  } = useAdminList<AdminRequest, RequestsFilter>({
+    initialFilter: { search: "", status: "", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getRequests(f);
+      return { items: res.requests, total: res.total, pages: res.pages };
+    },
+    errorText: "Не удалось загрузить список заявок",
   });
-  const [searchInput, setSearchInput] = useState("");
-  const [requests, setRequests] = useState<AdminRequest[]>([]);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<AdminRequestDetail | null>(null);
-  const [panelLoading, setPanelLoading] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState(false);
+  const {
+    selected,
+    panelLoading,
+    mobilePanel,
+    setSelected,
+    openPanel,
+    closePanel: closePanelMobile,
+  } = useAdminPanel<AdminRequestDetail>({
+    fetchFn: (id) => adminApi.getRequest(id),
+    onOpen: () => setDeleteConfirm(false),
+  });
 
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const loadRequests = useCallback(async (f: RequestsFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getRequests(f);
-      setRequests(res.requests);
-      setTotal(res.total);
-      setPages(res.pages);
-    } catch (_e) {
-      setError("Не удалось загрузить список заявок");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadRequests(filter);
-  }, [filter, loadRequests]);
-
-  const handleSearch = () =>
-    setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  const handleStatusFilter = (value: string) =>
-    setFilter((f) => ({ ...f, status: value === "all" ? "" : value, page: 1 }));
-
-  const handlePage = (newPage: number) =>
-    setFilter((f) => ({ ...f, page: newPage }));
-
-  const openPanel = async (req: AdminRequest) => {
-    setPanelLoading(true);
-    setSelected(null);
-    setDeleteConfirm(false);
-    setMobilePanel(true);
-    try {
-      const detail = await adminApi.getRequest(req.id);
-      setSelected(detail);
-    } catch (_e) {
-      console.error("Ошибка загрузки заявки", _e);
-    } finally {
-      setPanelLoading(false);
-    }
-  };
-
-  const closePanelMobile = () => {
-    setMobilePanel(false);
-    setSelected(null);
-  };
+  const handleStatusFilter = (value: string) => handleFilterChange("status", value);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
@@ -117,9 +86,7 @@ export default function AdminRequests() {
       await adminApi.updateRequestStatus(selected.id, newStatus);
       const updated = await adminApi.getRequest(selected.id);
       setSelected(updated);
-      setRequests((prev) =>
-        prev.map((r) => (r.id === updated.id ? { ...r, status: updated.status } : r))
-      );
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);
     } finally {
@@ -132,10 +99,9 @@ export default function AdminRequests() {
     setDeleteLoading(true);
     try {
       await adminApi.deleteRequest(selected.id);
-      setRequests((prev) => prev.filter((r) => r.id !== selected.id));
-      setTotal((t) => t - 1);
-      setSelected(null);
+      closePanelMobile();
       setDeleteConfirm(false);
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления", _e);
     } finally {
@@ -192,7 +158,7 @@ export default function AdminRequests() {
                   {requests.map((req) => (
                     <tr
                       key={req.id}
-                      onClick={() => openPanel(req)}
+                      onClick={() => openPanel(req.id)}
                       className={`border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/30 ${
                         selected?.id === req.id ? "bg-primary/5" : ""
                       }`}

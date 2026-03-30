@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { adminApi, AdminReview, ReviewsFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +24,7 @@ import { formatDate } from "@/lib/admin";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
+import { useAdminList } from "@/hooks/admin/useAdminList";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -41,54 +42,45 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function AdminReviews() {
-  const [filter, setFilter] = useState<ReviewsFilter>({ search: "", rating: "", page: 1, limit: 20 });
-  const [searchInput, setSearchInput] = useState("");
-  const [reviews, setReviews] = useState<AdminReview[]>([]);
-  const [total, setTotal] = useState(0);
-  const [avgRating, setAvgRating] = useState(0);
-  const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    items: reviews,
+    total,
+    pages,
+    filter,
+    searchInput,
+    loading,
+    error,
+    extra,
+    setSearchInput,
+    setFilter,
+    handleSearch,
+    handleFilterChange,
+    handlePage,
+  } = useAdminList<AdminReview, ReviewsFilter>({
+    initialFilter: { search: "", rating: "", page: 1, limit: 20 },
+    fetchFn: async (f) => {
+      const res = await adminApi.getReviews(f);
+      return { items: res.reviews, total: res.total, pages: res.pages, avg_rating: res.avg_rating };
+    },
+    errorText: "Не удалось загрузить отзывы",
+  });
+
+  const avgRating = (extra.avg_rating as number) ?? 0;
 
   const [selected, setSelected] = useState<AdminReview | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const loadReviews = useCallback(async (f: ReviewsFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await adminApi.getReviews(f);
-      setReviews(res.reviews);
-      setTotal(res.total);
-      setAvgRating(res.avg_rating);
-      setPages(res.pages);
-    } catch (_e) {
-      setError("Не удалось загрузить отзывы");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadReviews(filter);
-  }, [filter, loadReviews]);
-
-  const handleSearch = () => setFilter((f) => ({ ...f, search: searchInput, page: 1 }));
-  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Enter") handleSearch(); };
-  const handleRatingFilter = (value: string) =>
-    setFilter((f) => ({ ...f, rating: value === "all" ? "" : value, page: 1 }));
-  const handlePage = (newPage: number) => setFilter((f) => ({ ...f, page: newPage }));
+  const handleRatingFilter = (value: string) => handleFilterChange("rating", value);
 
   const handleDelete = async () => {
     if (!selected) return;
     setDeleteLoading(true);
     try {
       await adminApi.deleteReview(selected.id);
-      setReviews((prev) => prev.filter((r) => r.id !== selected.id));
-      setTotal((t) => t - 1);
       setSelected(null);
       setDeleteConfirm(false);
+      setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления отзыва", _e);
     } finally {
