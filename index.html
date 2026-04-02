@@ -28,8 +28,13 @@
     <meta name="description" content="SovetPay — платформа аренды жилья через рекомендации. Безопасно, быстро и выгодно.">
     <meta name="keywords" content="аренда жилья, снять квартиру, рекомендации, найти квартиру, аренда через знакомых, вознаграждение за рекомендацию"/>
     <meta name="author" content="SovetPay"/>
-    <meta name="robots" content="index, follow"/>
+    <meta name="robots" content="index, follow" id="robots-meta"/>
     <link rel="canonical" href="https://sovetpay.ru/"/>
+    <script>
+        if (location.hostname !== 'sovetpay.ru' && location.hostname !== 'www.sovetpay.ru') {
+            document.getElementById('robots-meta').setAttribute('content', 'noindex, nofollow');
+        }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://cdn.poehali.dev/projects/98f29e7d-3c71-4ce1-9618-2738c542d164/bucket/54f5768a-4a72-415b-be6d-324618d95f3d.png"/>
