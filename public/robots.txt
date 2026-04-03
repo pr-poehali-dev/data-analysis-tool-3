@@ -1,11 +1,2 @@
 User-agent: *
-Allow: /
-Disallow: /auth/
-Disallow: /dashboard
-Disallow: /create-request
-Disallow: /edit-request/
-Disallow: /edit-recommendation/
-Disallow: /suggest-property
-Disallow: /request-offers/
-
-Sitemap: https://sovetpay.ru/sitemap.xml
+Disallow: /
