@@ -8,6 +8,33 @@ from email.mime.text import MIMEText
 
 SUPPORT_EMAIL = "sovetpay@gmail.com"
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
+RATE_LIMIT_MAX = 5
+RATE_LIMIT_WINDOW_HOURS = 1
+
+
+def check_rate_limit(ip: str) -> bool:
+    """Возвращает True если лимит не превышен, False если превышен."""
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    cur = conn.cursor()
+    cur.execute(
+        f"SELECT COUNT(*) FROM {SCHEMA}.rate_limits "
+        f"WHERE key = %s AND action = 'send_feedback' "
+        f"AND created_at > NOW() - INTERVAL '{RATE_LIMIT_WINDOW_HOURS} hours'",
+        (ip,)
+    )
+    count = cur.fetchone()[0]
+    if count < RATE_LIMIT_MAX:
+        cur.execute(
+            f"INSERT INTO {SCHEMA}.rate_limits (key, action) VALUES (%s, 'send_feedback')",
+            (ip,)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    cur.close()
+    conn.close()
+    return False
 
 
 def save_to_db(email: str, subject_type: str, message: str) -> None:
@@ -51,6 +78,14 @@ def handler(event: dict, context) -> dict:
             'statusCode': 400,
             'headers': headers,
             'body': json.dumps({'error': 'Поля email и message обязательны'})
+        }
+
+    ip = (event.get('requestContext') or {}).get('identity', {}).get('sourceIp', 'unknown')
+    if not check_rate_limit(ip):
+        return {
+            'statusCode': 429,
+            'headers': headers,
+            'body': json.dumps({'error': 'Слишком много запросов. Попробуйте через час.'})
         }
 
     smtp_user = os.environ.get('SMTP_USER')
