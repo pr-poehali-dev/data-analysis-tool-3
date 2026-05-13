@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { adminApi, FeedbackMessage, FeedbackFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
