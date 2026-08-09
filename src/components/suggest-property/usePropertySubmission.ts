@@ -60,6 +60,23 @@ export function usePropertySubmission() {
       return;
     }
 
+    if (propertyData.floor && propertyData.totalFloors) {
+      const floorValue = parseInt(propertyData.floor);
+      const totalFloorsValue = parseInt(propertyData.totalFloors);
+      if (
+        !isNaN(floorValue) &&
+        !isNaN(totalFloorsValue) &&
+        floorValue >= totalFloorsValue
+      ) {
+        toast({
+          title: "Ошибка",
+          description: "Этаж должен быть меньше общего количества этажей",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const user = authStore.getUser();
     if (!user) {
       toast({

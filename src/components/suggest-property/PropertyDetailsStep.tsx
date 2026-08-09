@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Upload, Sofa, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import Icon from "@/components/ui/icon";
 
 export interface PropertyData {
   address: string;
@@ -36,6 +38,26 @@ export const PropertyDetailsStep = ({
   isSubmitting,
 }: PropertyDetailsStepProps) => {
   const { toast } = useToast();
+  const [floorError, setFloorError] = useState<string>("");
+
+  const validateFloor = (floor: string, totalFloors: string) => {
+    if (floor === "" || totalFloors === "") {
+      setFloorError("");
+      return true;
+    }
+    const floorValue = parseInt(floor);
+    const totalFloorsValue = parseInt(totalFloors);
+    if (isNaN(floorValue) || isNaN(totalFloorsValue)) {
+      setFloorError("");
+      return true;
+    }
+    if (floorValue >= totalFloorsValue) {
+      setFloorError("Этаж должен быть меньше общего количества этажей");
+      return false;
+    }
+    setFloorError("");
+    return true;
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -147,7 +169,12 @@ export const PropertyDetailsStep = ({
               type="number"
               placeholder="5"
               value={propertyData.floor}
-              onChange={(e) => update({ floor: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                update({ floor: value });
+                validateFloor(value, propertyData.totalFloors);
+              }}
+              className={floorError ? "border-red-500 focus-visible:ring-red-500" : ""}
             />
           </div>
           <div className="space-y-2">
@@ -157,10 +184,21 @@ export const PropertyDetailsStep = ({
               type="number"
               placeholder="9"
               value={propertyData.totalFloors}
-              onChange={(e) => update({ totalFloors: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                update({ totalFloors: value });
+                validateFloor(propertyData.floor, value);
+              }}
+              className={floorError ? "border-red-500 focus-visible:ring-red-500" : ""}
             />
           </div>
         </div>
+        {floorError && (
+          <p className="text-xs text-red-500 -mt-4 flex items-center gap-1">
+            <Icon name="AlertCircle" size={12} />
+            {floorError}
+          </p>
+        )}
 
         <div className="space-y-3">
           <Label>Удобства</Label>
