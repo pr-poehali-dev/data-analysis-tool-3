@@ -50,6 +50,7 @@ export const Step2HousingParameters = ({
   rentalPeriods,
 }: Step2Props) => {
   const [rewardError, setRewardError] = useState<string>("");
+  const [budgetError, setBudgetError] = useState<string>("");
 
   const getCityOptions = () => {
     return getSortedCities().map(city => ({
@@ -69,6 +70,25 @@ export const Step2HousingParameters = ({
       setRewardError("");
       return true;
     }
+  };
+
+  const validateBudget = (min: string, max: string) => {
+    if (min === "" || max === "") {
+      setBudgetError("");
+      return true;
+    }
+    const minValue = parseInt(min);
+    const maxValue = parseInt(max);
+    if (isNaN(minValue) || isNaN(maxValue)) {
+      setBudgetError("");
+      return true;
+    }
+    if (minValue >= maxValue) {
+      setBudgetError("Значение «От» должно быть меньше значения «До»");
+      return false;
+    }
+    setBudgetError("");
+    return true;
   };
 
   const currentDistricts = formData.city ? citiesWithDistricts[formData.city] || [] : [];
@@ -147,28 +167,47 @@ export const Step2HousingParameters = ({
               <input
                 type="number"
                 value={formData.budgetMin}
-                onChange={(e) =>
-                  updateFormData("budgetMin", e.target.value)
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  updateFormData("budgetMin", value);
+                  validateBudget(value, formData.budgetMax);
+                }}
                 placeholder="От"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                  budgetError
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-border focus:ring-primary"
+                }`}
               />
             </div>
             <div>
               <input
                 type="number"
                 value={formData.budgetMax}
-                onChange={(e) =>
-                  updateFormData("budgetMax", e.target.value)
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  updateFormData("budgetMax", value);
+                  validateBudget(formData.budgetMin, value);
+                }}
                 placeholder="До"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                  budgetError
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-border focus:ring-primary"
+                }`}
               />
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Укажите бюджет в рублях в месяц
-          </p>
+          {budgetError ? (
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <Icon name="AlertCircle" size={12} />
+              {budgetError}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground mt-1">
+              Укажите бюджет в рублях в месяц
+            </p>
+          )}
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6">

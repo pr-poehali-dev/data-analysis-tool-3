@@ -76,11 +76,19 @@ export const CreateRequest = () => {
   };
 
   const canProceedStep2 = () => {
+    const budgetMinValue = parseInt(formData.budgetMin);
+    const budgetMaxValue = parseInt(formData.budgetMax);
+    const isBudgetValid =
+      !isNaN(budgetMinValue) &&
+      !isNaN(budgetMaxValue) &&
+      budgetMinValue < budgetMaxValue;
+
     return (
       formData.city &&
       formData.districts.length > 0 &&
       formData.budgetMin &&
       formData.budgetMax &&
+      isBudgetValid &&
       formData.housingType &&
       formData.roomsCount &&
       formData.rentalPeriod &&
