@@ -159,6 +159,9 @@ def handler(event: dict, context) -> dict:
     admin_login = os.environ.get("ADMIN_LOGIN", "")
     admin_password = os.environ.get("ADMIN_PASSWORD", "")
     admin_password_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
+    admin_login_2 = os.environ.get("ADMIN_LOGIN_2", "")
+    admin_password_2 = os.environ.get("ADMIN_PASSWORD_2", "")
+    admin_password_hash_2 = os.environ.get("ADMIN_PASSWORD_HASH_2", "")
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
 
     # POST /logout — очищаем cookie
@@ -207,7 +210,12 @@ def handler(event: dict, context) -> dict:
             login_ok = hmac.compare_digest(login, admin_login)
             password_ok = check_password(password, admin_password, admin_password_hash)
 
-            if not (login_ok and password_ok):
+            login_ok_2 = bool(admin_login_2) and hmac.compare_digest(login, admin_login_2)
+            password_ok_2 = bool(admin_login_2) and check_password(password, admin_password_2, admin_password_hash_2)
+
+            is_valid = (login_ok and password_ok) or (login_ok_2 and password_ok_2)
+
+            if not is_valid:
                 record_attempt(conn, client_ip, success=False)
                 return {
                     "statusCode": 401,
