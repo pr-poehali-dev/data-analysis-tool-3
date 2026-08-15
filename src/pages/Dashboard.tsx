@@ -17,6 +17,7 @@ import { recommendationsStore, Recommendation } from "@/store/recommendationsSto
 import { messagesStore } from "@/store/messagesStore";
 import { authStore } from "@/store/authStore";
 import { EmailRequiredModal } from "@/components/dashboard/EmailRequiredModal";
+import { dashboardMenuItems } from "@/config/dashboardMenu";
 
 interface DashboardProps {
   user: {
@@ -31,23 +32,6 @@ interface DashboardProps {
   };
   onLogout: () => void;
 }
-
-type MenuItem = {
-  id: string;
-  label: string;
-  icon: string;
-};
-
-const menuItems: MenuItem[] = [
-  { id: "feed", label: "Лента заявок", icon: "List" },
-  { id: "requests", label: "Найти жильё", icon: "FileText" },
-  { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp" },
-  { id: "messages", label: "Сообщения", icon: "MessageSquare" },
-  { id: "documents", label: "Документы", icon: "FolderOpen" },
-  { id: "balance", label: "Баланс", icon: "Wallet" },
-  { id: "reviews", label: "Отзывы", icon: "Star" },
-  { id: "settings", label: "Настройки профиля", icon: "Settings" },
-];
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const location = useLocation();
@@ -164,7 +148,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <div className="flex max-w-7xl mx-auto pt-[80px]">
         <aside className="hidden md:block w-44 lg:w-56 bg-white border-r border-border min-h-[calc(100vh-80px)] p-2 lg:p-4 sticky top-[80px] self-start flex-shrink-0">
           <nav className="space-y-0.5 lg:space-y-1">
-            {menuItems.map((item) => (
+            {dashboardMenuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleMenuClick(item.id)}
