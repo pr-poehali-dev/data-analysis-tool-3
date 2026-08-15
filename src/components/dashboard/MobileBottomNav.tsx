@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { getDashboardMenuItem } from "@/config/dashboardMenu";
 
 interface MobileBottomNavItem {
   id: string;
@@ -6,11 +7,13 @@ interface MobileBottomNavItem {
   icon: string;
 }
 
+const BOTTOM_NAV_IDS = ["feed", "recommendations", "requests", "messages"];
+
 const bottomNavItems: MobileBottomNavItem[] = [
-  { id: "feed", label: "Лента", icon: "List" },
-  { id: "recommendations", label: "Рекомендации", icon: "ThumbsUp" },
-  { id: "requests", label: "Жильё", icon: "FileText" },
-  { id: "messages", label: "Сообщения", icon: "MessageSquare" },
+  ...BOTTOM_NAV_IDS.map((id) => {
+    const item = getDashboardMenuItem(id)!;
+    return { id: item.id, label: item.shortLabel ?? item.label, icon: item.icon };
+  }),
   { id: "profile", label: "Профиль", icon: "User" },
 ];
 

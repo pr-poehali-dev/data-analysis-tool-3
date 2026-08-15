@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import Icon from "@/components/ui/icon";
 import { authStore } from "@/store/authStore";
+import { getDashboardMenuItem } from "@/config/dashboardMenu";
 
 interface ProfileMenuItem {
   id: string;
@@ -16,12 +17,12 @@ interface ProfileMenuItem {
   icon: string;
 }
 
-const profileMenuItems: ProfileMenuItem[] = [
-  { id: "documents", label: "Документы", icon: "FolderOpen" },
-  { id: "balance", label: "Баланс", icon: "Wallet" },
-  { id: "reviews", label: "Отзывы", icon: "Star" },
-  { id: "settings", label: "Настройка профиля", icon: "Settings" },
-];
+const PROFILE_MENU_IDS = ["documents", "balance", "reviews", "settings"];
+
+const profileMenuItems: ProfileMenuItem[] = PROFILE_MENU_IDS.map((id) => {
+  const item = getDashboardMenuItem(id)!;
+  return { id: item.id, label: item.profileLabel ?? item.label, icon: item.icon };
+});
 
 const footerSections = [
   {
