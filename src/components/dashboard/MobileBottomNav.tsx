@@ -40,7 +40,7 @@ export const MobileBottomNav = ({
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border pb-[calc(env(safe-area-inset-bottom)+10px)]">
       <div className="flex items-stretch justify-between px-1">
         {bottomNavItems.map((item) => {
           const isActive = item.id === "profile" ? isProfileActive : activeSection === item.id;
@@ -49,7 +49,7 @@ export const MobileBottomNav = ({
               key={item.id}
               type="button"
               onClick={() => handleClick(item.id)}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 pb-1"
             >
               <span className={`relative ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                 <Icon name={item.icon} size={22} />
