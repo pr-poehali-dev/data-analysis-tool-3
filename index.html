@@ -33,7 +33,7 @@
     <script>
         if (location.hostname === 'sovetpay.ru' || location.hostname === 'www.sovetpay.ru') {
             document.getElementById('robots-meta').setAttribute('content', 'index, follow');
-        } else {
+        } else if (!location.hostname.includes('preview.poehali.dev')) {
             location.replace('https://sovetpay.ru' + location.pathname + location.search + location.hash);
         }
     </script>
