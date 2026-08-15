@@ -5,17 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { authStore } from "@/store/authStore";
 import { messagesStore } from "@/store/messagesStore";
 import Icon from "@/components/ui/icon";
-
-const dashboardMenuItems = [
-  { id: "feed", label: "Лента заявок", icon: "List" },
-  { id: "requests", label: "Найти жильё", icon: "FileText" },
-  { id: "recommendations", label: "Мои рекомендации", icon: "ThumbsUp" },
-  { id: "messages", label: "Сообщения", icon: "MessageSquare" },
-  { id: "documents", label: "Документы", icon: "FolderOpen" },
-  { id: "balance", label: "Баланс", icon: "Wallet" },
-  { id: "reviews", label: "Отзывы", icon: "Star" },
-  { id: "settings", label: "Настройки профиля", icon: "Settings" },
-];
+import { dashboardMenuItems } from "@/config/dashboardMenu";
 
 const footerSections = [
   {
