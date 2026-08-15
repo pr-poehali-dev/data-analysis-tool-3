@@ -10,6 +10,7 @@ import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSec
 import { DashboardReviewsSection } from "@/components/dashboard/DashboardReviewsSection";
 import { MessageNotification } from "@/components/notifications/MessageNotification";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
+import { MobileProfileSheet } from "@/components/dashboard/MobileProfileSheet";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
@@ -150,6 +151,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -194,7 +196,14 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         activeSection={activeSection}
         onSelect={handleMenuClick}
         unreadMessagesCount={unreadMessagesCount}
-        onProfileClick={() => handleMenuClick("settings")}
+        onProfileClick={() => setIsProfileSheetOpen(true)}
+      />
+
+      <MobileProfileSheet
+        open={isProfileSheetOpen}
+        onOpenChange={setIsProfileSheetOpen}
+        onSelect={handleMenuClick}
+        onLogout={onLogout}
       />
 
       <Footer hiddenOnMobile />
