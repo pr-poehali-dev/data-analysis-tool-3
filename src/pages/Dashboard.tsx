@@ -158,7 +158,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <MessageNotification userEmail={user.email} />
       
       <div className="fixed top-0 left-0 right-0 z-50 bg-background">
-        <PortfolioNavbar onLogout={onLogout} showNavigation={false} />
+        <PortfolioNavbar onLogout={onLogout} showNavigation={false} showMobileMenu={false} />
       </div>
 
       <div className="flex max-w-7xl mx-auto pt-[80px]">
