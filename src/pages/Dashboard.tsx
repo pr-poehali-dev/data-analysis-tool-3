@@ -9,6 +9,7 @@ import { DashboardSettingsSection } from "@/components/dashboard/DashboardSettin
 import { DashboardOtherSections } from "@/components/dashboard/DashboardOtherSections";
 import { DashboardReviewsSection } from "@/components/dashboard/DashboardReviewsSection";
 import { MessageNotification } from "@/components/notifications/MessageNotification";
+import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { PortfolioNavbar, Footer } from "@/components/landing";
 import { requestsStore, Request } from "@/store/requestsStore";
 import { recommendationsStore, Recommendation } from "@/store/recommendationsStore";
@@ -184,10 +185,17 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
           </nav>
         </aside>
 
-        <main className="flex-1 p-3 sm:p-6 md:p-8">
+        <main className="flex-1 p-3 sm:p-6 md:p-8 pb-24 md:pb-8">
           {renderContent()}
         </main>
       </div>
+
+      <MobileBottomNav
+        activeSection={activeSection}
+        onSelect={handleMenuClick}
+        unreadMessagesCount={unreadMessagesCount}
+        onProfileClick={() => handleMenuClick("settings")}
+      />
 
       <Footer hiddenOnMobile />
 
