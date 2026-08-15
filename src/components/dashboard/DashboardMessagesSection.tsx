@@ -85,7 +85,7 @@ export const DashboardMessagesSection = ({ user }: DashboardMessagesSectionProps
         <h2 className="text-lg font-bold text-foreground">Сообщения</h2>
       </div>
       
-      <div className="grid lg:grid-cols-3 gap-3 h-[calc(100vh-110px)]">
+      <div className="grid lg:grid-cols-3 gap-3 h-[calc(100vh-190px)] md:h-[calc(100vh-110px)]">
         <div className={`lg:col-span-1 bg-gray-50 rounded-lg p-3 sm:p-4 overflow-y-auto ${
           selectedChat ? 'hidden lg:block' : 'block'
         }`}>
