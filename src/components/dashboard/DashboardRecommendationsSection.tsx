@@ -114,7 +114,7 @@ export const DashboardRecommendationsSection = ({ userRecommendations }: Dashboa
                   onClick={() => {
                     const chat = messagesStore.getChatByRecommendation(recommendation.id);
                     if (chat) {
-                      navigate('/dashboard', { state: { activeSection: 'messages' } });
+                      navigate('/dashboard', { state: { activeSection: 'messages', chatId: chat.id } });
                     }
                   }}
                   className="h-8 text-xs flex-1"

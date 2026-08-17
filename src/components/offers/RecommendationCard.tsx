@@ -206,11 +206,9 @@ export default function RecommendationCard({ recommendation, profile, request, c
                 size="sm"
                 onClick={async () => {
                   await messagesStore.fetchChatByRecommendation(recommendation.id);
-                  const chat = messagesStore.getChatByRecommendation(recommendation.id);
-                  if (chat) {
-                    navigate("/", { state: { activeSection: "messages" } });
-                  } else {
-                    await messagesStore.createChat({
+                  let chat = messagesStore.getChatByRecommendation(recommendation.id);
+                  if (!chat) {
+                    chat = await messagesStore.createChat({
                       recommendationId: recommendation.id,
                       requestId: request?.id || '',
                       requestName: request?.name || '',
@@ -223,8 +221,8 @@ export default function RecommendationCard({ recommendation, profile, request, c
                       tenantPhoto: currentUser.photo || '',
                       tenantVkLink: currentUser.vkLink || '',
                     });
-                    navigate("/", { state: { activeSection: "messages" } });
                   }
+                  navigate("/dashboard", { state: { activeSection: "messages", chatId: chat.id } });
                 }}
                 className="flex items-center gap-2"
               >
