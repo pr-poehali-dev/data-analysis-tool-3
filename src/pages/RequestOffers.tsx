@@ -30,7 +30,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
 
   useEffect(() => {
     if (!requestId) {
-      navigate("/dashboard");
+      navigate("/dashboard", { state: { activeSection: "requests" } });
       return;
     }
 
@@ -43,7 +43,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
       if (fetched) {
         setRequest(fetched);
       } else if (!cached) {
-        navigate("/dashboard");
+        navigate("/dashboard", { state: { activeSection: "requests" } });
       }
     });
 

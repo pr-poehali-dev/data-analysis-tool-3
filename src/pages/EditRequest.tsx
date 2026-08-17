@@ -59,7 +59,7 @@ export const EditRequest = () => {
 
   useEffect(() => {
     if (!requestId) {
-      navigate("/dashboard");
+      navigate("/dashboard", { state: { activeSection: "requests" } });
       return;
     }
 
@@ -74,7 +74,7 @@ export const EditRequest = () => {
           description: "Заявка не найдена",
           variant: "destructive",
         });
-        navigate("/dashboard");
+        navigate("/dashboard", { state: { activeSection: "requests" } });
         return;
       }
 
@@ -85,7 +85,7 @@ export const EditRequest = () => {
           description: "У вас нет прав для редактирования этой заявки",
           variant: "destructive",
         });
-        navigate("/dashboard");
+        navigate("/dashboard", { state: { activeSection: "requests" } });
         return;
       }
 

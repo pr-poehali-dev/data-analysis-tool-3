@@ -15,7 +15,7 @@ export const TermsOfUse = () => {
 
   const handleGoBack = () => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/dashboard', { state: { activeSection: 'feed' } });
     } else {
       navigate('/');
     }

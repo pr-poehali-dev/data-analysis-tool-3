@@ -104,7 +104,7 @@ export const HowItWorks = () => {
 
   const handleGoBack = () => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/dashboard', { state: { activeSection: 'feed' } });
     } else {
       navigate('/');
     }
