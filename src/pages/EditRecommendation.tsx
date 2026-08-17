@@ -35,7 +35,7 @@ export const EditRecommendation = () => {
 
   useEffect(() => {
     if (!recommendationId) {
-      navigate("/", { state: { activeSection: "recommendations" } });
+      navigate("/dashboard", { state: { activeSection: "recommendations" } });
       return;
     }
 
@@ -47,7 +47,7 @@ export const EditRecommendation = () => {
           description: "У вас нет прав для редактирования этой рекомендации",
           variant: "destructive",
         });
-        navigate("/", { state: { activeSection: "recommendations" } });
+        navigate("/dashboard", { state: { activeSection: "recommendations" } });
         return;
       }
       setPropertyData(recommendation.propertyData);
@@ -70,7 +70,7 @@ export const EditRecommendation = () => {
           description: "Рекомендация не найдена",
           variant: "destructive",
         });
-        navigate("/", { state: { activeSection: "recommendations" } });
+        navigate("/dashboard", { state: { activeSection: "recommendations" } });
       }
     });
   }, [recommendationId, navigate, toast]);
@@ -117,7 +117,7 @@ export const EditRecommendation = () => {
       description: "Рекомендация обновлена",
     });
     
-    navigate("/", { state: { activeSection: "recommendations" } });
+    navigate("/dashboard", { state: { activeSection: "recommendations" } });
   };
 
   return (
@@ -125,7 +125,7 @@ export const EditRecommendation = () => {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => navigate("/", { state: { activeSection: "recommendations" } })}
+            onClick={() => navigate("/dashboard", { state: { activeSection: "recommendations" } })}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
