@@ -80,7 +80,7 @@ const AppContent = () => {
     const userData = {
       firstName: data.firstName,
       lastName: data.lastName,
-      role: "tenant",
+      role: "tenant" as const,
       email: data.email,
       phone: data.phone,
     };
