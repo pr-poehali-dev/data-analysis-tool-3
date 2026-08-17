@@ -135,15 +135,15 @@ const AppContent = () => {
       {/* Админ-панель — изолированный layout, не пересекается с основным сайтом */}
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="requests" element={<AdminRequests />} />
-        <Route path="recommendations" element={<AdminRecommendations />} />
-        <Route path="escrow" element={<AdminEscrow />} />
-        <Route path="reviews" element={<AdminReviews />} />
-        <Route path="feedback" element={<AdminFeedback />} />
-        <Route path="stats" element={<AdminStats />} />
-        <Route path="audit-log" element={<AdminAuditLog />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/requests" element={<AdminRequests />} />
+        <Route path="/admin/recommendations" element={<AdminRecommendations />} />
+        <Route path="/admin/escrow" element={<AdminEscrow />} />
+        <Route path="/admin/reviews" element={<AdminReviews />} />
+        <Route path="/admin/feedback" element={<AdminFeedback />} />
+        <Route path="/admin/stats" element={<AdminStats />} />
+        <Route path="/admin/audit-log" element={<AdminAuditLog />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
