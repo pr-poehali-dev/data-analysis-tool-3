@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Recommendation, recommendationsStore } from "@/store/recommendationsStore";
 import { messagesStore } from "@/store/messagesStore";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface DashboardRecommendationsSectionProps {
   userRecommendations: Recommendation[];
