@@ -84,7 +84,7 @@ export const MessageNotification = ({ userEmail }: { userEmail: string }) => {
   }, [userEmail, notifications]);
 
   const handleNotificationClick = (notification: NotificationItem) => {
-    navigate('/dashboard', { state: { activeSection: 'messages' } });
+    navigate('/dashboard', { state: { activeSection: 'messages', chatId: notification.chatId } });
     setNotifications(prev => prev.filter(n => n.id !== notification.id));
   };
 
