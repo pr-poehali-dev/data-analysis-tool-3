@@ -54,7 +54,7 @@ export const CreateRequest = () => {
     reward: 10000,
   });
 
-  const updateFormData = (field: keyof RequestFormData, value: any) => {
+  const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -68,7 +68,7 @@ export const CreateRequest = () => {
   };
 
   const canProceedStep1 = () => {
-    return (
+    return Boolean(
       formData.whoWillLive &&
       formData.aboutYourself.trim().length >= 20 &&
       formData.hasPets
@@ -83,7 +83,7 @@ export const CreateRequest = () => {
       !isNaN(budgetMaxValue) &&
       budgetMinValue < budgetMaxValue;
 
-    return (
+    return Boolean(
       formData.city &&
       formData.districts.length > 0 &&
       formData.budgetMin &&

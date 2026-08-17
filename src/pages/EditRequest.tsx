@@ -108,7 +108,7 @@ export const EditRequest = () => {
     loadRequest();
   }, [requestId, navigate, toast]);
 
-  const updateFormData = (field: keyof RequestFormData, value: any) => {
+  const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -122,7 +122,7 @@ export const EditRequest = () => {
   };
 
   const canProceedStep1 = () => {
-    return (
+    return Boolean(
       formData.whoWillLive &&
       formData.aboutYourself.trim().length >= 20 &&
       formData.hasPets
@@ -130,7 +130,7 @@ export const EditRequest = () => {
   };
 
   const canProceedStep2 = () => {
-    return (
+    return Boolean(
       formData.city &&
       formData.districts.length > 0 &&
       formData.budgetMin &&
