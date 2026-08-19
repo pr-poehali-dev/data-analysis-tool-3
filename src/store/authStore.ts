@@ -308,6 +308,13 @@ export const authStore = {
     return null;
   },
 
+  /** Принудительно перевыпускает access-токен (например, после смены email —
+   * чтобы в токене и во всех новых запросах сразу использовался новый email). */
+  refreshToken: async (): Promise<boolean> => {
+    const result = await doRefresh();
+    return result === "ok";
+  },
+
   restoreSession: async (): Promise<void> => {
     if (sessionRestored) return;
     if (restorePromise) return restorePromise;

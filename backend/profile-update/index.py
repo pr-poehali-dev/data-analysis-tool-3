@@ -98,6 +98,37 @@ def response(status: int, body: dict) -> dict:
     }
 
 
+def migrate_user_email_data(cur, S: str, old_email: str, new_email: str) -> None:
+    """Переносит все данные пользователя (чаты, заявки, рекомендации, сделки, отзывы,
+    документы, сообщения) со старого идентификатора (например, синтетического tg_...)
+    на новый подтверждённый email. Вызывается сразу после UPDATE users SET email.
+    """
+    if not old_email or not new_email or old_email == new_email:
+        return
+
+    cur.execute(f"UPDATE {S}chats SET recommender_email = %s WHERE recommender_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}chats SET tenant_email = %s WHERE tenant_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}messages SET sender_id = %s WHERE sender_id = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}requests SET user_email = %s WHERE user_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}recommendations SET user_id = %s WHERE user_id = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}recommendations SET owner_email = %s WHERE owner_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}escrow_transactions SET tenant_email = %s WHERE tenant_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}escrow_transactions SET recommender_email = %s WHERE recommender_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}documents SET user_email = %s WHERE user_email = %s", (new_email, old_email))
+    cur.execute(f"UPDATE {S}feedback_messages SET email = %s WHERE email = %s", (new_email, old_email))
+
+    # reviews: reviewer_email + chat_id уникальны вместе, поэтому переносим только те записи,
+    # где на новом email ещё нет отзыва в этом же чате (иначе просто оставляем как есть)
+    cur.execute(f"""
+        UPDATE {S}reviews r SET reviewer_email = %s
+        WHERE r.reviewer_email = %s
+          AND NOT EXISTS (
+              SELECT 1 FROM {S}reviews r2 WHERE r2.chat_id = r.chat_id AND r2.reviewer_email = %s
+          )
+    """, (new_email, old_email, new_email))
+    cur.execute(f"UPDATE {S}reviews SET reviewee_email = %s WHERE reviewee_email = %s", (new_email, old_email))
+
+
 def get_user_id_from_event(event: dict) -> int:
     headers = event.get('headers', {})
     auth = headers.get('X-Authorization') or headers.get('x-authorization') or headers.get('Authorization') or headers.get('authorization') or ''
@@ -241,10 +272,14 @@ def handle_update_profile(event: dict) -> dict:
         if last_name is not None:
             updates.append("last_name = %s")
             values.append(last_name)
+        old_email_for_migration = None
         if email is not None:
             cur.execute(f"SELECT id FROM {S}users WHERE email = %s AND id != %s", (email, user_id))
             if cur.fetchone():
                 return response(400, {'error': 'Эта почта уже привязана к другому аккаунту'})
+            cur.execute(f"SELECT email FROM {S}users WHERE id = %s", (user_id,))
+            prev_row = cur.fetchone()
+            old_email_for_migration = prev_row[0] if prev_row else None
             updates.append("email = %s")
             values.append(email)
         if city is not None:
@@ -277,6 +312,9 @@ def handle_update_profile(event: dict) -> dict:
             f"UPDATE {S}users SET {', '.join(updates)} WHERE id = %s",
             tuple(values)
         )
+
+        if old_email_for_migration and email is not None and old_email_for_migration != email:
+            migrate_user_email_data(cur, S, old_email_for_migration, email)
 
         cur.execute(f"""
             SELECT id, email, name, avatar_url, first_name, last_name,
@@ -450,9 +488,17 @@ def handle_verify_email_code(event: dict) -> dict:
         if stored_code != code:
             return response(400, {'error': 'Неверный код'})
 
+        cur.execute(f"SELECT email FROM {S}users WHERE id = %s", (user_id,))
+        old_row = cur.fetchone()
+        old_email = old_row[0] if old_row else None
+
         cur.execute(f"UPDATE {S}email_verification_codes SET used = TRUE WHERE user_id = %s", (user_id,))
         cur.execute(f"UPDATE {S}users SET email = %s, email_verified = TRUE, updated_at = %s WHERE id = %s",
                     (stored_email, datetime.now(timezone.utc).isoformat(), user_id))
+
+        if old_email:
+            migrate_user_email_data(cur, S, old_email, stored_email)
+
         conn.commit()
 
         cur.execute(f"""

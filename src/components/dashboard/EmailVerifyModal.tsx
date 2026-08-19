@@ -97,6 +97,7 @@ export const EmailVerifyModal = ({ isOpen, email, onClose, onVerified }: EmailVe
         setError(data.error || "Неверный код");
         return;
       }
+      await authStore.refreshToken();
       onVerified(email);
     } catch {
       setError("Ошибка сети");

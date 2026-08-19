@@ -93,6 +93,7 @@ export const EmailRequiredModal = ({ isOpen, onClose, onEmailAdded }: EmailRequi
         setError(data.error || "Ошибка проверки кода");
         return;
       }
+      await authStore.refreshToken();
       onEmailAdded(email);
     } catch {
       setError("Ошибка сети");
