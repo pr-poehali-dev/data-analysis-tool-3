@@ -24,7 +24,7 @@ def handle_get_chats(event):
                  WHERE m.chat_id = c.id AND m.is_read = FALSE AND m.sender_id != %s) as unread_count,
                 c.created_at
             FROM {S}chats c
-            WHERE c.recommender_email = %s OR c.tenant_email = %s
+            WHERE (c.recommender_email = %s OR c.tenant_email = %s) AND c.is_hidden = FALSE
             ORDER BY COALESCE(c.last_message_time, c.created_at) DESC
         """, (auth_email, auth_email, auth_email))
         rows = cur.fetchall()
@@ -53,6 +53,7 @@ def handle_get_chat_by_recommendation(event):
             FROM {S}chats c
             WHERE c.recommendation_id = %s
               AND (c.recommender_email = %s OR c.tenant_email = %s)
+              AND c.is_hidden = FALSE
             LIMIT 1
         """, (auth_email, recommendation_id, auth_email, auth_email))
         row = cur.fetchone()
@@ -99,6 +100,7 @@ def handle_create_chat(event):
             cur.execute(f"""
                 SELECT id, recommendation_id FROM {S}chats
                 WHERE request_id = %s AND recommender_email = %s AND tenant_email = %s
+                  AND is_hidden = FALSE
                 ORDER BY created_at ASC
                 LIMIT 1
             """, (request_id, recommender, tenant))
@@ -108,7 +110,7 @@ def handle_create_chat(event):
         if not existing and recommendation_id:
             cur.execute(f"""
                 SELECT id, recommendation_id FROM {S}chats
-                WHERE recommendation_id = %s
+                WHERE recommendation_id = %s AND is_hidden = FALSE
                 LIMIT 1
             """, (recommendation_id,))
             existing = cur.fetchone()
