@@ -44,6 +44,8 @@ def handle_list(event):
                 return response(403, {'error': 'Нет доступа к заявкам другого пользователя'})
             conditions.append("user_email = %s")
             values.append(user_email)
+            if not status_filter:
+                conditions.append("status != 'archived'")
 
         if status_filter:
             conditions.append("status = %s")
