@@ -63,6 +63,18 @@ def handle_get_chat_by_recommendation(event):
         conn.close()
 
 
+def _fetch_chat_row(cur, S, auth_email, chat_id):
+    cur.execute(f"""
+        SELECT {CHAT_COLUMNS},
+            (SELECT COUNT(*) FROM {S}messages m
+             WHERE m.chat_id = c.id AND m.is_read = FALSE AND m.sender_id != %s) as unread_count,
+            c.created_at
+        FROM {S}chats c
+        WHERE c.id = %s
+    """, (auth_email, chat_id))
+    return cur.fetchone()
+
+
 def handle_create_chat(event):
     auth_email = require_auth(event)
     body = parse_body(event)
@@ -73,25 +85,44 @@ def handle_create_chat(event):
         return response(403, {'error': 'Нет доступа'})
 
     recommendation_id = body.get('recommendationId')
+    request_id = body.get('requestId') or None
 
     S = get_schema()
     conn = get_connection()
     try:
         cur = conn.cursor()
 
-        if recommendation_id:
+        existing = None
+
+        # Основная проверка: чат уже существует между этими же людьми в рамках этой заявки
+        if request_id:
             cur.execute(f"""
-                SELECT {CHAT_COLUMNS},
-                    (SELECT COUNT(*) FROM {S}messages m
-                     WHERE m.chat_id = c.id AND m.is_read = FALSE AND m.sender_id != %s) as unread_count,
-                    c.created_at
-                FROM {S}chats c
-                WHERE c.recommendation_id = %s
+                SELECT id, recommendation_id FROM {S}chats
+                WHERE request_id = %s AND recommender_email = %s AND tenant_email = %s
+                ORDER BY created_at ASC
                 LIMIT 1
-            """, (auth_email, recommendation_id))
+            """, (request_id, recommender, tenant))
             existing = cur.fetchone()
-            if existing:
-                return response(200, {'chat': chat_row_to_dict(existing), 'existing': True})
+
+        # Фолбэк для старых записей без request_id — проверка по конкретной рекомендации
+        if not existing and recommendation_id:
+            cur.execute(f"""
+                SELECT id, recommendation_id FROM {S}chats
+                WHERE recommendation_id = %s
+                LIMIT 1
+            """, (recommendation_id,))
+            existing = cur.fetchone()
+
+        if existing:
+            chat_id, existing_recommendation_id = existing
+            if recommendation_id and existing_recommendation_id != recommendation_id:
+                cur.execute(
+                    f"UPDATE {S}chats SET recommendation_id = %s, updated_at = %s WHERE id = %s",
+                    (recommendation_id, datetime.now(timezone.utc), chat_id)
+                )
+                conn.commit()
+            row = _fetch_chat_row(cur, S, auth_email, chat_id)
+            return response(200, {'chat': chat_row_to_dict(row), 'existing': True})
 
         def safe_photo(val):
             if not val or val.startswith('data:'):
@@ -109,7 +140,7 @@ def handle_create_chat(event):
             RETURNING {CHAT_COLUMNS}, 0 as unread_count, created_at
         """, (
             recommendation_id,
-            body.get('requestId') or None,
+            request_id,
             body.get('requestName', ''),
             body.get('recommenderEmail', ''),
             body.get('recommenderName', ''),
