@@ -1,6 +1,6 @@
 """Обработчики эскроу-транзакций."""
 import json
-from utils import get_conn, get_schema, resp, tx_row_to_dict, TX_COLUMNS
+from utils import get_conn, get_schema, resp, tx_row_to_dict, TX_COLUMNS, to_utc_iso
 from email_service import notify_escrow_status
 from auth_utils import require_auth
 
@@ -120,7 +120,7 @@ def handle_create(event):
         conn.commit()
         return resp(201, {
             'id': str(row[0]),
-            'createdAt': row[1].isoformat(),
+            'createdAt': to_utc_iso(row[1]),
             'status': 'frozen'
         })
     finally:
@@ -182,7 +182,7 @@ def handle_update_status(event):
         return resp(200, {
             'id': str(row[0]),
             'status': row[1],
-            'completedAt': row[2].isoformat() if row[2] else None,
+            'completedAt': to_utc_iso(row[2]),
         })
     finally:
         conn.close()

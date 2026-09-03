@@ -26,6 +26,20 @@ def response(status, body):
     }
 
 
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    Колонка в БД timestamp without time zone, но фактически хранится UTC
+    (datetime.now(timezone.utc) при записи). Без пометки '+00:00' фронтенд
+    интерпретирует время как локальное, из-за чего оно показывается со сдвигом.
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
+
+
 def parse_body(event):
     import base64
     body_str = event.get('body', '{}')
@@ -75,8 +89,8 @@ def row_to_dict(row, include_photos=True, has_user_name=False):
             'comments': row[16] or '',
         },
         'status': row[18] or 'pending',
-        'createdAt': row[19].isoformat() if row[19] else None,
-        'updatedAt': row[20].isoformat() if row[20] else None,
+        'createdAt': to_utc_iso(row[19]),
+        'updatedAt': to_utc_iso(row[20]),
     }
     if include_photos:
         result['photos'] = row[17] if row[17] else []

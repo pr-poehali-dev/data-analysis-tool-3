@@ -2,9 +2,24 @@
 import json
 import os
 import psycopg2
+from datetime import timezone
 
 MAX_BODY_SIZE = 1 * 1024 * 1024
 MAX_AVATAR_LENGTH = 2048
+
+
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    Колонка в БД timestamp without time zone, но фактически хранится UTC
+    (datetime.now(timezone.utc) при записи). Без пометки '+00:00' фронтенд
+    интерпретирует время как локальное, из-за чего оно показывается со сдвигом.
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 
 def get_connection():
@@ -65,6 +80,6 @@ def row_to_dict(row):
         'rentalPeriod': row[18] or '',
         'moveInDate': row[19] or '',
         'status': row[20] or 'active',
-        'createdAt': row[21].isoformat() if row[21] else None,
-        'updatedAt': row[22].isoformat() if row[22] else None,
+        'createdAt': to_utc_iso(row[21]),
+        'updatedAt': to_utc_iso(row[22]),
     }

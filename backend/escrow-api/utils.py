@@ -1,8 +1,23 @@
 """Общие утилиты: БД, CORS, ответы."""
 import json
 import os
+from datetime import timezone
 import psycopg2
 from auth_utils import get_cors_headers
+
+
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    Колонка в БД timestamp without time zone, но фактически хранится UTC
+    (сервер БД работает в UTC). Без пометки '+00:00' фронтенд интерпретирует
+    время как локальное, из-за чего оно показывается со сдвигом.
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 
 def get_conn():
@@ -39,8 +54,8 @@ def tx_row_to_dict(r):
         'rentAmount': float(r[8]),
         'commissionAmount': float(r[9]),
         'status': r[10],
-        'createdAt': r[11].isoformat() if r[11] else None,
-        'completedAt': r[12].isoformat() if r[12] else None,
+        'createdAt': to_utc_iso(r[11]),
+        'completedAt': to_utc_iso(r[12]),
     }
 
 
