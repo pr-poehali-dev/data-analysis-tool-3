@@ -3,6 +3,22 @@ import json
 import os
 import base64
 import psycopg2
+from datetime import timezone
+
+
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    В колонке БД тип timestamp without time zone, но фактически все значения
+    записываются как datetime.now(timezone.utc) (см. message_handlers.py и index.py).
+    Без явной пометки '+00:00' фронтенд интерпретирует время как локальное,
+    из-за чего сообщения показываются на несколько часов раньше реального времени.
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 
 def get_connection():
@@ -69,9 +85,9 @@ def chat_row_to_dict(row):
         'tenantPhoto': row[10] or '',
         'tenantVkLink': row[11] or '',
         'lastMessage': row[12] or '',
-        'lastMessageTime': row[13].isoformat() if row[13] else None,
+        'lastMessageTime': to_utc_iso(row[13]),
         'unreadCount': row[14] if len(row) > 14 else 0,
-        'createdAt': row[15].isoformat() if len(row) > 15 and row[15] else None,
+        'createdAt': to_utc_iso(row[15]) if len(row) > 15 else None,
     }
 
 
@@ -86,5 +102,5 @@ def message_row_to_dict(row):
         'photos': row[6] if row[6] else [],
         'read': bool(row[7]),
         'isSystemMessage': bool(row[8]),
-        'createdAt': row[9].isoformat() if row[9] else None,
+        'createdAt': to_utc_iso(row[9]),
     }
