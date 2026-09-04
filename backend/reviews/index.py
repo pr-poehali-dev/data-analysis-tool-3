@@ -1,8 +1,32 @@
 import json
 import os
+from datetime import timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from auth_utils import require_auth, auth_error_response, set_request_origin, get_cors_headers
+
+
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    Колонка created_at в БД timestamp without time zone, но фактически хранится
+    UTC (сервер БД работает в UTC). str(datetime) без пометки зоны браузер
+    интерпретирует как локальное время, из-за чего дата отзыва показывается
+    со сдвигом (иногда даже другим днём).
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
+
+
+def normalize_review_dates(review: dict) -> dict:
+    if review.get('created_at') is not None:
+        review['created_at'] = to_utc_iso(review['created_at'])
+    if review.get('updated_at') is not None:
+        review['updated_at'] = to_utc_iso(review['updated_at'])
+    return review
 
 def handler(event: dict, context) -> dict:
     """API для работы с отзывами между участниками сделок"""
@@ -93,7 +117,7 @@ def get_reviews(event: dict, conn) -> dict:
             'statusCode': 200,
             'headers': get_cors_headers(),
             'body': json.dumps({
-                'reviews': [dict(r) for r in reviews],
+                'reviews': [normalize_review_dates(dict(r)) for r in reviews],
                 'avg_rating': avg_rating,
                 'total': len(reviews)
             }, default=str)
@@ -181,6 +205,6 @@ def create_review(event: dict, conn) -> dict:
             'headers': get_cors_headers(),
             'body': json.dumps({
                 'success': True,
-                'review': dict(review)
+                'review': normalize_review_dates(dict(review))
             }, default=str)
         }

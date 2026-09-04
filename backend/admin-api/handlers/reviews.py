@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso
 
 
 def handle_reviews(query: dict) -> dict:
@@ -66,7 +66,7 @@ def handle_reviews(query: dict) -> dict:
             "reviewee_photo": row[6],
             "rating": row[7],
             "comment": row[8],
-            "created_at": str(row[9]) if row[9] else None,
+            "created_at": to_utc_iso(row[9]),
             "chat_id": row[10],
             "recommendation_id": row[11],
         })

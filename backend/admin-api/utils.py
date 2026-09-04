@@ -4,9 +4,24 @@ import hmac
 import hashlib
 import base64
 import time
+from datetime import timezone
 import psycopg2
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
+
+
+def to_utc_iso(dt):
+    """Сериализует datetime в ISO-строку с явной пометкой UTC.
+
+    Колонки timestamp в БД хранят UTC без пометки часового пояса (сервер БД
+    работает в UTC). Без явной пометки '+00:00' фронтенд интерпретирует
+    время как локальное, из-за чего оно показывается со сдвигом.
+    """
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 _current_event: dict = {}
 
