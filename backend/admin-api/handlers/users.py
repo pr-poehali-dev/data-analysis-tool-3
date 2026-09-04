@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso
 
 
 def handle_users(query: dict) -> dict:
@@ -81,10 +81,10 @@ def handle_users(query: dict) -> dict:
             "role": row[7],
             "avatar_url": row[8],
             "is_blocked": row[9],
-            "blocked_at": str(row[10]) if row[10] else None,
+            "blocked_at": to_utc_iso(row[10]),
             "blocked_reason": row[11],
-            "created_at": str(row[12]) if row[12] else None,
-            "last_login_at": str(row[13]) if row[13] else None,
+            "created_at": to_utc_iso(row[12]),
+            "last_login_at": to_utc_iso(row[13]),
             "requests_count": row[14],
             "recommendations_count": row[15],
         })
@@ -150,10 +150,10 @@ def handle_user(query: dict) -> dict:
             "role": row[7],
             "avatar_url": row[8],
             "is_blocked": row[9],
-            "blocked_at": str(row[10]) if row[10] else None,
+            "blocked_at": to_utc_iso(row[10]),
             "blocked_reason": row[11],
-            "created_at": str(row[12]) if row[12] else None,
-            "last_login_at": str(row[13]) if row[13] else None,
+            "created_at": to_utc_iso(row[12]),
+            "last_login_at": to_utc_iso(row[13]),
             "telegram_username": row[14],
             "vk_link": row[15],
             "email_verified": row[16],

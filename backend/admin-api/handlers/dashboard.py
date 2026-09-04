@@ -1,4 +1,4 @@
-from utils import get_db, json_response, SCHEMA
+from utils import get_db, json_response, SCHEMA, to_utc_iso
 
 
 def handle_stats() -> dict:
@@ -106,7 +106,7 @@ def handle_activity() -> dict:
             "id": row[1],
             "title": row[2],
             "action": row[3],
-            "created_at": str(row[4])
+            "created_at": to_utc_iso(row[4])
         }
         for row in all_rows
     ]
