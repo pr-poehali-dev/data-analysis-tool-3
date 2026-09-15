@@ -7,7 +7,6 @@ import { ProfilePhoto } from "./settings/ProfilePhoto";
 import { ProfileFields } from "./settings/ProfileFields";
 import { NotificationSettings } from "./settings/NotificationSettings";
 import { EmailVerifyModal } from "./EmailVerifyModal";
-import { useIsMobile } from "@/hooks/use-mobile";
 import funcUrls from "../../../backend/func2url.json";
 
 const PROFILE_URL = funcUrls["profile-update"];
@@ -28,7 +27,6 @@ interface DashboardSettingsSectionProps {
 }
 
 export const DashboardSettingsSection = ({ user, onShowOnboardingTour }: DashboardSettingsSectionProps) => {
-  const isMobile = useIsMobile();
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -217,7 +215,7 @@ export const DashboardSettingsSection = ({ user, onShowOnboardingTour }: Dashboa
 
         <NotificationSettings />
 
-        {isMobile && onShowOnboardingTour && (
+        {onShowOnboardingTour && (
           <div className="bg-white rounded-lg border border-border p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>

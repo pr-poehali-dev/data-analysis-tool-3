@@ -18,6 +18,7 @@ import { messagesStore } from "@/store/messagesStore";
 import { authStore } from "@/store/authStore";
 import { EmailRequiredModal } from "@/components/dashboard/EmailRequiredModal";
 import { OnboardingTour } from "@/components/dashboard/OnboardingTour";
+import { OnboardingTourDesktop } from "@/components/dashboard/OnboardingTourDesktop";
 import { dashboardMenuItems } from "@/config/dashboardMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { shouldShowOnboardingTour, incrementOnboardingViewCount } from "@/lib/onboardingStorage";
@@ -49,12 +50,12 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
   useEffect(() => {
-    if (!isMobile || !user.email || showEmailModal) return;
+    if (!user.email || showEmailModal) return;
     if (shouldShowOnboardingTour(user.email)) {
       const timer = setTimeout(() => setShowOnboardingTour(true), 400);
       return () => clearTimeout(timer);
     }
-  }, [isMobile, user.email, showEmailModal]);
+  }, [user.email, showEmailModal]);
 
   const handleOnboardingFinish = () => {
     setShowOnboardingTour(false);
@@ -174,6 +175,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             {dashboardMenuItems.map((item) => (
               <button
                 key={item.id}
+                id={`desktop-nav-${item.id}`}
                 onClick={() => handleMenuClick(item.id)}
                 type="button"
                 className={`w-full flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg transition-colors whitespace-nowrap relative ${
@@ -225,7 +227,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         }}
       />
 
-      {showOnboardingTour && <OnboardingTour onFinish={handleOnboardingFinish} />}
+      {showOnboardingTour && (
+        isMobile ? (
+          <OnboardingTour onFinish={handleOnboardingFinish} />
+        ) : (
+          <OnboardingTourDesktop onFinish={handleOnboardingFinish} />
+        )
+      )}
     </div>
   );
 };
