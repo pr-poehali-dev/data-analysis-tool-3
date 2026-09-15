@@ -45,7 +45,6 @@ function parseRequest(raw: any): Request {
 class RequestsStore {
   private listeners: Set<() => void> = new Set();
   private cache: Request[] = [];
-  private fetched = false;
   private userFetched: Set<string> = new Set();
 
   getRequests(): Request[] {
@@ -66,7 +65,6 @@ class RequestsStore {
       const data = await res.json();
       const fetched: Request[] = (data.requests || []).map(parseRequest);
       this.mergeCache(fetched);
-      this.fetched = true;
       this.notifyListeners();
       return fetched;
     } catch (e) {
@@ -81,7 +79,6 @@ class RequestsStore {
       const data = await res.json();
       const fetched: Request[] = (data.requests || []).map(parseRequest);
       this.mergeCache(fetched);
-      this.fetched = true;
       this.notifyListeners();
       return fetched;
     } catch (e) {

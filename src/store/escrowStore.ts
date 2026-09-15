@@ -114,14 +114,6 @@ class EscrowStore {
     return data.hasActive === true;
   }
 
-  getUserTransactions(userEmail: string): EscrowTransaction[] {
-    return [];
-  }
-
-  getUserBalance(userEmail: string): EscrowBalance {
-    return { frozen: 0, completed: 0, pending: 0, sent: 0 };
-  }
-
   subscribe(listener: () => void) {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);

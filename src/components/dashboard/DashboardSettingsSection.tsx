@@ -28,7 +28,6 @@ interface DashboardSettingsSectionProps {
 
 export const DashboardSettingsSection = ({ user, onShowOnboardingTour }: DashboardSettingsSectionProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showEmailVerify, setShowEmailVerify] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
@@ -112,8 +111,6 @@ export const DashboardSettingsSection = ({ user, onShowOnboardingTour }: Dashboa
 
     setSaving(false);
     setIsEditing(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSaveProfile = async () => {

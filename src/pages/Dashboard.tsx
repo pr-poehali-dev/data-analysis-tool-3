@@ -158,7 +158,6 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     }
   };
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   return (
