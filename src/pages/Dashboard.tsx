@@ -193,6 +193,15 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
                 )}
               </button>
             ))}
+
+            <button
+              onClick={handleShowOnboardingTour}
+              type="button"
+              className="w-full flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg transition-colors whitespace-nowrap text-foreground hover:bg-gray-100"
+            >
+              <Icon name="Sparkles" size={16} className="lg:w-[18px] lg:h-[18px]" />
+              <span className="text-xs lg:text-sm font-medium">Подсказки по разделам</span>
+            </button>
           </nav>
         </aside>
 
