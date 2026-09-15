@@ -17,7 +17,10 @@ import { recommendationsStore, Recommendation } from "@/store/recommendationsSto
 import { messagesStore } from "@/store/messagesStore";
 import { authStore } from "@/store/authStore";
 import { EmailRequiredModal } from "@/components/dashboard/EmailRequiredModal";
+import { OnboardingTour } from "@/components/dashboard/OnboardingTour";
 import { dashboardMenuItems } from "@/config/dashboardMenu";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { shouldShowOnboardingTour, incrementOnboardingViewCount } from "@/lib/onboardingStorage";
 
 interface DashboardProps {
   user: {
@@ -36,12 +39,32 @@ interface DashboardProps {
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState<string>("feed");
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [userRecommendations, setUserRecommendations] = useState<Recommendation[]>([]);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const hasRealEmail = !!user.email && !/^tg_\d+/.test(user.email) && user.email.includes("@");
   const [showEmailModal, setShowEmailModal] = useState(!hasRealEmail);
+  const [showOnboardingTour, setShowOnboardingTour] = useState(false);
+
+  useEffect(() => {
+    if (!isMobile || !user.email || showEmailModal) return;
+    if (shouldShowOnboardingTour(user.email)) {
+      const timer = setTimeout(() => setShowOnboardingTour(true), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, user.email, showEmailModal]);
+
+  const handleOnboardingFinish = () => {
+    setShowOnboardingTour(false);
+    incrementOnboardingViewCount(user.email);
+  };
+
+  const handleShowOnboardingTour = () => {
+    setActiveSection("feed");
+    setShowOnboardingTour(true);
+  };
 
   useEffect(() => {
     if (location.state?.activeSection) {
@@ -128,7 +151,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       case "reviews":
         return <DashboardReviewsSection userEmail={user.email} />;
       case "settings":
-        return <DashboardSettingsSection user={user} />;
+        return <DashboardSettingsSection user={user} onShowOnboardingTour={handleShowOnboardingTour} />;
       default:
         return <DashboardOtherSections activeSection={activeSection} user={user} />;
     }
@@ -200,6 +223,8 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
           setShowEmailModal(false);
         }}
       />
+
+      {showOnboardingTour && <OnboardingTour onFinish={handleOnboardingFinish} />}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { ProfilePhoto } from "./settings/ProfilePhoto";
 import { ProfileFields } from "./settings/ProfileFields";
 import { NotificationSettings } from "./settings/NotificationSettings";
 import { EmailVerifyModal } from "./EmailVerifyModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 import funcUrls from "../../../backend/func2url.json";
 
 const PROFILE_URL = funcUrls["profile-update"];
@@ -23,9 +24,11 @@ interface DashboardSettingsSectionProps {
     vkLink?: string;
     telegramUsername?: string;
   };
+  onShowOnboardingTour?: () => void;
 }
 
-export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps) => {
+export const DashboardSettingsSection = ({ user, onShowOnboardingTour }: DashboardSettingsSectionProps) => {
+  const isMobile = useIsMobile();
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -213,6 +216,21 @@ export const DashboardSettingsSection = ({ user }: DashboardSettingsSectionProps
         </div>
 
         <NotificationSettings />
+
+        {isMobile && onShowOnboardingTour && (
+          <div className="bg-white rounded-lg border border-border p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-foreground mb-1">Подсказка по разделам</h3>
+                <p className="text-sm text-muted-foreground">Показать короткий тур по главным разделам сервиса</p>
+              </div>
+              <Button variant="outline" onClick={onShowOnboardingTour} className="shrink-0">
+                <Icon name="Sparkles" size={16} />
+                Показать
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <EmailVerifyModal
