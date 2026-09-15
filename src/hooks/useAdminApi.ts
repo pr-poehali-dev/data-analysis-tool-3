@@ -91,6 +91,7 @@ export interface UsersFilter {
   status?: "all" | "active" | "blocked";
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface AdminRequest {
@@ -138,6 +139,7 @@ export interface RequestsFilter {
   status?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface AdminRecommendation {
@@ -183,6 +185,7 @@ export interface RecommendationsFilter {
   status?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface AdminEscrow {
@@ -225,6 +228,7 @@ export interface EscrowFilter {
   status?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface AdminReview {
@@ -256,6 +260,7 @@ export interface ReviewsFilter {
   rating?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface FeedbackMessage {
@@ -283,6 +288,7 @@ export interface FeedbackFilter {
   status?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface AnalyticsData {
