@@ -121,7 +121,7 @@ export default function AdminRecommendations() {
         statusLoading={statusLoading}
         deleteConfirm={deleteConfirm}
         deleteLoading={deleteLoading}
-        onClose={() => { setSelected(null); setMobilePanel(false); }}
+        onClose={closePanelMobile}
         onCloseMobile={closePanelMobile}
         onPhotoIndex={setPhotoIndex}
         onStatusChange={handleStatusChange}
