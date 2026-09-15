@@ -50,6 +50,7 @@ export const MobileBottomNav = ({
           return (
             <button
               key={item.id}
+              id={`mobile-nav-${item.id}`}
               type="button"
               onClick={() => handleClick(item.id)}
               className="flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 pb-1"
