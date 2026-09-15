@@ -70,6 +70,7 @@ interface MobileProfileSheetProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (id: string) => void;
   onLogout: () => void;
+  onShowOnboardingTour?: () => void;
 }
 
 export const MobileProfileSheet = ({
@@ -77,6 +78,7 @@ export const MobileProfileSheet = ({
   onOpenChange,
   onSelect,
   onLogout,
+  onShowOnboardingTour,
 }: MobileProfileSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,6 +93,11 @@ export const MobileProfileSheet = ({
   const handleLogout = () => {
     onOpenChange(false);
     onLogout();
+  };
+
+  const handleShowOnboardingTour = () => {
+    onOpenChange(false);
+    onShowOnboardingTour?.();
   };
 
   const handleFooterLinkClick = (href: string) => {
@@ -128,6 +135,17 @@ export const MobileProfileSheet = ({
               <span className="text-sm font-medium">{item.label}</span>
             </button>
           ))}
+
+          {onShowOnboardingTour && (
+            <button
+              type="button"
+              onClick={handleShowOnboardingTour}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-foreground hover:bg-gray-100 transition-colors"
+            >
+              <Icon name="Sparkles" size={20} />
+              <span className="text-sm font-medium">Подсказки по разделам</span>
+            </button>
+          )}
 
           <button
             type="button"

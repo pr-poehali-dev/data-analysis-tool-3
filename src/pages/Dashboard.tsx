@@ -211,6 +211,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         onOpenChange={setIsProfileSheetOpen}
         onSelect={handleMenuClick}
         onLogout={onLogout}
+        onShowOnboardingTour={handleShowOnboardingTour}
       />
 
       <Footer hiddenOnMobile />
