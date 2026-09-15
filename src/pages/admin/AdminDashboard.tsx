@@ -137,7 +137,7 @@ export default function AdminDashboard() {
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 labelFormatter={(v) => `Дата: ${v}`}
-                formatter={(v: number) => [`${v} чел.`, "Регистрации"]}
+                formatter={(v) => [`${v} чел.`, "Регистрации"]}
               />
               <Area
                 type="monotone"

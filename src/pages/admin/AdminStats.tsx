@@ -187,7 +187,7 @@ export default function AdminStats() {
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip
-                  formatter={(value: number, name: string) => [
+                  formatter={(value, name) => [
                     value,
                     name === "requests" ? "Заявки" : "Регистрации",
                   ]}
@@ -240,7 +240,7 @@ export default function AdminStats() {
                   width={70}
                 />
                 <Tooltip
-                  formatter={(value: number) => [value, "Заявок"]}
+                  formatter={(value) => [value, "Заявок"]}
                   contentStyle={{ fontSize: 12 }}
                 />
                 <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
@@ -266,8 +266,8 @@ export default function AdminStats() {
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
-                    label={({ type, percent }) =>
-                      `${type} ${(percent * 100).toFixed(0)}%`
+                    label={({ name, percent }) =>
+                      `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
                     labelLine={false}
                   >
@@ -276,7 +276,7 @@ export default function AdminStats() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number, name: string) => [value, name]}
+                    formatter={(value, name) => [value, name]}
                     contentStyle={{ fontSize: 12 }}
                   />
                 </PieChart>
@@ -301,7 +301,7 @@ export default function AdminStats() {
                   />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <Tooltip
-                    formatter={(value: number) => [value, "Заявок"]}
+                    formatter={(value) => [value, "Заявок"]}
                     labelFormatter={(v) => PERIOD_LABELS[v] || v}
                     contentStyle={{ fontSize: 12 }}
                   />

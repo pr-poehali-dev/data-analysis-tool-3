@@ -55,7 +55,7 @@ export const RequestOffers = ({ currentUser }: RequestOffersProps) => {
     updateRecommendations();
     recommendationsStore.fetchRecommendationsByRequestId(requestId);
     const unsubscribe = recommendationsStore.subscribe(updateRecommendations);
-    return unsubscribe;
+    return () => { unsubscribe(); };
   }, [requestId, navigate]);
 
   useEffect(() => {
