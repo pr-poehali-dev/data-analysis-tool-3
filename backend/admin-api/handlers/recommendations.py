@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import get_db, audit_log, json_response, SCHEMA, user_match
 
 REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
 
@@ -29,8 +29,10 @@ def handle_recommendations(query: dict) -> dict:
         conditions.append("rec.status = %s")
         params.append(status)
     if user_id.isdigit():
-        conditions.append("rec.user_id = %s")
-        params.append(user_id)
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM {SCHEMA}.users uf WHERE uf.id = %s AND {user_match('rec.user_id', 'uf')})"
+        )
+        params.append(int(user_id))
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
@@ -49,7 +51,7 @@ def handle_recommendations(query: dict) -> dict:
             COALESCE(u.first_name || ' ' || u.last_name, u.name, u.email) AS author_name,
             u.id AS author_user_id
         FROM {SCHEMA}.recommendations rec
-        LEFT JOIN {SCHEMA}.users u ON u.id::text = rec.user_id
+        LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("rec.user_id", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         {where}
         ORDER BY rec.created_at DESC
         LIMIT {limit} OFFSET {offset}
@@ -108,7 +110,7 @@ def handle_recommendation(query: dict) -> dict:
             COALESCE(u.first_name || ' ' || u.last_name, u.name, u.email) AS author_name,
             u.id AS author_user_id, u.email AS author_email, u.phone AS author_phone
         FROM {SCHEMA}.recommendations rec
-        LEFT JOIN {SCHEMA}.users u ON u.id::text = rec.user_id
+        LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("rec.user_id", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         WHERE rec.id = %s
     """, (int(rec_id),))
     row = cur.fetchone()

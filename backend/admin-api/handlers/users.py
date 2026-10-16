@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso
+from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso, user_match
 
 
 def handle_users(query: dict) -> dict:
@@ -45,8 +45,8 @@ def handle_users(query: dict) -> dict:
             id, email, first_name, last_name, name, phone, city, role,
             avatar_url, is_blocked, blocked_at, blocked_reason,
             created_at, last_login_at,
-            (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE r.user_id = u.id) AS requests_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.owner_email = u.email) AS recommendations_count
+            (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE {user_match("r.user_email")}) AS requests_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE {user_match("rec.user_id")}) AS recommendations_count
         FROM {SCHEMA}.users u
         {where}
         ORDER BY created_at DESC
@@ -113,8 +113,8 @@ def handle_user(query: dict) -> dict:
             avatar_url, is_blocked, blocked_at, blocked_reason,
             created_at, last_login_at,
             telegram_username, vk_link, email_verified,
-            (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE r.user_id = u.id) AS requests_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.owner_email = u.email) AS recommendations_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE {user_match("r.user_email")}) AS requests_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE {user_match("rec.user_id")}) AS recommendations_count,
             (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_email = u.email) AS reviews_count
         FROM {SCHEMA}.users u
         WHERE id = %s

@@ -98,3 +98,10 @@ def json_response(data: dict, status: int = 200) -> dict:
         "headers": get_cors_headers(_current_event),
         "body": json.dumps(data, default=str, ensure_ascii=False)
     }
+
+def user_match(ref: str, u: str = "u") -> str:
+    """SQL-условие: поле ref (email или tg_<id>) принадлежит пользователю u"""
+    return (
+        f"(LOWER({ref}) = LOWER(NULLIF({u}.email, '')) "
+        f"OR ({u}.telegram_id IS NOT NULL AND {ref} = 'tg_' || {u}.telegram_id))"
+    )

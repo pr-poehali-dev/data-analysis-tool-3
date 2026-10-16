@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import get_db, audit_log, json_response, SCHEMA, user_match
 
 REQUEST_STATUSES = ("active", "in_progress", "archived")
 
@@ -29,7 +29,9 @@ def handle_requests(query: dict) -> dict:
         conditions.append("r.status = %s")
         params.append(status)
     if user_id.isdigit():
-        conditions.append("r.user_id = %s")
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM {SCHEMA}.users uf WHERE uf.id = %s AND {user_match('r.user_email', 'uf')})"
+        )
         params.append(int(user_id))
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
@@ -50,7 +52,7 @@ def handle_requests(query: dict) -> dict:
             COALESCE(u.first_name || ' ' || u.last_name, u.name, r.user_email) AS author_name,
             (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
         FROM {SCHEMA}.requests r
-        LEFT JOIN {SCHEMA}.users u ON u.id = r.user_id
+        LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("r.user_email", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         {where}
         ORDER BY r.created_at DESC
         LIMIT {limit} OFFSET {offset}
@@ -113,7 +115,7 @@ def handle_request(query: dict) -> dict:
             u.phone AS author_phone, u.avatar_url AS author_avatar,
             (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
         FROM {SCHEMA}.requests r
-        LEFT JOIN {SCHEMA}.users u ON u.id = r.user_id
+        LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("r.user_email", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         WHERE r.id = %s
     """, (int(req_id),))
     row = cur.fetchone()
