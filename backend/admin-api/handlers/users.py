@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso, user_match
+from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, to_utc_iso, user_match
 
 
 def handle_users(query: dict) -> dict:
@@ -9,8 +9,7 @@ def handle_users(query: dict) -> dict:
     search = query.get("search", "").strip()
     role = query.get("role", "").strip()
     status = query.get("status", "all").strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -101,7 +100,7 @@ def handle_users(query: dict) -> dict:
 def handle_user(query: dict) -> dict:
     """Возвращает детальную карточку одного пользователя по id"""
     user_id = query.get("id", "")
-    if not user_id or not str(user_id).isdigit():
+    if not user_id or not is_id(user_id):
         return json_response({"error": "Укажите корректный id пользователя"}, 400)
 
     conn = get_db()
@@ -173,7 +172,7 @@ def handle_block_user(body: dict) -> dict:
     block = body.get("block")
     reason = body.get("reason", "")
 
-    if not user_id or not isinstance(user_id, int):
+    if not user_id or not isinstance(user_id, int) or isinstance(user_id, bool) or not is_id(user_id):
         return json_response({"error": "Укажите user_id"}, 400)
     if block is None:
         return json_response({"error": "Укажите block (true/false)"}, 400)

@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA, to_utc_iso
+from utils import is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA, to_utc_iso
 
 
 def handle_reviews(query: dict) -> dict:
@@ -8,8 +8,7 @@ def handle_reviews(query: dict) -> dict:
     """
     search = query.get("search", "").strip()
     rating = query.get("rating", "").strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -87,7 +86,7 @@ def handle_delete_review(body: dict) -> dict:
     body: { review_id: int }
     """
     review_id = body.get("review_id")
-    if not review_id or not isinstance(review_id, int):
+    if not review_id or not isinstance(review_id, int) or isinstance(review_id, bool) or not is_id(review_id):
         return json_response({"error": "Укажите review_id"}, 400)
 
     conn = get_db()

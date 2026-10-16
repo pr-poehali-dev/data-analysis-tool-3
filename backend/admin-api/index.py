@@ -1,11 +1,10 @@
-import json
 import sys
 import os
 
 # Добавляем текущую директорию в путь для импортов модулей
 sys.path.insert(0, os.path.dirname(__file__))
 
-from utils import get_cors_headers, verify_admin_token, json_response, set_current_event
+from utils import get_cors_headers, verify_admin_token, json_response, set_current_event, BadRequest, parse_body
 from handlers.dashboard import handle_stats, handle_registrations, handle_activity
 from handlers.users import handle_users, handle_user, handle_block_user
 from handlers.requests import handle_requests, handle_request, handle_update_request_status, handle_delete_request
@@ -48,6 +47,14 @@ def handler(event: dict, context) -> dict:
     """
     set_current_event(event)
 
+    try:
+        return _route(event)
+    except BadRequest as e:
+        return json_response({"error": str(e)}, 400)
+
+
+def _route(event: dict) -> dict:
+    """Проверяет токен и направляет запрос в нужный обработчик"""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": get_cors_headers(event), "body": ""}
 
@@ -71,47 +78,47 @@ def handler(event: dict, context) -> dict:
     elif action == "user":
         return handle_user(query)
     elif action == "block_user" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_block_user(body)
     elif action == "requests":
         return handle_requests(query)
     elif action == "request":
         return handle_request(query)
     elif action == "update_request_status" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_update_request_status(body)
     elif action == "delete_request" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_delete_request(body)
     elif action == "recommendations":
         return handle_recommendations(query)
     elif action == "recommendation":
         return handle_recommendation(query)
     elif action == "update_rec_status" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_update_rec_status(body)
     elif action == "delete_recommendation" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_delete_recommendation(body)
     elif action == "escrow":
         return handle_escrow(query)
     elif action == "escrow_detail":
         return handle_escrow_detail(query)
     elif action == "update_escrow_status" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_update_escrow_status(body)
     elif action == "reviews":
         return handle_reviews(query)
     elif action == "delete_review" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_delete_review(body)
     elif action == "feedback":
         return handle_feedback(query)
     elif action == "mark_feedback_read" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_mark_feedback_read(body)
     elif action == "reply_feedback" and method == "POST":
-        body = json.loads(event.get("body") or "{}")
+        body = parse_body(event)
         return handle_reply_feedback(body)
     elif action == "analytics":
         return handle_analytics()

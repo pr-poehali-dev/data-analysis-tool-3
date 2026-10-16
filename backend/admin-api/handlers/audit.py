@@ -1,4 +1,4 @@
-from utils import get_db, json_response, SCHEMA
+from utils import parse_pagination, get_db, json_response, SCHEMA
 
 
 def handle_audit_log(query: dict) -> dict:
@@ -7,8 +7,7 @@ def handle_audit_log(query: dict) -> dict:
     Параметры: action_filter, page, limit
     """
     action_filter = query.get("action_filter", "all").strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(100, max(1, int(query.get("limit", 50))))
+    page, limit = parse_pagination(query, 50, 100)
     offset = (page - 1) * limit
 
     conditions = []

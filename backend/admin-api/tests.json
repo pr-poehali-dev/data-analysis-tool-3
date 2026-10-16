@@ -12,14 +12,18 @@
       "method": "GET",
       "path": "/?action=stats",
       "expectedStatus": 403,
-      "expectedBody": {"error": "Доступ запрещён"},
+      "expectedBody": {
+        "error": "Доступ запрещён"
+      },
       "bodyMatcher": "partial"
     },
     {
       "name": "Неверный токен — отказ",
       "method": "GET",
       "path": "/?action=registrations",
-      "headers": {"X-Admin-Token": "invalid.token.here"},
+      "headers": {
+        "X-Admin-Token": "invalid.token.here"
+      },
       "expectedStatus": 403,
       "bodyMatcher": "partial"
     },
@@ -139,6 +143,26 @@
       "name": "Аналитика без токена — отказ",
       "method": "GET",
       "path": "/?action=analytics",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный токен и нечисловой page — отказ, не 500",
+      "method": "GET",
+      "path": "/?action=users&page=abc&limit=xyz",
+      "headers": {
+        "X-Admin-Token": "invalid.token.here"
+      },
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный токен и битое тело запроса — отказ, не 500",
+      "method": "POST",
+      "path": "/?action=block_user",
+      "headers": {
+        "X-Admin-Token": "invalid.token.here"
+      },
       "expectedStatus": 403,
       "bodyMatcher": "partial"
     }

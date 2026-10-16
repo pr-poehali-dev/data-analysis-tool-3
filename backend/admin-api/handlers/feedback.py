@@ -3,7 +3,7 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA
 
 
 def handle_feedback(query: dict) -> dict:
@@ -13,8 +13,7 @@ def handle_feedback(query: dict) -> dict:
     """
     status = query.get("status", "all").strip()
     search = query.get("search", "").strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -82,7 +81,7 @@ def handle_mark_feedback_read(body: dict) -> dict:
     body: { feedback_id: int }
     """
     feedback_id = body.get("feedback_id")
-    if not feedback_id or not isinstance(feedback_id, int):
+    if not feedback_id or not isinstance(feedback_id, int) or isinstance(feedback_id, bool) or not is_id(feedback_id):
         return json_response({"error": "Укажите feedback_id"}, 400)
 
     conn = get_db()
@@ -111,7 +110,7 @@ def handle_reply_feedback(body: dict) -> dict:
     feedback_id = body.get("feedback_id")
     reply_text = (body.get("reply") or "").strip()
 
-    if not feedback_id or not isinstance(feedback_id, int):
+    if not feedback_id or not isinstance(feedback_id, int) or isinstance(feedback_id, bool) or not is_id(feedback_id):
         return json_response({"error": "Укажите feedback_id"}, 400)
     if not reply_text:
         return json_response({"error": "Текст ответа не может быть пустым"}, 400)

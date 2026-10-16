@@ -105,3 +105,44 @@ def user_match(ref: str, u: str = "u") -> str:
         f"(LOWER({ref}) = LOWER(NULLIF({u}.email, '')) "
         f"OR ({u}.telegram_id IS NOT NULL AND {ref} = 'tg_' || {u}.telegram_id))"
     )
+
+
+class BadRequest(Exception):
+    """Некорректный запрос администратора: превращается в ответ 400"""
+
+
+MAX_PAGE = 1_000_000
+
+
+def _to_int(value, name: str, default: int) -> int:
+    if value is None or str(value).strip() == "":
+        return default
+    try:
+        return int(str(value).strip())
+    except ValueError:
+        raise BadRequest(f"Параметр {name} должен быть целым числом")
+
+
+def parse_pagination(query: dict, default_limit: int = 20, max_limit: int = 50) -> tuple:
+    """Разбирает page и limit. Не число -> BadRequest, слишком малые/большие значения подрезаются"""
+    page = min(MAX_PAGE, max(1, _to_int(query.get("page"), "page", 1)))
+    limit = min(max_limit, max(1, _to_int(query.get("limit"), "limit", default_limit)))
+    return page, limit
+
+
+def parse_body(event: dict) -> dict:
+    """Разбирает JSON-тело запроса. Не JSON или не объект -> BadRequest"""
+    raw = event.get("body") or "{}"
+    try:
+        data = json.loads(raw)
+    except (ValueError, TypeError):
+        raise BadRequest("Некорректное тело запроса: ожидается JSON")
+    if not isinstance(data, dict):
+        raise BadRequest("Тело запроса должно быть JSON-объектом")
+    return data
+
+
+def is_id(value) -> bool:
+    """Допустимый числовой идентификатор: ASCII-цифры, влезает в int4 базы"""
+    text = str(value).strip()
+    return text.isascii() and text.isdigit() and 0 < int(text) <= 2147483647

@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA, user_match
+from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
 
@@ -11,8 +11,7 @@ def handle_recommendations(query: dict) -> dict:
     search = query.get("search", "").strip()
     status = query.get("status", "").strip()
     user_id = str(query.get("user_id", "")).strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -28,7 +27,7 @@ def handle_recommendations(query: dict) -> dict:
     if status and status in REC_STATUSES:
         conditions.append("rec.status = %s")
         params.append(status)
-    if user_id.isdigit():
+    if is_id(user_id):
         conditions.append(
             f"EXISTS (SELECT 1 FROM {SCHEMA}.users uf WHERE uf.id = %s AND {user_match('rec.user_id', 'uf')})"
         )
@@ -94,7 +93,7 @@ def handle_recommendations(query: dict) -> dict:
 def handle_recommendation(query: dict) -> dict:
     """Возвращает детальную карточку рекомендации по id"""
     rec_id = query.get("id", "")
-    if not rec_id or not str(rec_id).isdigit():
+    if not rec_id or not is_id(rec_id):
         return json_response({"error": "Укажите корректный id рекомендации"}, 400)
 
     conn = get_db()
@@ -158,7 +157,7 @@ def handle_update_rec_status(body: dict) -> dict:
     rec_id = body.get("recommendation_id")
     new_status = body.get("status", "")
 
-    if not rec_id or not isinstance(rec_id, int):
+    if not rec_id or not isinstance(rec_id, int) or isinstance(rec_id, bool) or not is_id(rec_id):
         return json_response({"error": "Укажите recommendation_id"}, 400)
     if new_status not in REC_STATUSES:
         return json_response({"error": f"Статус должен быть одним из: {', '.join(REC_STATUSES)}"}, 400)
@@ -189,7 +188,7 @@ def handle_delete_recommendation(body: dict) -> dict:
     body: { recommendation_id: int }
     """
     rec_id = body.get("recommendation_id")
-    if not rec_id or not isinstance(rec_id, int):
+    if not rec_id or not isinstance(rec_id, int) or isinstance(rec_id, bool) or not is_id(rec_id):
         return json_response({"error": "Укажите recommendation_id"}, 400)
 
     conn = get_db()

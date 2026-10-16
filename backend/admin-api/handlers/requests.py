@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA, user_match
+from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REQUEST_STATUSES = ("active", "in_progress", "archived")
 
@@ -11,8 +11,7 @@ def handle_requests(query: dict) -> dict:
     search = query.get("search", "").strip()
     status = query.get("status", "").strip()
     user_id = str(query.get("user_id", "")).strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -28,7 +27,7 @@ def handle_requests(query: dict) -> dict:
     if status and status in REQUEST_STATUSES:
         conditions.append("r.status = %s")
         params.append(status)
-    if user_id.isdigit():
+    if is_id(user_id):
         conditions.append(
             f"EXISTS (SELECT 1 FROM {SCHEMA}.users uf WHERE uf.id = %s AND {user_match('r.user_email', 'uf')})"
         )
@@ -98,7 +97,7 @@ def handle_requests(query: dict) -> dict:
 def handle_request(query: dict) -> dict:
     """Возвращает детальную карточку заявки по id"""
     req_id = query.get("id", "")
-    if not req_id or not str(req_id).isdigit():
+    if not req_id or not is_id(req_id):
         return json_response({"error": "Укажите корректный id заявки"}, 400)
 
     conn = get_db()
@@ -165,7 +164,7 @@ def handle_update_request_status(body: dict) -> dict:
     req_id = body.get("request_id")
     new_status = body.get("status", "")
 
-    if not req_id or not isinstance(req_id, int):
+    if not req_id or not isinstance(req_id, int) or isinstance(req_id, bool) or not is_id(req_id):
         return json_response({"error": "Укажите request_id"}, 400)
     if new_status not in REQUEST_STATUSES:
         return json_response({"error": f"Статус должен быть одним из: {', '.join(REQUEST_STATUSES)}"}, 400)
@@ -196,7 +195,7 @@ def handle_delete_request(body: dict) -> dict:
     body: { request_id: int }
     """
     req_id = body.get("request_id")
-    if not req_id or not isinstance(req_id, int):
+    if not req_id or not isinstance(req_id, int) or isinstance(req_id, bool) or not is_id(req_id):
         return json_response({"error": "Укажите request_id"}, 400)
 
     conn = get_db()

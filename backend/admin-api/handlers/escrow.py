@@ -1,4 +1,4 @@
-from utils import get_db, audit_log, json_response, SCHEMA
+from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA
 
 ESCROW_STATUSES = ("pending", "frozen", "completed", "cancelled", "refunded")
 
@@ -18,8 +18,7 @@ def handle_escrow(query: dict) -> dict:
     """
     search = query.get("search", "").strip()
     status = query.get("status", "").strip()
-    page = max(1, int(query.get("page", 1)))
-    limit = min(50, max(1, int(query.get("limit", 20))))
+    page, limit = parse_pagination(query, 20, 50)
     offset = (page - 1) * limit
 
     conditions = []
@@ -108,7 +107,7 @@ def handle_escrow(query: dict) -> dict:
 def handle_escrow_detail(query: dict) -> dict:
     """Возвращает детальную карточку сделки по id"""
     escrow_id = query.get("id", "")
-    if not escrow_id or not str(escrow_id).isdigit():
+    if not escrow_id or not is_id(escrow_id):
         return json_response({"error": "Укажите корректный id сделки"}, 400)
 
     conn = get_db()
@@ -185,7 +184,7 @@ def handle_update_escrow_status(body: dict) -> dict:
     escrow_id = body.get("escrow_id")
     new_status = body.get("status", "")
 
-    if not escrow_id or not isinstance(escrow_id, int):
+    if not escrow_id or not isinstance(escrow_id, int) or isinstance(escrow_id, bool) or not is_id(escrow_id):
         return json_response({"error": "Укажите escrow_id"}, 400)
     if new_status not in ESCROW_STATUSES:
         return json_response({"error": f"Статус должен быть одним из: {', '.join(ESCROW_STATUSES)}"}, 400)
