@@ -80,8 +80,12 @@ def check_password(password: str, admin_password_plain: str, admin_password_hash
     Иначе — fallback на сравнение plain text через hmac (старый способ).
     """
     if admin_password_hash:
-        return bcrypt.checkpw(password.encode("utf-8"), admin_password_hash.encode("utf-8"))
-    # Fallback: plain text (для обратной совместимости пока не задан хеш)
+        try:
+            return bcrypt.checkpw(password.encode("utf-8"), admin_password_hash.encode("utf-8"))
+        except ValueError:
+            return False
+    if not admin_password_plain:
+        return False
     return hmac.compare_digest(password, admin_password_plain)
 
 
