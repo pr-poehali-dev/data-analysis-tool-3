@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   adminApi,
@@ -57,6 +57,10 @@ export default function AdminRecommendations() {
   const [photoIndex, setPhotoIndex] = useState(0);
 
   const handleStatusFilter = (value: string) => handleFilterChange("status", value);
+
+  useEffect(() => {
+    setFilter((f) => (f.user_id === userIdParam ? f : { ...f, user_id: userIdParam, page: 1 }));
+  }, [userIdParam, setFilter]);
 
   const handleResetUserFilter = () => {
     setSearchParams({});
