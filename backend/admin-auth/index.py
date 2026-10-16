@@ -5,13 +5,14 @@ import hashlib
 import time
 # redeploy 2
 import base64
+import ipaddress
 import bcrypt
 import psycopg2
 
 # Настройки защиты от брутфорса
-MAX_ATTEMPTS = 5          # максимум неудачных попыток
+MAX_ATTEMPTS = 5          # максимум неудачных попыток с одного IP
+GLOBAL_MAX_ATTEMPTS = 30  # максимум неудачных попыток со всех IP вместе
 WINDOW_MINUTES = 15       # окно наблюдения (минут)
-BLOCK_MINUTES = 30        # длительность блокировки (минут)
 
 
 def get_db_conn():
@@ -19,31 +20,46 @@ def get_db_conn():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
+def _is_internal_ip(value: str) -> bool:
+    """Внутренние адреса платформы (прокси), которые не являются адресом клиента"""
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        return True
+    return addr.is_private or addr.is_loopback or addr.is_link_local
+
+
 def get_client_ip(event: dict) -> str:
-    """Извлекает IP-адрес клиента из запроса"""
+    """Определяет IP клиента, который нельзя подделать заголовком.
+    Клиент может дописать любые адреса в начало X-Forwarded-For, а платформа добавляет
+    настоящий адрес справа и затем свои внутренние адреса. Поэтому отбрасываем внутренние
+    адреса с конца и берём последний оставшийся."""
     headers = event.get("headers") or {}
-    ip = (
-        headers.get("X-Forwarded-For", "")
-        or headers.get("x-forwarded-for", "")
-        or (event.get("requestContext") or {}).get("identity", {}).get("sourceIp", "")
-        or "unknown"
-    )
-    return ip.split(",")[0].strip()
+    forwarded = headers.get("X-Forwarded-For", "") or headers.get("x-forwarded-for", "")
+    parts = [p.strip() for p in forwarded.split(",") if p.strip()]
+    while parts and _is_internal_ip(parts[-1]):
+        parts.pop()
+    if parts:
+        return parts[-1]
+    source_ip = ((event.get("requestContext") or {}).get("identity") or {}).get("sourceIp", "")
+    return source_ip.strip() or "unknown"
 
 
 def is_ip_blocked(conn, ip: str) -> bool:
-    """Проверяет, заблокирован ли IP по числу неудачных попыток за окно WINDOW_MINUTES"""
-    window_start = time.time() - WINDOW_MINUTES * 60
-    window_ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(window_start))
+    """Блокирует вход, если с этого IP слишком много неудачных попыток за окно,
+    либо слишком много неудачных попыток со всех IP вместе (защита от подмены адреса)"""
     cur = conn.cursor()
     cur.execute(
-        "SELECT COUNT(*) FROM admin_login_attempts "
-        "WHERE ip_address = %s AND attempted_at >= %s AND success = FALSE",
-        (ip, window_ts)
+        "SELECT "
+        "COUNT(*) FILTER (WHERE ip_address = %s), "
+        "COUNT(*) "
+        "FROM admin_login_attempts "
+        "WHERE attempted_at >= NOW() - (%s * INTERVAL '1 minute') AND success = FALSE",
+        (ip, WINDOW_MINUTES)
     )
-    count = cur.fetchone()[0]
+    ip_count, total_count = cur.fetchone()
     cur.close()
-    return count >= MAX_ATTEMPTS
+    return ip_count >= MAX_ATTEMPTS or total_count >= GLOBAL_MAX_ATTEMPTS
 
 
 def record_attempt(conn, ip: str, success: bool):
@@ -203,7 +219,7 @@ def handler(event: dict, context) -> dict:
                     "statusCode": 429,
                     "headers": cors_headers,
                     "body": json.dumps({
-                        "error": f"Слишком много попыток входа. Попробуйте через {BLOCK_MINUTES} минут."
+                        "error": f"Слишком много попыток входа. Попробуйте через {WINDOW_MINUTES} минут."
                     })
                 }
 
