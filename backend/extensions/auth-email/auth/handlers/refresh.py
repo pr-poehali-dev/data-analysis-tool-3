@@ -46,7 +46,7 @@ def handle(event: dict, origin: str = '*') -> dict:
         cur = conn.cursor()
 
         cur.execute(f"""
-            SELECT rt.id, u.email, u.name
+            SELECT rt.id, u.email, u.name, u.is_blocked
             FROM {S}refresh_tokens rt
             JOIN {S}users u ON u.id = rt.user_id
             WHERE rt.token_hash = %s
@@ -59,7 +59,13 @@ def handle(event: dict, origin: str = '*') -> dict:
             conn.close()
             return error(401, 'Refresh token revoked or expired', origin)
 
-        old_rt_id, user_email, user_name = result
+        old_rt_id, user_email, user_name, is_blocked = result
+
+        if is_blocked:
+            cur.execute(f"DELETE FROM {S}refresh_tokens WHERE user_id = %s", (user_id,))
+            conn.commit()
+            conn.close()
+            return error(401, 'Аккаунт заблокирован', origin)
 
         cur.execute(f"DELETE FROM {S}refresh_tokens WHERE id = %s", (old_rt_id,))
 

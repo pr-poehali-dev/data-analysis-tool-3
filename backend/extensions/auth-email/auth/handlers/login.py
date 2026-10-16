@@ -45,7 +45,7 @@ def handle(event: dict, origin: str = '*') -> dict:
                 return error(429, f'Слишком много попыток. Повторите через {remaining // 60 + 1} мин.', origin)
 
     user = query_one(f"""
-        SELECT id, email, name, password_hash, email_verified
+        SELECT id, email, name, password_hash, email_verified, is_blocked
         FROM {S}users WHERE email = %s
     """, (email,))
 
@@ -54,7 +54,7 @@ def handle(event: dict, origin: str = '*') -> dict:
     if not user:
         return error(401, auth_error_msg, origin)
 
-    user_id, user_email, user_name, stored_hash, email_verified = user
+    user_id, user_email, user_name, stored_hash, email_verified, is_blocked = user
 
     if not verify_password(password, stored_hash):
         now = datetime.utcnow().isoformat()
@@ -65,6 +65,9 @@ def handle(event: dict, origin: str = '*') -> dict:
             WHERE email = %s
         """, (now, email))
         return error(401, auth_error_msg, origin)
+
+    if is_blocked:
+        return error(403, 'Аккаунт заблокирован', origin)
 
     if is_email_enabled() and not email_verified:
         return error(403, 'Email не подтверждён. Проверьте почту.', origin)

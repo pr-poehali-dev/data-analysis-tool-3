@@ -374,6 +374,12 @@ def handle_callback(event: dict, origin: str) -> dict:
                     )
                     user_id = cur.fetchone()[0]
 
+            cur.execute(f"SELECT is_blocked FROM {S}users WHERE id = %s", (user_id,))
+            blocked_row = cur.fetchone()
+            if blocked_row and blocked_row[0]:
+                conn.rollback()
+                return error(403, 'Аккаунт заблокирован', origin)
+
             access_token, expires_in = create_access_token(user_id, email)
             refresh_token = create_refresh_token()
             refresh_token_hash = hash_token(refresh_token)
@@ -480,6 +486,13 @@ def handle_refresh(event: dict, origin: str) -> dict:
             return error(401, 'Invalid or expired refresh token', origin)
 
         old_rt_id, user_id, email, name, avatar_url, google_id = row
+
+        cur.execute(f"SELECT is_blocked FROM {S}users WHERE id = %s", (user_id,))
+        blocked_row = cur.fetchone()
+        if blocked_row and blocked_row[0]:
+            cur.execute(f"DELETE FROM {S}refresh_tokens WHERE user_id = %s", (user_id,))
+            conn.commit()
+            return error(401, 'Аккаунт заблокирован', origin)
 
         cur.execute(f"DELETE FROM {S}refresh_tokens WHERE id = %s", (old_rt_id,))
 

@@ -354,6 +354,14 @@ def options_response(origin: str = '*') -> dict:
 # ACTION HANDLERS
 # =============================================================================
 
+def is_user_blocked(cursor, user_id: int) -> bool:
+    """Проверяет, заблокирован ли пользователь администратором."""
+    schema = get_schema()
+    cursor.execute(f"SELECT is_blocked FROM {schema}users WHERE id = %s", (user_id,))
+    row = cursor.fetchone()
+    return bool(row and row[0])
+
+
 def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
     """
     POST ?action=callback
@@ -395,6 +403,9 @@ def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
         last_name=token_data["telegram_last_name"],
         photo_url=token_data["telegram_photo_url"],
     )
+
+    if is_user_blocked(cursor, user["id"]):
+        return cors_response(403, {"error": "Аккаунт заблокирован"}, origin)
 
     # Mark token as used
     mark_token_used(cursor, token)
@@ -461,6 +472,11 @@ def handle_refresh(cursor, body: dict, event: dict = None, origin: str = '*') ->
     user = get_user_by_id(cursor, token_data["user_id"])
     if not user:
         return cors_response(401, {"error": "User not found"}, origin)
+
+    if is_user_blocked(cursor, user["id"]):
+        schema = get_schema()
+        cursor.execute(f"DELETE FROM {schema}refresh_tokens WHERE user_id = %s", (user["id"],))
+        return cors_response(401, {"error": "Аккаунт заблокирован"}, origin)
 
     delete_refresh_token(cursor, old_token_hash)
 
