@@ -2,9 +2,22 @@ import { adminStore } from "@/store/adminStore";
 
 const ADMIN_API_URL = "https://functions.poehali.dev/fdf4da58-d05b-4439-b49f-b49f4acba9f7";
 
+const ADMIN_LOGIN_PATH = "/admin/login";
+let redirectingToLogin = false;
+
+async function guardedFetch(input: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, init);
+  if (res.status === 403 && !redirectingToLogin && window.location.pathname !== ADMIN_LOGIN_PATH) {
+    redirectingToLogin = true;
+    adminStore.clearToken();
+    window.location.replace(ADMIN_LOGIN_PATH);
+  }
+  return res;
+}
+
 async function adminFetch(action: string, options?: RequestInit): Promise<Response> {
   const token = adminStore.getToken() || "";
-  return fetch(`${ADMIN_API_URL}?action=${action}`, {
+  return guardedFetch(`${ADMIN_API_URL}?action=${action}`, {
     method: "GET",
     ...options,
     headers: {
@@ -17,7 +30,7 @@ async function adminFetch(action: string, options?: RequestInit): Promise<Respon
 
 async function adminPost(action: string, body: object): Promise<Response> {
   const token = adminStore.getToken() || "";
-  return fetch(`${ADMIN_API_URL}?action=${action}`, {
+  return guardedFetch(`${ADMIN_API_URL}?action=${action}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -368,7 +381,7 @@ export const adminApi = {
     if (filter.limit) params.set("limit", String(filter.limit));
 
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки пользователей");
@@ -377,7 +390,7 @@ export const adminApi = {
 
   async getUser(id: number): Promise<AdminUserDetail> {
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?action=user&id=${id}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?action=user&id=${id}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки пользователя");
@@ -399,7 +412,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки заявок");
@@ -408,7 +421,7 @@ export const adminApi = {
 
   async getRequest(id: number): Promise<AdminRequestDetail> {
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?action=request&id=${id}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?action=request&id=${id}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки заявки");
@@ -435,7 +448,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки рекомендаций");
@@ -444,7 +457,7 @@ export const adminApi = {
 
   async getRecommendation(id: number): Promise<AdminRecommendationDetail> {
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?action=recommendation&id=${id}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?action=recommendation&id=${id}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки рекомендации");
@@ -470,7 +483,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки сделок");
@@ -479,7 +492,7 @@ export const adminApi = {
 
   async getEscrowDetail(id: number): Promise<AdminEscrowDetail> {
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?action=escrow_detail&id=${id}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?action=escrow_detail&id=${id}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки сделки");
@@ -500,7 +513,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки отзывов");
@@ -520,7 +533,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки обратной связи");
@@ -550,7 +563,7 @@ export const adminApi = {
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
-    const res = await fetch(`${ADMIN_API_URL}?${params.toString()}`, {
+    const res = await guardedFetch(`${ADMIN_API_URL}?${params.toString()}`, {
       headers: { "Content-Type": "application/json", "X-Admin-Token": token },
     });
     if (!res.ok) throw new Error("Ошибка загрузки журнала");
