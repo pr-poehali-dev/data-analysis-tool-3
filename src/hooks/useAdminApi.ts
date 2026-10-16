@@ -547,7 +547,10 @@ export const adminApi = {
 
   async replyFeedback(feedbackId: number, reply: string): Promise<void> {
     const res = await adminPost("reply_feedback", { feedback_id: feedbackId, reply });
-    if (!res.ok) throw new Error("Ошибка при отправке ответа");
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Ошибка при отправке ответа");
+    }
   },
 
   async getAnalytics(): Promise<AnalyticsData> {

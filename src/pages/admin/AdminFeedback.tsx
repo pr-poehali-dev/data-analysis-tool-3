@@ -55,6 +55,7 @@ export default function AdminFeedback() {
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
   const [replySuccess, setReplySuccess] = useState(false);
+  const [replyError, setReplyError] = useState("");
 
   const handleStatusFilter = (value: string) => handleFilterChange("status", value, "");
 
@@ -68,6 +69,7 @@ export default function AdminFeedback() {
     setMobilePanel(true);
     setReplyText("");
     setReplySuccess(false);
+    setReplyError("");
     if (msg.status === "new") {
       try {
         await adminApi.markFeedbackRead(msg.id);
@@ -83,6 +85,7 @@ export default function AdminFeedback() {
     if (!selected || !replyText.trim()) return;
     setReplyLoading(true);
     setReplySuccess(false);
+    setReplyError("");
     try {
       await adminApi.replyFeedback(selected.id, replyText.trim());
       const updatedMsg: FeedbackMessage = {
@@ -97,6 +100,7 @@ export default function AdminFeedback() {
       setReplySuccess(true);
     } catch (_e) {
       console.error("Ошибка отправки ответа", _e);
+      setReplyError(_e instanceof Error ? _e.message : "Не удалось отправить ответ");
     } finally {
       setReplyLoading(false);
     }
@@ -227,6 +231,12 @@ export default function AdminFeedback() {
                 rows={4}
                 className="text-sm resize-none"
               />
+              {replyError && (
+                <div className="flex items-start gap-1.5 text-sm text-red-600">
+                  <Icon name="AlertCircle" size={14} className="mt-0.5 shrink-0" />
+                  {replyError}
+                </div>
+              )}
               {replySuccess && (
                 <div className="flex items-center gap-1.5 text-sm text-green-600">
                   <Icon name="CheckCircle" size={14} />

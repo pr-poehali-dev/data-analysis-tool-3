@@ -1,3 +1,4 @@
+import html
 import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -132,6 +133,9 @@ def handle_reply_feedback(body: dict) -> dict:
     user_email = row[1]
     subject_type = row[2]
     original_message = row[3]
+    safe_reply = html.escape(reply_text)
+    safe_original = html.escape(original_message or "")
+    safe_subject = (subject_type or "").replace("\r", " ").replace("\n", " ")
 
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
@@ -144,7 +148,7 @@ def handle_reply_feedback(body: dict) -> dict:
     msg = MIMEMultipart("alternative")
     msg["From"] = smtp_user
     msg["To"] = user_email
-    msg["Subject"] = f"Re: [{subject_type}] Ваше обращение в SovetPay"
+    msg["Subject"] = f"Re: [{safe_subject}] Ваше обращение в SovetPay"
     msg["Reply-To"] = smtp_user
 
     text_body = f"Здравствуйте!\n\nОтвет на ваше обращение:\n\n{reply_text}\n\n---\nВаше обращение:\n{original_message}"
@@ -153,11 +157,11 @@ def handle_reply_feedback(body: dict) -> dict:
       <h2 style="color: #202020; margin-bottom: 8px;">Ответ на ваше обращение</h2>
       <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Команда SovetPay</p>
       <div style="border-left: 3px solid #3b82f6; padding-left: 16px; margin-bottom: 24px;">
-        <p style="margin: 0; font-size: 15px; color: #333; white-space: pre-wrap;">{reply_text}</p>
+        <p style="margin: 0; font-size: 15px; color: #333; white-space: pre-wrap;">{safe_reply}</p>
       </div>
       <div style="background: #f5f5f5; border-radius: 8px; padding: 16px;">
         <p style="margin: 0 0 8px; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.05em;">Ваше обращение</p>
-        <p style="margin: 0; font-size: 13px; color: #666; white-space: pre-wrap;">{original_message}</p>
+        <p style="margin: 0; font-size: 13px; color: #666; white-space: pre-wrap;">{safe_original}</p>
       </div>
     </div>
     """
@@ -165,10 +169,23 @@ def handle_reply_feedback(body: dict) -> dict:
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=4) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+    except smtplib.SMTPAuthenticationError:
+        cur.close()
+        conn.close()
+        return json_response({"error": "Не удалось войти в почтовый ящик отправителя. Проверьте SMTP-пароль в настройках проекта."}, 502)
+    except smtplib.SMTPRecipientsRefused:
+        cur.close()
+        conn.close()
+        return json_response({"error": "Адрес получателя не принят почтовым сервером. Проверьте email в обращении."}, 502)
+    except (smtplib.SMTPException, OSError):
+        cur.close()
+        conn.close()
+        return json_response({"error": "Не удалось отправить письмо. Ответ не отправлен, попробуйте ещё раз чуть позже."}, 502)
 
     cur.execute(f"""
         UPDATE {SCHEMA}.feedback_messages
