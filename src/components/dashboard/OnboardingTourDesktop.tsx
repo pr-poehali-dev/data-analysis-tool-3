@@ -22,6 +22,7 @@ const getTargetRect = (targetId: string): TargetRect | null => {
   return { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
 };
 
+const HEADER_HEIGHT = 80;
 const TOOLTIP_WIDTH = 320;
 const TOOLTIP_GAP = 16;
 
@@ -34,10 +35,16 @@ export const OnboardingTourDesktop = ({ onFinish }: OnboardingTourDesktopProps) 
 
   useLayoutEffect(() => {
     const update = () => {
-      const target = getTargetRect(step.targetId);
+      let target = getTargetRect(step.targetId);
       if (target) {
-        const el = document.getElementById(`desktop-nav-${step.targetId}`);
-        el?.scrollIntoView({ block: "nearest" });
+        const minTop = HEADER_HEIGHT + 16;
+        const maxBottom = window.innerHeight - 16;
+        if (target.top < minTop) {
+          window.scrollBy({ top: target.top - minTop, behavior: "instant" });
+        } else if (target.top + target.height > maxBottom) {
+          window.scrollBy({ top: target.top + target.height - maxBottom, behavior: "instant" });
+        }
+        target = getTargetRect(step.targetId);
       }
       setRect(target);
     };
