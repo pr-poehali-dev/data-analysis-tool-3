@@ -201,6 +201,10 @@ def handle_block_user(body: dict) -> dict:
         """, (int(user_id),))
 
     updated = cur.fetchone()
+    revoked = 0
+    if updated and block:
+        cur.execute(f"DELETE FROM {SCHEMA}.refresh_tokens WHERE user_id = %s", (int(user_id),))
+        revoked = cur.rowcount
     conn.commit()
     cur.close()
     conn.close()
@@ -209,5 +213,8 @@ def handle_block_user(body: dict) -> dict:
         return json_response({"error": "Пользователь не найден"}, 404)
 
     action_text = "заблокирован" if block else "разблокирован"
-    audit_log("block_user" if block else "unblock_user", "user", user_id, {"reason": reason})
+    details = {"reason": reason}
+    if block:
+        details["sessions_revoked"] = revoked
+    audit_log("block_user" if block else "unblock_user", "user", user_id, details)
     return json_response({"success": True, "message": f"Пользователь {action_text}"})
