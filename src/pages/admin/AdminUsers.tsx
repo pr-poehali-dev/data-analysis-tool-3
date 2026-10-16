@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminApi, AdminUser, AdminUserDetail, UsersFilter } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ function getInitials(user: AdminUser): string {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const {
     items: users,
     total,
@@ -258,6 +260,28 @@ export default function AdminUsers() {
                   <StatCard label="Заявок" value={selectedUser.requests_count} />
                   <StatCard label="Рекоменд." value={selectedUser.recommendations_count} />
                   <StatCard label="Отзывов" value={selectedUser.reviews_count} />
+                </div>
+                <div className="flex flex-col gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    disabled={selectedUser.requests_count === 0}
+                    onClick={() => navigate(`/admin/requests?user_id=${selectedUser.id}`)}
+                  >
+                    <Icon name="FileText" size={14} className="mr-1.5" />
+                    Заявки пользователя
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    disabled={selectedUser.recommendations_count === 0}
+                    onClick={() => navigate(`/admin/recommendations?user_id=${selectedUser.id}`)}
+                  >
+                    <Icon name="ThumbsUp" size={14} className="mr-1.5" />
+                    Рекомендации пользователя
+                  </Button>
                 </div>
               </div>
 

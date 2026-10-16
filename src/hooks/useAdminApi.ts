@@ -137,6 +137,7 @@ export interface RequestsResponse {
 export interface RequestsFilter {
   search?: string;
   status?: string;
+  user_id?: string;
   page?: number;
   limit?: number;
   [key: string]: unknown;
@@ -183,6 +184,7 @@ export interface RecommendationsResponse {
 export interface RecommendationsFilter {
   search?: string;
   status?: string;
+  user_id?: string;
   page?: number;
   limit?: number;
   [key: string]: unknown;
@@ -393,6 +395,7 @@ export const adminApi = {
     params.set("action", "requests");
     if (filter.search) params.set("search", filter.search);
     if (filter.status) params.set("status", filter.status);
+    if (filter.user_id) params.set("user_id", filter.user_id);
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";
@@ -428,6 +431,7 @@ export const adminApi = {
     params.set("action", "recommendations");
     if (filter.search) params.set("search", filter.search);
     if (filter.status) params.set("status", filter.status);
+    if (filter.user_id) params.set("user_id", filter.user_id);
     if (filter.page) params.set("page", String(filter.page));
     if (filter.limit) params.set("limit", String(filter.limit));
     const token = adminStore.getToken() || "";

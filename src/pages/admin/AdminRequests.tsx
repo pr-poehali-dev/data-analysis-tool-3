@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   adminApi,
   AdminRequest,
@@ -35,10 +36,14 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
+import AdminUserFilterBadge from "@/components/admin/AdminUserFilterBadge";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 export default function AdminRequests() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userIdParam = searchParams.get("user_id") || "";
+
   const {
     items: requests,
     total,
@@ -53,7 +58,7 @@ export default function AdminRequests() {
     handleFilterChange,
     handlePage,
   } = useAdminList<AdminRequest, RequestsFilter>({
-    initialFilter: { search: "", status: "", page: 1, limit: 20 },
+    initialFilter: { search: "", status: "", user_id: userIdParam, page: 1, limit: 20 },
     fetchFn: async (f) => {
       const res = await adminApi.getRequests(f);
       return { items: res.requests, total: res.total, pages: res.pages };
@@ -78,6 +83,11 @@ export default function AdminRequests() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleStatusFilter = (value: string) => handleFilterChange("status", value);
+
+  const handleResetUserFilter = () => {
+    setSearchParams({});
+    setFilter((f) => ({ ...f, user_id: "", page: 1 }));
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
@@ -117,6 +127,10 @@ export default function AdminRequests() {
           <h1 className="text-xl font-semibold text-foreground">Заявки</h1>
           <p className="text-sm text-muted-foreground mt-1">Всего: {total}</p>
         </div>
+
+        {filter.user_id && (
+          <AdminUserFilterBadge userId={filter.user_id} onReset={handleResetUserFilter} />
+        )}
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">

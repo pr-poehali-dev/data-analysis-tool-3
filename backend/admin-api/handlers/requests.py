@@ -6,10 +6,11 @@ REQUEST_STATUSES = ("active", "in_progress", "archived")
 def handle_requests(query: dict) -> dict:
     """
     Возвращает список заявок с поиском, фильтром по статусу, пагинацией.
-    Параметры: search, status, page, limit
+    Параметры: search, status, user_id, page, limit
     """
     search = query.get("search", "").strip()
     status = query.get("status", "").strip()
+    user_id = str(query.get("user_id", "")).strip()
     page = max(1, int(query.get("page", 1)))
     limit = min(50, max(1, int(query.get("limit", 20))))
     offset = (page - 1) * limit
@@ -27,6 +28,9 @@ def handle_requests(query: dict) -> dict:
     if status and status in REQUEST_STATUSES:
         conditions.append("r.status = %s")
         params.append(status)
+    if user_id.isdigit():
+        conditions.append("r.user_id = %s")
+        params.append(int(user_id))
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 

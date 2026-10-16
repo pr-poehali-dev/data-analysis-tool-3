@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   adminApi,
   AdminRecommendation,
   AdminRecommendationDetail,
   RecommendationsFilter,
 } from "@/hooks/useAdminApi";
+import AdminUserFilterBadge from "@/components/admin/AdminUserFilterBadge";
 import RecFilters from "./recommendations/RecFilters";
 import RecTable from "./recommendations/RecTable";
 import RecDetailPanel from "./recommendations/RecDetailPanel";
@@ -12,6 +14,9 @@ import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
 export default function AdminRecommendations() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userIdParam = searchParams.get("user_id") || "";
+
   const {
     items: recs,
     total,
@@ -26,7 +31,7 @@ export default function AdminRecommendations() {
     handleFilterChange,
     handlePage,
   } = useAdminList<AdminRecommendation, RecommendationsFilter>({
-    initialFilter: { search: "", status: "", page: 1, limit: 20 },
+    initialFilter: { search: "", status: "", user_id: userIdParam, page: 1, limit: 20 },
     fetchFn: async (f) => {
       const res = await adminApi.getRecommendations(f);
       return { items: res.recommendations, total: res.total, pages: res.pages };
@@ -52,6 +57,11 @@ export default function AdminRecommendations() {
   const [photoIndex, setPhotoIndex] = useState(0);
 
   const handleStatusFilter = (value: string) => handleFilterChange("status", value);
+
+  const handleResetUserFilter = () => {
+    setSearchParams({});
+    setFilter((f) => ({ ...f, user_id: "", page: 1 }));
+  };
   const openPanel = (rec: AdminRecommendation) => openPanelById(rec.id);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -92,6 +102,10 @@ export default function AdminRecommendations() {
           <h1 className="text-xl font-semibold text-foreground">Рекомендации</h1>
           <p className="text-sm text-muted-foreground mt-1">Всего: {total}</p>
         </div>
+
+        {filter.user_id && (
+          <AdminUserFilterBadge userId={filter.user_id} onReset={handleResetUserFilter} />
+        )}
 
         <RecFilters
           searchInput={searchInput}

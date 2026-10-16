@@ -31,6 +31,20 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Заявки пользователя без токена — отказ",
+      "method": "GET",
+      "path": "/?action=requests&user_id=1",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Рекомендации пользователя без токена — отказ",
+      "method": "GET",
+      "path": "/?action=recommendations&user_id=1",
+      "expectedStatus": 403,
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Блокировка без токена — отказ",
       "method": "POST",
       "path": "/?action=block_user",

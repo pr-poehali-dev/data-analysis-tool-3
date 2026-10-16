@@ -6,10 +6,11 @@ REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
 def handle_recommendations(query: dict) -> dict:
     """
     Возвращает список рекомендаций с поиском, фильтром по статусу, пагинацией.
-    Параметры: search, status, page, limit
+    Параметры: search, status, user_id, page, limit
     """
     search = query.get("search", "").strip()
     status = query.get("status", "").strip()
+    user_id = str(query.get("user_id", "")).strip()
     page = max(1, int(query.get("page", 1)))
     limit = min(50, max(1, int(query.get("limit", 20))))
     offset = (page - 1) * limit
@@ -27,6 +28,9 @@ def handle_recommendations(query: dict) -> dict:
     if status and status in REC_STATUSES:
         conditions.append("rec.status = %s")
         params.append(status)
+    if user_id.isdigit():
+        conditions.append("rec.user_id = %s")
+        params.append(user_id)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
