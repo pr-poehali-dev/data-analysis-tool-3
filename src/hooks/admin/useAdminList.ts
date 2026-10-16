@@ -54,21 +54,32 @@ export function useAdminList<TItem, TFilter extends BaseFilter>({
   const errorTextRef = useRef(errorText);
   errorTextRef.current = errorText;
 
+  const requestIdRef = useRef(0);
+
   const load = useCallback(async (f: TFilter) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
     try {
       const res = await fetchFnRef.current(f);
+      if (requestId !== requestIdRef.current) return;
       const { items: resItems, total: resTotal, pages: resPages, ...rest } = res;
       setItems(resItems as TItem[]);
       setTotal(resTotal);
       setPages(resPages);
       setExtra(rest as Record<string, unknown>);
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setError(errorTextRef.current);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      requestIdRef.current++;
+    };
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 interface UseAdminPanelOptions<TDetail> {
   fetchFn: (id: number) => Promise<TDetail>;
@@ -27,22 +27,35 @@ export function useAdminPanel<TDetail>({
   const onOpenRef = useRef(onOpen);
   onOpenRef.current = onOpen;
 
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      requestIdRef.current++;
+    };
+  }, []);
+
   const openPanel = useCallback(async (id: number) => {
+    const requestId = ++requestIdRef.current;
     setPanelLoading(true);
     setSelected(null);
     setMobilePanel(true);
     onOpenRef.current?.();
     try {
       const detail = await fetchFnRef.current(id);
+      if (requestId !== requestIdRef.current) return;
       setSelected(detail);
     } catch (_e) {
+      if (requestId !== requestIdRef.current) return;
       console.error("Ошибка загрузки деталей", _e);
     } finally {
-      setPanelLoading(false);
+      if (requestId === requestIdRef.current) setPanelLoading(false);
     }
   }, []);
 
   const closePanel = useCallback(() => {
+    requestIdRef.current++;
+    setPanelLoading(false);
     setMobilePanel(false);
     setSelected(null);
   }, []);
