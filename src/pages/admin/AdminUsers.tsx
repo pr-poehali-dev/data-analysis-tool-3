@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-import { formatDate, ROLE_LABELS } from "@/lib/admin";
+import { formatDate, formatDateTime, ROLE_LABELS } from "@/lib/admin";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
@@ -295,9 +295,9 @@ export default function AdminUsers() {
               {/* Даты */}
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Даты</div>
-                <InfoRow icon="CalendarPlus" label="Регистрация" value={formatDate(selectedUser.created_at)} />
+                <InfoRow icon="CalendarPlus" label="Регистрация" value={formatDateTime(selectedUser.created_at)} />
                 <UserLocalTime iso={selectedUser.created_at} tz={selectedUser.tz} className="pl-6" />
-                <InfoRow icon="Clock" label="Последний вход" value={formatDate(selectedUser.last_login_at)} />
+                <InfoRow icon="Clock" label="Последний вход" value={formatDateTime(selectedUser.last_login_at)} />
                 <UserLocalTime iso={selectedUser.last_login_at} tz={selectedUser.tz} className="pl-6" />
               </div>
 
