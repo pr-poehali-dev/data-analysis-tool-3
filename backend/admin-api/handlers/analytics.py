@@ -5,7 +5,7 @@ def handle_analytics() -> dict:
     """
     Расширенная аналитика платформы:
     - По городам: количество заявок
-    - Конверсия: заявки → рекомендации → сделки
+    - Конверсия: доля заявок с рекомендацией, доля рекомендаций со сделкой, доля заявок со сделкой
     - Средний бюджет (из заявок) и средняя сумма аренды (из сделок)
     - Распределение по типу жилья
     - Распределение по сроку аренды
@@ -34,9 +34,37 @@ def handle_analytics() -> dict:
     cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.escrow_transactions WHERE status != 'cancelled'")
     total_escrow = cur.fetchone()[0]
 
-    req_to_rec = round(total_recommendations / total_requests * 100, 1) if total_requests > 0 else 0
-    rec_to_deal = round(total_escrow / total_recommendations * 100, 1) if total_recommendations > 0 else 0
-    req_to_deal = round(total_escrow / total_requests * 100, 1) if total_requests > 0 else 0
+    cur.execute(f"""
+        SELECT COUNT(DISTINCT rec.request_id)
+        FROM {SCHEMA}.recommendations rec
+        JOIN {SCHEMA}.requests r ON r.id::text = rec.request_id
+        WHERE rec.status != 'deleted'
+    """)
+    requests_with_rec = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT COUNT(DISTINCT rec.id)
+        FROM {SCHEMA}.escrow_transactions e
+        JOIN {SCHEMA}.recommendations rec ON rec.id::text = e.recommendation_id
+        WHERE e.status != 'cancelled' AND rec.status != 'deleted'
+    """)
+    recs_with_deal = cur.fetchone()[0]
+
+    cur.execute(f"""
+        SELECT COUNT(DISTINCT r.id)
+        FROM {SCHEMA}.escrow_transactions e
+        JOIN {SCHEMA}.recommendations rec ON rec.id::text = e.recommendation_id
+        JOIN {SCHEMA}.requests r ON r.id::text = rec.request_id
+        WHERE e.status != 'cancelled' AND rec.status != 'deleted'
+    """)
+    requests_with_deal = cur.fetchone()[0]
+
+    def pct(part: int, whole: int) -> float:
+        return round(part / whole * 100, 1) if whole > 0 else 0
+
+    req_to_rec = pct(requests_with_rec, total_requests)
+    rec_to_deal = pct(recs_with_deal, total_recommendations)
+    req_to_deal = pct(requests_with_deal, total_requests)
 
     cur.execute(f"""
         SELECT COALESCE(ROUND(AVG(mid_budget), 0), 0)
@@ -133,6 +161,9 @@ def handle_analytics() -> dict:
             "total_requests": total_requests,
             "total_recommendations": total_recommendations,
             "total_escrow": total_escrow,
+            "requests_with_rec": requests_with_rec,
+            "recs_with_deal": recs_with_deal,
+            "requests_with_deal": requests_with_deal,
             "req_to_rec_pct": req_to_rec,
             "rec_to_deal_pct": rec_to_deal,
             "req_to_deal_pct": req_to_deal,

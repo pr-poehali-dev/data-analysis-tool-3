@@ -55,11 +55,13 @@ function ConversionStep({
   label,
   count,
   pct,
+  caption,
   color,
 }: {
   label: string;
   count: number;
   pct?: number;
+  caption?: string;
   color: string;
 }) {
   return (
@@ -75,7 +77,7 @@ function ConversionStep({
             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div className={`h-full ${color} rounded-full`} style={{ width: `${Math.min(pct, 100)}%` }} />
             </div>
-            <span className="text-xs text-muted-foreground">{pct}% от предыдущего этапа</span>
+            <span className="text-xs text-muted-foreground">{pct}% {caption}</span>
           </div>
         )}
       </div>
@@ -162,17 +164,19 @@ export default function AdminStats() {
             label="Рекомендаций"
             count={conversion.total_recommendations}
             pct={conversion.req_to_rec_pct}
+            caption={`заявок получили рекомендацию (${conversion.requests_with_rec} из ${conversion.total_requests})`}
             color="bg-emerald-500"
           />
           <ConversionStep
             label="Сделок"
             count={conversion.total_escrow}
             pct={conversion.rec_to_deal_pct}
+            caption={`рекомендаций дошли до сделки (${conversion.recs_with_deal} из ${conversion.total_recommendations})`}
             color="bg-amber-500"
           />
           <div className="pt-3 border-t text-sm text-muted-foreground">
-            Итоговая конверсия заявка → сделка:{" "}
-            <span className="font-semibold text-foreground">{conversion.req_to_deal_pct}%</span>
+            Заявок, дошедших до сделки: {conversion.requests_with_deal} из {conversion.total_requests}{" "}
+            <span className="font-semibold text-foreground">({conversion.req_to_deal_pct}%)</span>
           </div>
         </div>
       </section>

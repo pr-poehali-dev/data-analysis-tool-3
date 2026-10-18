@@ -318,6 +318,9 @@ export interface AnalyticsData {
     total_requests: number;
     total_recommendations: number;
     total_escrow: number;
+    requests_with_rec: number;
+    recs_with_deal: number;
+    requests_with_deal: number;
     req_to_rec_pct: number;
     rec_to_deal_pct: number;
     req_to_deal_pct: number;
