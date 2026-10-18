@@ -19,6 +19,7 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import AdminActionError from "@/components/admin/AdminActionError";
+import UserLocalTime from "@/components/admin/UserLocalTime";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
@@ -295,7 +296,9 @@ export default function AdminUsers() {
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Даты</div>
                 <InfoRow icon="CalendarPlus" label="Регистрация" value={formatDate(selectedUser.created_at)} />
+                <UserLocalTime iso={selectedUser.created_at} tz={selectedUser.tz} className="pl-6" />
                 <InfoRow icon="Clock" label="Последний вход" value={formatDate(selectedUser.last_login_at)} />
+                <UserLocalTime iso={selectedUser.last_login_at} tz={selectedUser.tz} className="pl-6" />
               </div>
 
               {/* Если заблокирован — показываем причину */}

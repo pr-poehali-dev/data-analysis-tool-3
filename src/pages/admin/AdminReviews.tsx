@@ -25,6 +25,7 @@ import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminActionError from "@/components/admin/AdminActionError";
+import UserLocalTime from "@/components/admin/UserLocalTime";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 
 function StarRating({ rating }: { rating: number }) {
@@ -190,6 +191,7 @@ export default function AdminReviews() {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
                         {formatDate(review.created_at)}
+                        <UserLocalTime iso={review.created_at} tz={review.reviewer_tz} who="У автора" className="mt-0.5 whitespace-normal" />
                       </td>
                       <td className="px-4 py-3">
                         <Button

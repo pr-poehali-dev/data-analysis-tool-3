@@ -3,7 +3,7 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from utils import to_utc_iso, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA
+from utils import user_match, to_utc_iso, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA
 
 
 def handle_feedback(query: dict) -> dict:
@@ -20,14 +20,14 @@ def handle_feedback(query: dict) -> dict:
     params = []
     if search:
         conditions.append(
-            "(LOWER(COALESCE(email,'')) LIKE LOWER(%s) "
-            "OR LOWER(COALESCE(message,'')) LIKE LOWER(%s) "
-            "OR LOWER(COALESCE(subject_type,'')) LIKE LOWER(%s))"
+            "(LOWER(COALESCE(fm.email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(fm.message,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(fm.subject_type,'')) LIKE LOWER(%s))"
         )
         like = f"%{search}%"
         params.extend([like, like, like])
     if status and status != "all":
-        conditions.append("status = %s")
+        conditions.append("fm.status = %s")
         params.append(status)
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
@@ -35,17 +35,18 @@ def handle_feedback(query: dict) -> dict:
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages {where}", params)
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages fm {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.feedback_messages WHERE status = 'new'")
     unread_count = cur.fetchone()[0]
 
     cur.execute(f"""
-        SELECT id, email, subject_type, message, status, admin_reply, replied_at, created_at
-        FROM {SCHEMA}.feedback_messages
+        SELECT fm.id, fm.email, fm.subject_type, fm.message, fm.status, fm.admin_reply, fm.replied_at, fm.created_at,
+               (SELECT u.tz FROM {SCHEMA}.users u WHERE {user_match("fm.email")} ORDER BY u.id LIMIT 1) AS user_tz
+        FROM {SCHEMA}.feedback_messages fm
         {where}
-        ORDER BY created_at DESC
+        ORDER BY fm.created_at DESC, fm.id DESC
         LIMIT {limit} OFFSET {offset}
     """, params)
     rows = cur.fetchall()
@@ -63,6 +64,7 @@ def handle_feedback(query: dict) -> dict:
             "admin_reply": row[5],
             "replied_at": to_utc_iso(row[6]),
             "created_at": to_utc_iso(row[7]),
+            "user_tz": row[8],
         })
 
     return json_response({

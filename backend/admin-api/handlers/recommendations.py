@@ -107,7 +107,7 @@ def handle_recommendation(query: dict) -> dict:
             rec.property_comments, rec.photos, rec.coordinates_lat, rec.coordinates_lng,
             rec.created_at, rec.updated_at,
             COALESCE(u.first_name || ' ' || u.last_name, u.name, u.email) AS author_name,
-            u.id AS author_user_id, u.email AS author_email, u.phone AS author_phone
+            u.id AS author_user_id, u.email AS author_email, u.phone AS author_phone, u.tz AS author_tz
         FROM {SCHEMA}.recommendations rec
         LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("rec.user_id", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         WHERE rec.id = %s
@@ -145,6 +145,7 @@ def handle_recommendation(query: dict) -> dict:
             "author_user_id": row[21],
             "author_email": row[22],
             "author_phone": row[23],
+            "author_tz": row[24],
         }
     })
 

@@ -27,6 +27,7 @@ import {
 import Icon from "@/components/ui/icon";
 import {
   formatDate,
+  formatDateTime,
   REQUEST_STATUS_LABELS as STATUS_LABELS,
   REQUEST_STATUS_BADGE as STATUS_BADGE,
   REQUEST_STATUSES,
@@ -38,6 +39,7 @@ import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
 import AdminUserFilterBadge from "@/components/admin/AdminUserFilterBadge";
 import AdminActionError from "@/components/admin/AdminActionError";
+import UserLocalTime from "@/components/admin/UserLocalTime";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
@@ -259,6 +261,8 @@ export default function AdminRequests() {
                 <InfoRow icon="User" label="Имя" value={selected.author_name} />
                 <InfoRow icon="Mail" label="Email" value={selected.user_email} />
                 <InfoRow icon="Phone" label="Телефон" value={selected.author_phone} />
+                <InfoRow icon="CalendarPlus" label="Создана" value={formatDateTime(selected.created_at)} />
+                <UserLocalTime iso={selected.created_at} tz={selected.author_tz} className="pl-6" />
               </div>
 
               {/* Офферы */}

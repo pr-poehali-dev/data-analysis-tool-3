@@ -1,4 +1,4 @@
-from utils import to_utc_iso, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA
+from utils import user_match, to_utc_iso, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA
 
 ESCROW_STATUSES = ("pending", "frozen", "completed", "cancelled", "refunded")
 
@@ -120,7 +120,9 @@ def handle_escrow_detail(query: dict) -> dict:
             e.recommender_name, e.recommender_email,
             e.rent_amount, e.commission_amount,
             e.created_at, e.completed_at,
-            e.chat_id, e.recommendation_id
+            e.chat_id, e.recommendation_id,
+            (SELECT u.tz FROM {SCHEMA}.users u WHERE {user_match("e.tenant_email")} ORDER BY u.id LIMIT 1) AS tenant_tz,
+            (SELECT u.tz FROM {SCHEMA}.users u WHERE {user_match("e.recommender_email")} ORDER BY u.id LIMIT 1) AS recommender_tz
         FROM {SCHEMA}.escrow_transactions e
         WHERE e.id = %s
     """, (int(escrow_id),))
@@ -171,6 +173,8 @@ def handle_escrow_detail(query: dict) -> dict:
             "completed_at": to_utc_iso(row[10]),
             "chat_id": row[11],
             "recommendation_id": row[12],
+            "tenant_tz": row[13],
+            "recommender_tz": row[14],
             "history": history,
         }
     })

@@ -18,6 +18,7 @@ import {
   FEEDBACK_SUBJECT_BADGE as SUBJECT_BADGE,
 } from "@/lib/admin";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import UserLocalTime from "@/components/admin/UserLocalTime";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
@@ -196,6 +197,7 @@ export default function AdminFeedback() {
               <div className="text-xs text-muted-foreground">
                 {formatDate(selected.created_at)}
               </div>
+              <UserLocalTime iso={selected.created_at} tz={selected.user_tz} />
             </div>
 
             {/* Текст обращения */}

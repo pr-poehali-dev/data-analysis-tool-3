@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Icon from "@/components/ui/icon";
 import AdminActionError from "@/components/admin/AdminActionError";
+import UserLocalTime from "@/components/admin/UserLocalTime";
+import { formatDateTime } from "@/lib/admin";
 import { STATUS_LABELS, STATUS_BADGE, REC_STATUSES } from "./recConstants";
 
 interface RecDetailPanelProps {
@@ -184,6 +186,8 @@ export default function RecDetailPanel({
               <InfoRow icon="User" label="Имя" value={selected.author_name} />
               <InfoRow icon="Mail" label="Email" value={selected.author_email} />
               <InfoRow icon="Phone" label="Телефон" value={selected.author_phone} />
+              <InfoRow icon="CalendarPlus" label="Создана" value={formatDateTime(selected.created_at)} />
+              <UserLocalTime iso={selected.created_at} tz={selected.author_tz} className="pl-6" />
             </div>
 
             {/* Владелец объекта */}

@@ -92,6 +92,7 @@ export interface AdminUser {
 }
 
 export interface AdminUserDetail extends AdminUser {
+  tz?: string | null;
   telegram_username: string | null;
   vk_link: string | null;
   email_verified: boolean;
@@ -139,6 +140,7 @@ export interface AdminRequest {
 }
 
 export interface AdminRequestDetail extends AdminRequest {
+  author_tz?: string | null;
   location: string | null;
   bonus: string | null;
   about_yourself: string | null;
@@ -185,6 +187,7 @@ export interface AdminRecommendation {
 }
 
 export interface AdminRecommendationDetail extends AdminRecommendation {
+  author_tz?: string | null;
   invite_message: string | null;
   property_comments: string | null;
   photos: string[];
@@ -228,6 +231,8 @@ export interface AdminEscrow {
 }
 
 export interface AdminEscrowDetail extends AdminEscrow {
+  tenant_tz?: string | null;
+  recommender_tz?: string | null;
   history: { status: string; label: string; date: string | null }[];
 }
 
@@ -256,6 +261,7 @@ export interface EscrowFilter {
 
 export interface AdminReview {
   id: number;
+  reviewer_tz?: string | null;
   reviewer_name: string;
   reviewer_email: string;
   reviewer_photo: string | null;
@@ -295,6 +301,7 @@ export interface FeedbackMessage {
   admin_reply: string | null;
   replied_at: string | null;
   created_at: string | null;
+  user_tz?: string | null;
 }
 
 export interface FeedbackResponse {

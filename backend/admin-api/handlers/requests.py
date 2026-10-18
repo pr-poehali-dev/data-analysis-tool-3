@@ -112,7 +112,8 @@ def handle_request(query: dict) -> dict:
             r.has_pets, r.districts, r.status, r.created_at, r.updated_at,
             COALESCE(u.first_name || ' ' || u.last_name, u.name, r.user_email) AS author_name,
             u.phone AS author_phone, u.avatar_url AS author_avatar,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count
+            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE rec.request_id::text = r.id::text) AS offers_count,
+            u.tz AS author_tz
         FROM {SCHEMA}.requests r
         LEFT JOIN LATERAL (SELECT * FROM {SCHEMA}.users u2 WHERE {user_match("r.user_email", "u2")} ORDER BY u2.id LIMIT 1) u ON true
         WHERE r.id = %s
@@ -152,6 +153,7 @@ def handle_request(query: dict) -> dict:
             "author_phone": row[23],
             "author_avatar": row[24],
             "offers_count": row[25],
+            "author_tz": row[26],
         }
     })
 

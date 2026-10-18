@@ -33,6 +33,7 @@ import {
   ESCROW_STATUSES,
 } from "@/lib/admin";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import UserLocalTime from "@/components/admin/UserLocalTime";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
@@ -263,6 +264,10 @@ export default function AdminEscrow() {
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Даты</div>
                 <InfoRow icon="CalendarPlus" label="Создана" value={formatDate(selected.created_at)} />
+                <UserLocalTime iso={selected.created_at} tz={selected.tenant_tz} who="У арендатора" className="pl-6" />
+                {selected.recommender_tz !== selected.tenant_tz && (
+                  <UserLocalTime iso={selected.created_at} tz={selected.recommender_tz} who="У рекомендателя" className="pl-6" />
+                )}
                 {selected.completed_at && (
                   <InfoRow icon="CalendarCheck" label="Завершена" value={formatDate(selected.completed_at)} />
                 )}

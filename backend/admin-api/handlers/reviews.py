@@ -1,4 +1,4 @@
-from utils import short_title, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA, to_utc_iso
+from utils import user_match, short_title, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA, to_utc_iso
 
 
 def handle_reviews(query: dict) -> dict:
@@ -15,15 +15,15 @@ def handle_reviews(query: dict) -> dict:
     params = []
     if search:
         conditions.append(
-            "(LOWER(COALESCE(reviewer_name,'')) LIKE LOWER(%s) "
-            "OR LOWER(COALESCE(reviewer_email,'')) LIKE LOWER(%s) "
-            "OR LOWER(COALESCE(reviewee_name,'')) LIKE LOWER(%s) "
-            "OR LOWER(COALESCE(comment,'')) LIKE LOWER(%s))"
+            "(LOWER(COALESCE(rv.reviewer_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(rv.reviewer_email,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(rv.reviewee_name,'')) LIKE LOWER(%s) "
+            "OR LOWER(COALESCE(rv.comment,'')) LIKE LOWER(%s))"
         )
         like = f"%{search}%"
         params.extend([like, like, like, like])
     if rating and rating.isdigit() and 1 <= int(rating) <= 5:
-        conditions.append("rating = %s")
+        conditions.append("rv.rating = %s")
         params.append(int(rating))
 
     where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
@@ -31,18 +31,19 @@ def handle_reviews(query: dict) -> dict:
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.reviews {where}", params)
+    cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.reviews rv {where}", params)
     total = cur.fetchone()[0]
 
     cur.execute(f"""
         SELECT
-            id, reviewer_name, reviewer_email, reviewer_photo,
-            reviewee_name, reviewee_email, reviewee_photo,
-            rating, comment, created_at,
-            chat_id, recommendation_id
-        FROM {SCHEMA}.reviews
+            rv.id, rv.reviewer_name, rv.reviewer_email, rv.reviewer_photo,
+            rv.reviewee_name, rv.reviewee_email, rv.reviewee_photo,
+            rv.rating, rv.comment, rv.created_at,
+            rv.chat_id, rv.recommendation_id,
+            (SELECT u.tz FROM {SCHEMA}.users u WHERE {user_match("rv.reviewer_email")} ORDER BY u.id LIMIT 1) AS reviewer_tz
+        FROM {SCHEMA}.reviews rv
         {where}
-        ORDER BY created_at DESC
+        ORDER BY rv.created_at DESC, rv.id DESC
         LIMIT {limit} OFFSET {offset}
     """, params)
     rows = cur.fetchall()
@@ -68,6 +69,7 @@ def handle_reviews(query: dict) -> dict:
             "created_at": to_utc_iso(row[9]),
             "chat_id": row[10],
             "recommendation_id": row[11],
+            "reviewer_tz": row[12],
         })
 
     return json_response({

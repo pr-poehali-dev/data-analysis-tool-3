@@ -136,7 +136,8 @@ def handle_user(query: dict) -> dict:
             telegram_username, vk_link, email_verified,
             (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE {user_match("r.user_email")}) AS requests_count,
             (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE {user_match("rec.user_id")}) AS recommendations_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_email = u.email) AS reviews_count
+            (SELECT COUNT(*) FROM {SCHEMA}.reviews rev WHERE rev.reviewer_email = u.email) AS reviews_count,
+            tz
         FROM {SCHEMA}.users u
         WHERE id = %s
     """, (int(user_id),))
@@ -181,6 +182,7 @@ def handle_user(query: dict) -> dict:
             "requests_count": row[17],
             "recommendations_count": row[18],
             "reviews_count": row[19],
+            "tz": row[20],
         }
     })
 
