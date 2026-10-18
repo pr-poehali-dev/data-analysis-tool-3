@@ -11,6 +11,7 @@ import { SocialLoginButtons } from "./SocialLoginButtons";
 import { ResetRequestView } from "./ResetRequestView";
 import { ResetCodeView, ResetSuccessView } from "./ResetCodeView";
 import funcUrls from "../../../backend/func2url.json";
+import { withTimezone } from "@/lib/userTimezone";
 
 const AUTH_EMAIL_URL = funcUrls["auth-email-auth"];
 
@@ -52,7 +53,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: data.email, password: data.password }),
+        body: JSON.stringify(withTimezone({ email: data.email, password: data.password })),
       });
 
       const result = await res.json();

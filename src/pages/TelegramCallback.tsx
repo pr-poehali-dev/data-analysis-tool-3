@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authStore } from "@/store/authStore";
 import funcUrls from "../../backend/func2url.json";
+import { withTimezone } from "@/lib/userTimezone";
 
 const AUTH_URL = funcUrls["telegram-bot-telegram-auth"];
 
@@ -24,7 +25,7 @@ export default function TelegramCallback() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ token }),
+          body: JSON.stringify(withTimezone({ token })),
         });
 
         const data = await res.json();

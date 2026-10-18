@@ -5,6 +5,7 @@ import hashlib
 import secrets
 import smtplib
 import base64
+import re
 import uuid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -380,6 +381,31 @@ def handle_update_profile(event: dict) -> dict:
         conn.close()
 
 
+_TZ_RE = re.compile(r'^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+\-]+){1,2})$')
+
+
+def handle_set_timezone(event: dict) -> dict:
+    """Сохраняет часовой пояс пользователя (например Europe/Moscow). Некорректное значение игнорируется."""
+    user_id = get_user_id_from_event(event)
+    try:
+        body = json.loads(event.get('body') or '{}')
+    except ValueError:
+        body = {}
+    tz = body.get('timezone') if isinstance(body, dict) else None
+    if not isinstance(tz, str) or len(tz.strip()) > 64 or not _TZ_RE.match(tz.strip()):
+        return response(200, {'success': True, 'saved': False})
+
+    S = get_schema()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE {S}users SET tz = %s WHERE id = %s AND tz IS DISTINCT FROM %s", (tz.strip(), user_id, tz.strip()))
+        conn.commit()
+        return response(200, {'success': True, 'saved': True})
+    finally:
+        conn.close()
+
+
 def handle_send_email_code(event: dict) -> dict:
     user_id = get_user_id_from_event(event)
     body = json.loads(event.get('body', '{}'))
@@ -544,6 +570,8 @@ def handler(event: dict, context) -> dict:
         if method == 'GET':
             return handle_get_profile(event)
         elif method in ('POST', 'PUT'):
+            if action == 'set_timezone':
+                return handle_set_timezone(event)
             if action == 'send_email_code':
                 return handle_send_email_code(event)
             if action == 'verify_email_code':

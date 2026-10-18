@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authStore } from "@/store/authStore";
 import funcUrls from "../../backend/func2url.json";
+import { withTimezone } from "@/lib/userTimezone";
 
 const AUTH_URL = funcUrls["vk-auth-vk-auth"];
 
@@ -40,7 +41,7 @@ export default function VkCallback() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ code, code_verifier, device_id: device_id || "" }),
+          body: JSON.stringify(withTimezone({ code, code_verifier, device_id: device_id || "" })),
         });
 
         const data = await res.json();

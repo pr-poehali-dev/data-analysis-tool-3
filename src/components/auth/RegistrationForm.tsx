@@ -15,6 +15,7 @@ import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLog
 import { EmailVerification } from "./EmailVerification";
 import { FieldError } from "./FieldError";
 import funcUrls from "../../../backend/func2url.json";
+import { withTimezone } from "@/lib/userTimezone";
 
 const AUTH_EMAIL_URL = funcUrls["auth-email-auth"];
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
@@ -111,7 +112,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(withTimezone({ email, password })),
       });
 
       const data = await res.json();

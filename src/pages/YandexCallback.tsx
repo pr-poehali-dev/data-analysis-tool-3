@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authStore } from "@/store/authStore";
 import funcUrls from "../../backend/func2url.json";
+import { withTimezone } from "@/lib/userTimezone";
 
 const AUTH_URL = funcUrls["yandex-auth-yandex-auth"];
 
@@ -32,7 +33,7 @@ export default function YandexCallback() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ code }),
+          body: JSON.stringify(withTimezone({ code })),
         });
 
         const data = await res.json();

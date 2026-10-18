@@ -24,6 +24,7 @@ import TelegramCallback from "./pages/TelegramCallback";
 import VkCallback from "./pages/VkCallback";
 import GoogleCallback from "./pages/GoogleCallback";
 import { authStore } from "./store/authStore";
+import { useSyncUserTimezone } from "@/hooks/useSyncUserTimezone";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -51,6 +52,8 @@ const AppContent = () => {
     vkLink?: string;
   } | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
+
+  useSyncUserTimezone(sessionReady && user !== null);
 
   useEffect(() => {
     console.log("[App] starting restoreSession...");
