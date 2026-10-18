@@ -362,6 +362,36 @@ def is_user_blocked(cursor, user_id: int) -> bool:
     return bool(row and row[0])
 
 
+import re as _re
+
+_TZ_RE = _re.compile(r'^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+\-]+){1,2})$')
+
+
+def clean_timezone(value):
+    """Возвращает название пояса (например Europe/Moscow) или None, если значение некорректно."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if len(value) > 64 or not _TZ_RE.match(value):
+        return None
+    return value
+
+
+def save_user_timezone(cur, schema_prefix, user_id, tz):
+    """Сохраняет пояс пользователя. Любая ошибка молча игнорируется и не ломает вход."""
+    if not tz:
+        return
+    try:
+        cur.execute("SAVEPOINT save_user_tz")
+        cur.execute(f"UPDATE {schema_prefix}users SET tz = %s WHERE id = %s", (tz, user_id))
+        cur.execute("RELEASE SAVEPOINT save_user_tz")
+    except Exception:
+        try:
+            cur.execute("ROLLBACK TO SAVEPOINT save_user_tz")
+        except Exception:
+            pass
+
+
 def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
     """
     POST ?action=callback
@@ -406,6 +436,8 @@ def handle_callback(cursor, body: dict, origin: str = '*') -> dict:
 
     if is_user_blocked(cursor, user["id"]):
         return cors_response(403, {"error": "Аккаунт заблокирован"}, origin)
+
+    save_user_timezone(cursor, get_schema(), user["id"], clean_timezone(body.get("timezone")))
 
     # Mark token as used
     mark_token_used(cursor, token)

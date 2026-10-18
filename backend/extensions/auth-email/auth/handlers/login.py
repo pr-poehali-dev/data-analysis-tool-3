@@ -8,6 +8,7 @@ from utils.password import verify_password
 from utils.jwt_utils import create_access_token, create_refresh_token, hash_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from utils.email import is_email_enabled
 from utils.http import response, error, make_refresh_cookie
+from utils.user_tz import clean_timezone
 
 
 MAX_LOGIN_ATTEMPTS = int(os.environ.get('MAX_LOGIN_ATTEMPTS', '5'))
@@ -80,6 +81,13 @@ def handle(event: dict, origin: str = '*') -> dict:
             last_login_at = %s
         WHERE id = %s
     """, (now, user_id))
+
+    tz = clean_timezone(payload.get('timezone'))
+    if tz:
+        try:
+            execute(f"UPDATE {S}users SET tz = %s WHERE id = %s", (tz, user_id))
+        except Exception:
+            pass
 
     access_token = create_access_token(user_id, user_email)
     refresh_token, refresh_expires = create_refresh_token(user_id)

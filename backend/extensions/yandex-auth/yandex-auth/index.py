@@ -267,6 +267,36 @@ def handle_auth_url(event: dict, origin: str) -> dict:
     }, origin)
 
 
+import re as _re
+
+_TZ_RE = _re.compile(r'^(UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+\-]+){1,2})$')
+
+
+def clean_timezone(value):
+    """Возвращает название пояса (например Europe/Moscow) или None, если значение некорректно."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if len(value) > 64 or not _TZ_RE.match(value):
+        return None
+    return value
+
+
+def save_user_timezone(cur, schema_prefix, user_id, tz):
+    """Сохраняет пояс пользователя. Любая ошибка молча игнорируется и не ломает вход."""
+    if not tz:
+        return
+    try:
+        cur.execute("SAVEPOINT save_user_tz")
+        cur.execute(f"UPDATE {schema_prefix}users SET tz = %s WHERE id = %s", (tz, user_id))
+        cur.execute("RELEASE SAVEPOINT save_user_tz")
+    except Exception:
+        try:
+            cur.execute("ROLLBACK TO SAVEPOINT save_user_tz")
+        except Exception:
+            pass
+
+
 def handle_callback(event: dict, origin: str) -> dict:
     """Handle Yandex OAuth callback."""
     body_str = event.get('body', '{}')
@@ -390,6 +420,8 @@ def handle_callback(event: dict, origin: str) -> dict:
             if blocked_row and blocked_row[0]:
                 conn.rollback()
                 return error(403, 'Аккаунт заблокирован', origin)
+
+            save_user_timezone(cur, S, user_id, clean_timezone(payload.get('timezone')))
 
             access_token, expires_in = create_access_token(user_id, email)
             refresh_token = create_refresh_token()
