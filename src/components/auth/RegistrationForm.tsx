@@ -13,6 +13,7 @@ import { TelegramLoginButton } from "@/components/extensions/telegram-bot/Telegr
 import { VkLoginButton } from "@/components/extensions/vk-auth/VkLoginButton";
 import { GoogleLoginButton } from "@/components/extensions/google-auth/GoogleLoginButton";
 import { EmailVerification } from "./EmailVerification";
+import { FieldError } from "./FieldError";
 import funcUrls from "../../../backend/func2url.json";
 
 const AUTH_EMAIL_URL = funcUrls["auth-email-auth"];
@@ -22,11 +23,31 @@ const GOOGLE_AUTH_URL = funcUrls["google-auth-google-auth"];
 const TG_BOT_USERNAME = "sovetpay_bot";
 
 const registrationSchema = z.object({
-  firstName: z.string().min(2, "Минимум 2 символа"),
-  lastName: z.string().min(2, "Минимум 2 символа"),
-  phone: z.string().regex(/^\+?[0-9]{10,12}$/, "Некорректный номер телефона"),
-  email: z.string().email("Некорректный email"),
-  password: z.string().min(6, "Минимум 6 символов"),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "Введите имя")
+    .min(2, "Имя должно быть не короче 2 символов"),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Введите фамилию")
+    .min(2, "Фамилия должна быть не короче 2 символов"),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Введите номер телефона")
+    .transform((value) => value.replace(/[\s()-]/g, ""))
+    .refine((value) => /^\+?[0-9]{10,12}$/.test(value), "Введите номер в формате +7 900 123-45-67"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Введите email")
+    .email("Проверьте email: он должен выглядеть как ivan@example.com"),
+  password: z
+    .string()
+    .min(1, "Придумайте пароль")
+    .min(6, "Пароль должен быть не короче 6 символов"),
 });
 
 type FormData = z.infer<typeof registrationSchema>;
@@ -264,7 +285,7 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
               {registerError && (
                 <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
                   {registerError}
@@ -277,8 +298,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                     id="firstName"
                     placeholder="Иван"
                     {...register("firstName")}
-                    error={errors.firstName?.message}
+                    aria-invalid={!!errors.firstName}
+                    aria-describedby="firstName-error"
+                    className={errors.firstName ? "border-destructive focus-visible:ring-destructive" : undefined}
                   />
+                  <FieldError id="firstName-error" message={errors.firstName?.message} />
                 </div>
 
                 <div className="space-y-1">
@@ -287,8 +311,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                     id="lastName"
                     placeholder="Иванов"
                     {...register("lastName")}
-                    error={errors.lastName?.message}
+                    aria-invalid={!!errors.lastName}
+                    aria-describedby="lastName-error"
+                    className={errors.lastName ? "border-destructive focus-visible:ring-destructive" : undefined}
                   />
+                  <FieldError id="lastName-error" message={errors.lastName?.message} />
                 </div>
               </div>
 
@@ -299,8 +326,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   type="tel"
                   placeholder="+7 (900) 123-45-67"
                   {...register("phone")}
-                  error={errors.phone?.message}
+                  aria-invalid={!!errors.phone}
+                  aria-describedby="phone-error"
+                  className={errors.phone ? "border-destructive focus-visible:ring-destructive" : undefined}
                 />
+                <FieldError id="phone-error" message={errors.phone?.message} />
               </div>
 
               <div className="space-y-1">
@@ -310,8 +340,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   type="email"
                   placeholder="ivan@example.com"
                   {...register("email")}
-                  error={errors.email?.message}
+                  aria-invalid={!!errors.email}
+                  aria-describedby="email-error"
+                  className={errors.email ? "border-destructive focus-visible:ring-destructive" : undefined}
                 />
+                <FieldError id="email-error" message={errors.email?.message} />
                 <p className="text-xs text-muted-foreground">
                   Мы отправим код подтверждения на вашу почту
                 </p>
@@ -324,8 +357,11 @@ export const RegistrationForm = ({ onSuccess }: RegistrationFormProps) => {
                   type="password"
                   placeholder="••••••"
                   {...register("password")}
-                  error={errors.password?.message}
+                  aria-invalid={!!errors.password}
+                  aria-describedby="password-error"
+                  className={errors.password ? "border-destructive focus-visible:ring-destructive" : undefined}
                 />
+                <FieldError id="password-error" message={errors.password?.message} />
               </div>
 
               <Button
