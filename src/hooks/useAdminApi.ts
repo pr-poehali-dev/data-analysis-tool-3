@@ -40,6 +40,12 @@ async function adminPost(action: string, body: object): Promise<Response> {
   });
 }
 
+async function assertOk(res: Response, fallback: string): Promise<void> {
+  if (res.ok) return;
+  const data = await res.json().catch(() => ({}));
+  throw new Error(typeof data?.error === "string" && data.error ? data.error : fallback);
+}
+
 export interface DashboardStats {
   users_total: number;
   requests_total: number;
@@ -400,7 +406,7 @@ export const adminApi = {
 
   async blockUser(userId: number, block: boolean, reason?: string): Promise<void> {
     const res = await adminPost("block_user", { user_id: userId, block, reason: reason || "" });
-    if (!res.ok) throw new Error("Ошибка при изменении статуса пользователя");
+    await assertOk(res, "Ошибка при изменении статуса пользователя");
   },
 
   async getRequests(filter: RequestsFilter = {}): Promise<RequestsResponse> {
@@ -431,12 +437,12 @@ export const adminApi = {
 
   async updateRequestStatus(requestId: number, status: string): Promise<void> {
     const res = await adminPost("update_request_status", { request_id: requestId, status });
-    if (!res.ok) throw new Error("Ошибка при изменении статуса заявки");
+    await assertOk(res, "Ошибка при изменении статуса заявки");
   },
 
   async deleteRequest(requestId: number): Promise<void> {
     const res = await adminPost("delete_request", { request_id: requestId });
-    if (!res.ok) throw new Error("Ошибка при удалении заявки");
+    await assertOk(res, "Ошибка при удалении заявки");
   },
 
   async getRecommendations(filter: RecommendationsFilter = {}): Promise<RecommendationsResponse> {
@@ -467,12 +473,12 @@ export const adminApi = {
 
   async updateRecStatus(recommendationId: number, status: string): Promise<void> {
     const res = await adminPost("update_rec_status", { recommendation_id: recommendationId, status });
-    if (!res.ok) throw new Error("Ошибка при изменении статуса рекомендации");
+    await assertOk(res, "Ошибка при изменении статуса рекомендации");
   },
 
   async deleteRecommendation(recommendationId: number): Promise<void> {
     const res = await adminPost("delete_recommendation", { recommendation_id: recommendationId });
-    if (!res.ok) throw new Error("Ошибка при удалении рекомендации");
+    await assertOk(res, "Ошибка при удалении рекомендации");
   },
 
   async getEscrow(filter: EscrowFilter = {}): Promise<EscrowResponse> {
@@ -502,7 +508,7 @@ export const adminApi = {
 
   async updateEscrowStatus(escrowId: number, status: string): Promise<void> {
     const res = await adminPost("update_escrow_status", { escrow_id: escrowId, status });
-    if (!res.ok) throw new Error("Ошибка при изменении статуса сделки");
+    await assertOk(res, "Ошибка при изменении статуса сделки");
   },
 
   async getReviews(filter: ReviewsFilter = {}): Promise<ReviewsResponse> {
@@ -522,7 +528,7 @@ export const adminApi = {
 
   async deleteReview(reviewId: number): Promise<void> {
     const res = await adminPost("delete_review", { review_id: reviewId });
-    if (!res.ok) throw new Error("Ошибка при удалении отзыва");
+    await assertOk(res, "Ошибка при удалении отзыва");
   },
 
   async getFeedback(filter: FeedbackFilter = {}): Promise<FeedbackResponse> {

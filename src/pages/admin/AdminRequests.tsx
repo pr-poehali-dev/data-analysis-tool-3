@@ -37,6 +37,7 @@ import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
 import StatusBadge from "@/components/admin/StatusBadge";
 import AdminUserFilterBadge from "@/components/admin/AdminUserFilterBadge";
+import AdminActionError from "@/components/admin/AdminActionError";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
@@ -75,9 +76,10 @@ export default function AdminRequests() {
     closePanel: closePanelMobile,
   } = useAdminPanel<AdminRequestDetail>({
     fetchFn: (id) => adminApi.getRequest(id),
-    onOpen: () => setDeleteConfirm(false),
+    onOpen: () => { setDeleteConfirm(false); setActionError(""); },
   });
 
+  const [actionError, setActionError] = useState("");
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -96,6 +98,7 @@ export default function AdminRequests() {
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
     setStatusLoading(true);
+    setActionError("");
     try {
       await adminApi.updateRequestStatus(selected.id, newStatus);
       const updated = await adminApi.getRequest(selected.id);
@@ -103,6 +106,7 @@ export default function AdminRequests() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось изменить статус заявки");
     } finally {
       setStatusLoading(false);
     }
@@ -111,6 +115,7 @@ export default function AdminRequests() {
   const handleDelete = async () => {
     if (!selected) return;
     setDeleteLoading(true);
+    setActionError("");
     try {
       await adminApi.deleteRequest(selected.id);
       closePanelMobile();
@@ -118,6 +123,7 @@ export default function AdminRequests() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось удалить заявку");
     } finally {
       setDeleteLoading(false);
     }
@@ -268,6 +274,8 @@ export default function AdminRequests() {
                   <p className="text-sm text-foreground leading-relaxed">{selected.about_yourself}</p>
                 </div>
               )}
+
+              <AdminActionError message={actionError} onClose={() => setActionError("")} />
 
               {/* Управление статусом */}
               <div className="space-y-2 pt-2 border-t">

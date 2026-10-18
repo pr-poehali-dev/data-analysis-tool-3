@@ -48,9 +48,10 @@ export default function AdminRecommendations() {
     closePanel: closePanelMobile,
   } = useAdminPanel<AdminRecommendationDetail>({
     fetchFn: (id) => adminApi.getRecommendation(id),
-    onOpen: () => { setDeleteConfirm(false); setPhotoIndex(0); },
+    onOpen: () => { setDeleteConfirm(false); setPhotoIndex(0); setActionError(""); },
   });
 
+  const [actionError, setActionError] = useState("");
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -71,6 +72,7 @@ export default function AdminRecommendations() {
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
     setStatusLoading(true);
+    setActionError("");
     try {
       await adminApi.updateRecStatus(selected.id, newStatus);
       const updated = await adminApi.getRecommendation(selected.id);
@@ -78,6 +80,7 @@ export default function AdminRecommendations() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось изменить статус рекомендации");
     } finally {
       setStatusLoading(false);
     }
@@ -86,6 +89,7 @@ export default function AdminRecommendations() {
   const handleDelete = async () => {
     if (!selected) return;
     setDeleteLoading(true);
+    setActionError("");
     try {
       await adminApi.deleteRecommendation(selected.id);
       closePanelMobile();
@@ -93,6 +97,7 @@ export default function AdminRecommendations() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось удалить рекомендацию");
     } finally {
       setDeleteLoading(false);
     }
@@ -139,6 +144,8 @@ export default function AdminRecommendations() {
         statusLoading={statusLoading}
         deleteConfirm={deleteConfirm}
         deleteLoading={deleteLoading}
+        actionError={actionError}
+        onClearError={() => setActionError("")}
         onClose={closePanelMobile}
         onCloseMobile={closePanelMobile}
         onPhotoIndex={setPhotoIndex}

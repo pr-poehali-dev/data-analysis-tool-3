@@ -24,6 +24,7 @@ import { formatDate } from "@/lib/admin";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
+import AdminActionError from "@/components/admin/AdminActionError";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 
 function StarRating({ rating }: { rating: number }) {
@@ -70,12 +71,14 @@ export default function AdminReviews() {
   const [selected, setSelected] = useState<AdminReview | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   const handleRatingFilter = (value: string) => handleFilterChange("rating", value);
 
   const handleDelete = async () => {
     if (!selected) return;
     setDeleteLoading(true);
+    setActionError("");
     try {
       await adminApi.deleteReview(selected.id);
       setSelected(null);
@@ -83,6 +86,7 @@ export default function AdminReviews() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка удаления отзыва", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось удалить отзыв");
     } finally {
       setDeleteLoading(false);
     }
@@ -104,6 +108,8 @@ export default function AdminReviews() {
             )}
           </div>
         </div>
+
+        <AdminActionError message={actionError} onClose={() => setActionError("")} className="mb-4" />
 
         {/* Фильтры */}
         <div className="flex flex-wrap gap-3 mb-5">

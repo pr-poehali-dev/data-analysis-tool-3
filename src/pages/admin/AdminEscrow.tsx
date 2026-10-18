@@ -8,6 +8,16 @@ import {
 } from "@/hooks/useAdminApi";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -64,9 +74,10 @@ export default function AdminEscrow() {
     closePanel: closePanelMobile,
   } = useAdminPanel<AdminEscrowDetail>({
     fetchFn: (id) => adminApi.getEscrowDetail(id),
-    onOpen: () => setStatusMessage(null),
+    onOpen: () => { setStatusMessage(null); setPendingStatus(null); },
   });
 
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -84,9 +95,10 @@ export default function AdminEscrow() {
       setStatusMessage(`Статус изменён на «${STATUS_LABELS[newStatus]}»`);
     } catch (_e) {
       console.error("Ошибка изменения статуса", _e);
-      setStatusMessage("Ошибка при изменении статуса");
+      setStatusMessage(_e instanceof Error ? `Ошибка: ${_e.message}` : "Ошибка при изменении статуса");
     } finally {
       setStatusLoading(false);
+      setPendingStatus(null);
     }
   };
 
@@ -291,7 +303,7 @@ export default function AdminEscrow() {
                       variant="outline"
                       size="sm"
                       disabled={statusLoading}
-                      onClick={() => handleStatusChange(s)}
+                      onClick={() => setPendingStatus(s)}
                       className="text-xs"
                     >
                       {statusLoading ? (
@@ -311,6 +323,31 @@ export default function AdminEscrow() {
           ) : null}
         </AdminDetailPanel>
       )}
+
+      <AlertDialog open={pendingStatus !== null} onOpenChange={(open) => { if (!open && !statusLoading) setPendingStatus(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Изменить статус сделки?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Сделка «{selected?.request_name}»: «{selected ? STATUS_LABELS[selected.status] : ""}» → «{pendingStatus ? STATUS_LABELS[pendingStatus] : ""}».
+              Меняется только пометка в системе: деньги не двигаются, пользователям ничего не отправляется.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={statusLoading}>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (pendingStatus) handleStatusChange(pendingStatus);
+              }}
+              disabled={statusLoading}
+            >
+              {statusLoading ? <Icon name="Loader2" size={14} className="animate-spin mr-1.5" /> : null}
+              Изменить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

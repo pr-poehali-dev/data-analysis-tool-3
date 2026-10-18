@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Icon from "@/components/ui/icon";
+import AdminActionError from "@/components/admin/AdminActionError";
 import { STATUS_LABELS, STATUS_BADGE, REC_STATUSES } from "./recConstants";
 
 interface RecDetailPanelProps {
@@ -22,6 +23,8 @@ interface RecDetailPanelProps {
   statusLoading: boolean;
   deleteConfirm: boolean;
   deleteLoading: boolean;
+  actionError: string;
+  onClearError: () => void;
   onClose: () => void;
   onCloseMobile: () => void;
   onPhotoIndex: (fn: (i: number) => number) => void;
@@ -50,6 +53,8 @@ export default function RecDetailPanel({
   statusLoading,
   deleteConfirm,
   deleteLoading,
+  actionError,
+  onClearError,
   onClose,
   onCloseMobile,
   onPhotoIndex,
@@ -194,6 +199,8 @@ export default function RecDetailPanel({
                 <p className="text-sm text-foreground leading-relaxed">{selected.property_comments}</p>
               </div>
             )}
+
+            <AdminActionError message={actionError} onClose={onClearError} />
 
             {/* Управление статусом */}
             <div className="space-y-2 pt-2 border-t">

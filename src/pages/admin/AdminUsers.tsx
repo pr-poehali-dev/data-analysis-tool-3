@@ -18,6 +18,7 @@ import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import AdminPagination from "@/components/admin/AdminPagination";
 import AdminLoadingState from "@/components/admin/AdminLoadingState";
 import AdminDetailPanel from "@/components/admin/AdminDetailPanel";
+import AdminActionError from "@/components/admin/AdminActionError";
 import { useAdminList } from "@/hooks/admin/useAdminList";
 import { useAdminPanel } from "@/hooks/admin/useAdminPanel";
 
@@ -61,9 +62,10 @@ export default function AdminUsers() {
     closePanel: closePanelMobile,
   } = useAdminPanel<AdminUserDetail>({
     fetchFn: (id) => adminApi.getUser(id),
-    onOpen: () => { setShowBlockForm(false); setBlockReason(""); },
+    onOpen: () => { setShowBlockForm(false); setBlockReason(""); setActionError(""); },
   });
 
+  const [actionError, setActionError] = useState("");
   const [blockLoading, setBlockLoading] = useState(false);
   const [blockReason, setBlockReason] = useState("");
   const [showBlockForm, setShowBlockForm] = useState(false);
@@ -76,6 +78,7 @@ export default function AdminUsers() {
   const handleBlock = async () => {
     if (!selectedUser) return;
     setBlockLoading(true);
+    setActionError("");
     try {
       await adminApi.blockUser(selectedUser.id, true, blockReason);
       const updated = await adminApi.getUser(selectedUser.id);
@@ -85,6 +88,7 @@ export default function AdminUsers() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка блокировки", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось заблокировать пользователя");
     } finally {
       setBlockLoading(false);
     }
@@ -93,6 +97,7 @@ export default function AdminUsers() {
   const handleUnblock = async () => {
     if (!selectedUser) return;
     setBlockLoading(true);
+    setActionError("");
     try {
       await adminApi.blockUser(selectedUser.id, false);
       const updated = await adminApi.getUser(selectedUser.id);
@@ -100,6 +105,7 @@ export default function AdminUsers() {
       setFilter((f) => ({ ...f }));
     } catch (_e) {
       console.error("Ошибка разблокировки", _e);
+      setActionError(_e instanceof Error ? _e.message : "Не удалось разблокировать пользователя");
     } finally {
       setBlockLoading(false);
     }
@@ -303,6 +309,7 @@ export default function AdminUsers() {
 
               {/* Кнопки блокировки */}
               <div className="pt-2 border-t space-y-2">
+                <AdminActionError message={actionError} onClose={() => setActionError("")} />
                 {selectedUser.is_blocked ? (
                   <Button
                     variant="outline"
