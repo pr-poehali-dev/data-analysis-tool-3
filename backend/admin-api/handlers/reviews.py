@@ -1,4 +1,4 @@
-from utils import is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA, to_utc_iso
+from utils import short_title, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA, to_utc_iso
 
 
 def handle_reviews(query: dict) -> dict:
@@ -91,7 +91,7 @@ def handle_delete_review(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.reviews WHERE id = %s RETURNING id", (int(review_id),))
+    cur.execute(f"DELETE FROM {SCHEMA}.reviews WHERE id = %s RETURNING id, reviewer_name, reviewee_name, rating", (int(review_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -100,5 +100,7 @@ def handle_delete_review(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Отзыв не найден"}, 404)
 
-    audit_log("delete_review", "review", review_id, {})
+    audit_log("delete_review", "review", review_id, {
+        "title": short_title(f"{deleted[1] or 'Без имени'} → {deleted[2] or 'Без имени'}, оценка {deleted[3]}"),
+    })
     return json_response({"success": True, "message": "Отзыв удалён"})

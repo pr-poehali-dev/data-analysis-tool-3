@@ -345,6 +345,7 @@ export interface AuditLogEntry {
   entity_id: number | null;
   details: Record<string, unknown>;
   created_at: string | null;
+  admin_login: string | null;
 }
 
 export interface AuditLogResponse {

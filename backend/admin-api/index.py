@@ -4,7 +4,7 @@ import os
 # Добавляем текущую директорию в путь для импортов модулей
 sys.path.insert(0, os.path.dirname(__file__))
 
-from utils import get_cors_headers, verify_admin_token, json_response, set_current_event, BadRequest, parse_body
+from utils import get_cors_headers, verify_admin_token, json_response, set_current_event, set_current_admin, BadRequest, parse_body
 from handlers.dashboard import handle_stats, handle_registrations, handle_activity
 from handlers.users import handle_users, handle_user, handle_block_user
 from handlers.requests import handle_requests, handle_request, handle_update_request_status, handle_delete_request
@@ -62,6 +62,7 @@ def _route(event: dict) -> dict:
     token = headers.get("X-Admin-Token") or headers.get("x-admin-token") or ""
     if not verify_admin_token(token):
         return json_response({"error": "Доступ запрещён"}, 403)
+    set_current_admin(token)
 
     query = event.get("queryStringParameters") or {}
     action = query.get("action", "")

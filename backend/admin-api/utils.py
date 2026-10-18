@@ -24,11 +24,24 @@ def to_utc_iso(dt):
     return dt.isoformat()
 
 _current_event: dict = {}
+_current_admin: str = ""
 
 
 def set_current_event(event: dict):
-    global _current_event
+    global _current_event, _current_admin
     _current_event = event
+    _current_admin = ""
+
+
+def set_current_admin(token: str):
+    """Запоминает логин администратора из уже проверенного ключа для записи в журнал"""
+    global _current_admin
+    try:
+        body = token.split(".")[1]
+        payload = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
+        _current_admin = str(payload.get("sub") or "")[:100]
+    except (ValueError, IndexError, TypeError, AttributeError):
+        _current_admin = ""
 
 
 def get_cors_headers(event: dict) -> dict:
@@ -82,8 +95,8 @@ def audit_log(action: str, entity_type: str, entity_id, details: dict = None):
         conn = get_db()
         cur = conn.cursor()
         cur.execute(
-            f"INSERT INTO {SCHEMA}.admin_audit_log (action, entity_type, entity_id, details) VALUES (%s, %s, %s, %s)",
-            (action, entity_type, entity_id, json.dumps(details or {}, ensure_ascii=False))
+            f"INSERT INTO {SCHEMA}.admin_audit_log (action, entity_type, entity_id, details, admin_login) VALUES (%s, %s, %s, %s, %s)",
+            (action, entity_type, entity_id, json.dumps(details or {}, ensure_ascii=False), _current_admin or None)
         )
         conn.commit()
         cur.close()
@@ -146,3 +159,9 @@ def is_id(value) -> bool:
     """Допустимый числовой идентификатор: ASCII-цифры, влезает в int4 базы"""
     text = str(value).strip()
     return text.isascii() and text.isdigit() and 0 < int(text) <= 2147483647
+
+
+def short_title(value, limit: int = 200) -> str:
+    """Название для журнала: без лишних пробелов и не длиннее limit символов"""
+    text = " ".join(str(value or "").split())
+    return text[:limit]

@@ -1,4 +1,4 @@
-from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
+from utils import short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REQUEST_STATUSES = ("active", "in_progress", "archived")
 
@@ -200,7 +200,7 @@ def handle_delete_request(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.requests WHERE id = %s RETURNING id", (int(req_id),))
+    cur.execute(f"DELETE FROM {SCHEMA}.requests WHERE id = %s RETURNING id, name", (int(req_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -209,5 +209,5 @@ def handle_delete_request(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Заявка не найдена"}, 404)
 
-    audit_log("delete_request", "request", req_id, {})
+    audit_log("delete_request", "request", req_id, {"title": short_title(deleted[1])})
     return json_response({"success": True, "message": "Заявка удалена"})

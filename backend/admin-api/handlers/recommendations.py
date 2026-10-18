@@ -1,4 +1,4 @@
-from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
+from utils import short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
 
@@ -193,7 +193,7 @@ def handle_delete_recommendation(body: dict) -> dict:
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(f"DELETE FROM {SCHEMA}.recommendations WHERE id = %s RETURNING id", (int(rec_id),))
+    cur.execute(f"DELETE FROM {SCHEMA}.recommendations WHERE id = %s RETURNING id, address", (int(rec_id),))
     deleted = cur.fetchone()
     conn.commit()
     cur.close()
@@ -202,5 +202,5 @@ def handle_delete_recommendation(body: dict) -> dict:
     if not deleted:
         return json_response({"error": "Рекомендация не найдена"}, 404)
 
-    audit_log("delete_recommendation", "recommendation", rec_id, {})
+    audit_log("delete_recommendation", "recommendation", rec_id, {"title": short_title(deleted[1]) or "Без адреса"})
     return json_response({"success": True, "message": "Рекомендация удалена"})

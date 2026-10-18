@@ -234,6 +234,7 @@ def handler(event: dict, context) -> dict:
             password_ok_2 = bool(admin_login_2) and check_password(password, admin_password_2, admin_password_hash_2)
 
             is_valid = (login_ok and password_ok) or (login_ok_2 and password_ok_2)
+            admin_name = admin_login if (login_ok and password_ok) else admin_login_2
 
             if not is_valid:
                 record_attempt(conn, client_ip, success=False)
@@ -251,6 +252,7 @@ def handler(event: dict, context) -> dict:
 
         payload = {
             "role": "admin",
+            "sub": admin_name,
             "iat": int(time.time()),
             "exp": int(time.time()) + 8 * 3600
         }

@@ -25,7 +25,7 @@ def handle_audit_log(query: dict) -> dict:
     total = cur.fetchone()[0]
 
     cur.execute(f"""
-        SELECT id, action, entity_type, entity_id, details, created_at
+        SELECT id, action, entity_type, entity_id, details, created_at, admin_login
         FROM {SCHEMA}.admin_audit_log
         {where}
         ORDER BY created_at DESC
@@ -44,6 +44,7 @@ def handle_audit_log(query: dict) -> dict:
             "entity_id": row[3],
             "details": row[4] if row[4] else {},
             "created_at": str(row[5]) if row[5] else None,
+            "admin_login": row[6],
         })
 
     return json_response({

@@ -12,6 +12,13 @@ import {
 
 const ALL_ACTIONS = Object.keys(ACTION_LABELS);
 
+const DETAIL_LABELS: Record<string, string> = {
+  title: "Название",
+  reason: "Причина",
+  status: "Статус",
+  sessions_revoked: "Завершено сессий",
+};
+
 function DetailsBadge({ details }: { details: Record<string, unknown> }) {
   const entries = Object.entries(details).filter(([, v]) => v !== null && v !== "" && v !== undefined);
   if (entries.length === 0) return null;
@@ -19,7 +26,7 @@ function DetailsBadge({ details }: { details: Record<string, unknown> }) {
     <div className="flex flex-wrap gap-1 mt-1">
       {entries.map(([k, v]) => (
         <span key={k} className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground">
-          {k}: <span className="text-foreground font-medium">{String(v)}</span>
+          {DETAIL_LABELS[k] || k}: <span className="text-foreground font-medium">{String(v)}</span>
         </span>
       ))}
     </div>
@@ -136,6 +143,10 @@ export default function AdminAuditLog() {
                             {entry.entity_id ? ` #${entry.entity_id}` : ""}
                           </span>
                         )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Администратор:{" "}
+                        <span className="text-foreground font-medium">{entry.admin_login || "не указан"}</span>
                       </div>
                       <DetailsBadge details={entry.details} />
                     </div>
