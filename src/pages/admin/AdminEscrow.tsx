@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   adminApi,
-  AdminEscrow,
+  AdminEscrow as AdminEscrowItem,
   AdminEscrowDetail,
   EscrowFilter,
   EscrowSummary,
@@ -44,7 +44,7 @@ export default function AdminEscrow() {
     handleSearch,
     handleFilterChange,
     handlePage,
-  } = useAdminList<AdminEscrow, EscrowFilter>({
+  } = useAdminList<AdminEscrowItem, EscrowFilter>({
     initialFilter: { search: "", status: "", page: 1, limit: 20 },
     fetchFn: async (f) => {
       const res = await adminApi.getEscrow(f);
@@ -71,7 +71,7 @@ export default function AdminEscrow() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const handleStatusFilter = (value: string) => handleFilterChange("status", value);
-  const openPanel = (tx: AdminEscrow) => openPanelById(tx.id);
+  const openPanel = (tx: AdminEscrowItem) => openPanelById(tx.id);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selected) return;
