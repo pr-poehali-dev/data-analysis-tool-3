@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { adminStore } from "@/store/adminStore";
 import { useNoIndex } from "@/hooks/admin/useNoIndex";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,10 @@ export default function AdminLogin() {
       setLoading(false);
     }
   };
+
+  if (adminStore.isAuthenticated()) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30">
