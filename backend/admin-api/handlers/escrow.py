@@ -1,4 +1,4 @@
-from utils import parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA
+from utils import to_utc_iso, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA
 
 ESCROW_STATUSES = ("pending", "frozen", "completed", "cancelled", "refunded")
 
@@ -84,8 +84,8 @@ def handle_escrow(query: dict) -> dict:
             "recommender_email": row[6],
             "rent_amount": float(row[7]),
             "commission_amount": float(row[8]),
-            "created_at": str(row[9]) if row[9] else None,
-            "completed_at": str(row[10]) if row[10] else None,
+            "created_at": to_utc_iso(row[9]),
+            "completed_at": to_utc_iso(row[10]),
             "chat_id": row[11],
             "recommendation_id": row[12],
         })
@@ -135,25 +135,25 @@ def handle_escrow_detail(query: dict) -> dict:
     history.append({
         "status": "frozen" if row[2] != "pending" else "pending",
         "label": "Сделка создана",
-        "date": str(row[9]) if row[9] else None,
+        "date": to_utc_iso(row[9]),
     })
     if row[2] == "completed" and row[10]:
         history.append({
             "status": "completed",
             "label": ESCROW_STATUS_LABELS["completed"],
-            "date": str(row[10]),
+            "date": to_utc_iso(row[10]),
         })
     elif row[2] == "cancelled":
         history.append({
             "status": "cancelled",
             "label": ESCROW_STATUS_LABELS["cancelled"],
-            "date": str(row[10]) if row[10] else None,
+            "date": to_utc_iso(row[10]),
         })
     elif row[2] == "refunded":
         history.append({
             "status": "refunded",
             "label": ESCROW_STATUS_LABELS["refunded"],
-            "date": str(row[10]) if row[10] else None,
+            "date": to_utc_iso(row[10]),
         })
 
     return json_response({
@@ -167,8 +167,8 @@ def handle_escrow_detail(query: dict) -> dict:
             "recommender_email": row[6],
             "rent_amount": float(row[7]),
             "commission_amount": float(row[8]),
-            "created_at": str(row[9]) if row[9] else None,
-            "completed_at": str(row[10]) if row[10] else None,
+            "created_at": to_utc_iso(row[9]),
+            "completed_at": to_utc_iso(row[10]),
             "chat_id": row[11],
             "recommendation_id": row[12],
             "history": history,

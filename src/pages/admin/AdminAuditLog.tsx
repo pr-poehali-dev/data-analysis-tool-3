@@ -3,7 +3,7 @@ import { adminApi, AuditLogEntry, AuditLogResponse } from "@/hooks/useAdminApi";
 import Icon from "@/components/ui/icon";
 import AdminPagination from "@/components/admin/AdminPagination";
 import {
-  formatDateShort as formatDateTime,
+  formatDateTime,
   ACTION_LABELS,
   ACTION_ICONS,
   ACTION_COLORS,

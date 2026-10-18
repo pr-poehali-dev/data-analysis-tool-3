@@ -1,4 +1,4 @@
-from utils import parse_pagination, get_db, json_response, SCHEMA
+from utils import to_utc_iso, parse_pagination, get_db, json_response, SCHEMA
 
 
 def handle_audit_log(query: dict) -> dict:
@@ -43,7 +43,7 @@ def handle_audit_log(query: dict) -> dict:
             "entity_type": row[2],
             "entity_id": row[3],
             "details": row[4] if row[4] else {},
-            "created_at": str(row[5]) if row[5] else None,
+            "created_at": to_utc_iso(row[5]),
             "admin_login": row[6],
         })
 

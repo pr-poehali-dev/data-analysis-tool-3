@@ -14,7 +14,7 @@ export function formatDate(dateStr: string | null): string {
 export function formatDateTime(dateStr: string | null): string {
   if (!dateStr) return "—";
   try {
-    return new Date(dateStr).toLocaleDateString("ru-RU", {
+    return new Date(dateStr).toLocaleString("ru-RU", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",

@@ -3,7 +3,7 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from utils import is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA
+from utils import to_utc_iso, is_id, parse_pagination, get_db, audit_log, json_response, SCHEMA
 
 
 def handle_feedback(query: dict) -> dict:
@@ -61,8 +61,8 @@ def handle_feedback(query: dict) -> dict:
             "message": row[3],
             "status": row[4],
             "admin_reply": row[5],
-            "replied_at": str(row[6]) if row[6] else None,
-            "created_at": str(row[7]) if row[7] else None,
+            "replied_at": to_utc_iso(row[6]),
+            "created_at": to_utc_iso(row[7]),
         })
 
     return json_response({
