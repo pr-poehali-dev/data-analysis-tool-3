@@ -1,4 +1,4 @@
-from utils import short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
+from utils import to_utc_iso, short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REQUEST_STATUSES = ("active", "in_progress", "archived")
 
@@ -77,8 +77,8 @@ def handle_requests(query: dict) -> dict:
             "move_in_date": row[11],
             "reward": row[12],
             "status": row[13],
-            "created_at": str(row[14]) if row[14] else None,
-            "updated_at": str(row[15]) if row[15] else None,
+            "created_at": to_utc_iso(row[14]),
+            "updated_at": to_utc_iso(row[15]),
             "who_will_live": row[16],
             "has_pets": row[17],
             "author_name": row[18],
@@ -146,8 +146,8 @@ def handle_request(query: dict) -> dict:
             "has_pets": row[17],
             "districts": row[18],
             "status": row[19],
-            "created_at": str(row[20]) if row[20] else None,
-            "updated_at": str(row[21]) if row[21] else None,
+            "created_at": to_utc_iso(row[20]),
+            "updated_at": to_utc_iso(row[21]),
             "author_name": row[22],
             "author_phone": row[23],
             "author_avatar": row[24],

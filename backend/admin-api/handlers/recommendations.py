@@ -1,4 +1,4 @@
-from utils import short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
+from utils import to_utc_iso, short_title, parse_pagination, is_id, get_db, audit_log, json_response, SCHEMA, user_match
 
 REC_STATUSES = ("pending", "accepted", "rejected", "deleted")
 
@@ -70,8 +70,8 @@ def handle_recommendations(query: dict) -> dict:
             "request_id": row[5],
             "request_name": row[6],
             "owner_email": row[7],
-            "created_at": str(row[8]) if row[8] else None,
-            "updated_at": str(row[9]) if row[9] else None,
+            "created_at": to_utc_iso(row[8]),
+            "updated_at": to_utc_iso(row[9]),
             "has_furniture": row[10],
             "has_appliances": row[11],
             "area": row[12],
@@ -139,8 +139,8 @@ def handle_recommendation(query: dict) -> dict:
             "photos": row[15] if row[15] else [],
             "coordinates_lat": row[16],
             "coordinates_lng": row[17],
-            "created_at": str(row[18]) if row[18] else None,
-            "updated_at": str(row[19]) if row[19] else None,
+            "created_at": to_utc_iso(row[18]),
+            "updated_at": to_utc_iso(row[19]),
             "author_name": row[20],
             "author_user_id": row[21],
             "author_email": row[22],
