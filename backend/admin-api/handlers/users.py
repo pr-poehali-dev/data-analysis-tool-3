@@ -40,16 +40,38 @@ def handle_users(query: dict) -> dict:
     total = cur.fetchone()[0]
 
     cur.execute(f"""
+        WITH page AS (
+            SELECT
+                id, email, first_name, last_name, name, phone, city, role,
+                avatar_url, is_blocked, blocked_at, blocked_reason,
+                created_at, last_login_at, telegram_id
+            FROM {SCHEMA}.users u
+            {where}
+            ORDER BY created_at DESC, id DESC
+            LIMIT {limit} OFFSET {offset}
+        ),
+        req AS (
+            SELECT p.id AS uid, COUNT(*) AS cnt
+            FROM page p
+            JOIN {SCHEMA}.requests r ON {user_match("r.user_email", "p")}
+            GROUP BY p.id
+        ),
+        rec AS (
+            SELECT p.id AS uid, COUNT(*) AS cnt
+            FROM page p
+            JOIN {SCHEMA}.recommendations x ON {user_match("x.user_id", "p")}
+            GROUP BY p.id
+        )
         SELECT
-            id, email, first_name, last_name, name, phone, city, role,
-            avatar_url, is_blocked, blocked_at, blocked_reason,
-            created_at, last_login_at,
-            (SELECT COUNT(*) FROM {SCHEMA}.requests r WHERE {user_match("r.user_email")}) AS requests_count,
-            (SELECT COUNT(*) FROM {SCHEMA}.recommendations rec WHERE {user_match("rec.user_id")}) AS recommendations_count
-        FROM {SCHEMA}.users u
-        {where}
-        ORDER BY created_at DESC
-        LIMIT {limit} OFFSET {offset}
+            p.id, p.email, p.first_name, p.last_name, p.name, p.phone, p.city, p.role,
+            p.avatar_url, p.is_blocked, p.blocked_at, p.blocked_reason,
+            p.created_at, p.last_login_at,
+            COALESCE(req.cnt, 0) AS requests_count,
+            COALESCE(rec.cnt, 0) AS recommendations_count
+        FROM page p
+        LEFT JOIN req ON req.uid = p.id
+        LEFT JOIN rec ON rec.uid = p.id
+        ORDER BY p.created_at DESC, p.id DESC
     """, params)
     rows = cur.fetchall()
 
