@@ -13,6 +13,7 @@ import psycopg2
 MAX_ATTEMPTS = 5          # максимум неудачных попыток с одного IP
 GLOBAL_MAX_ATTEMPTS = 30  # максимум неудачных попыток со всех IP вместе
 WINDOW_MINUTES = 15       # окно наблюдения (минут)
+MIN_JWT_SECRET_LENGTH = 32  # минимальная длина секрета подписи ключа
 
 
 def get_db_conn():
@@ -107,6 +108,8 @@ def check_password(password: str, admin_password_plain: str, admin_password_hash
 
 def create_jwt(payload: dict, secret: str) -> str:
     """Создаёт JWT токен вручную без внешних зависимостей"""
+    if len(secret) < MIN_JWT_SECRET_LENGTH:
+        raise ValueError("Секрет подписи ключа не задан или слишком короткий")
     header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode()).rstrip(b"=").decode()
     body = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
     signature_input = f"{header}.{body}".encode()
@@ -117,6 +120,8 @@ def create_jwt(payload: dict, secret: str) -> str:
 
 def verify_jwt(token: str, secret: str) -> dict | None:
     """Проверяет JWT токен и возвращает payload или None"""
+    if len(secret) < MIN_JWT_SECRET_LENGTH:
+        return None
     try:
         parts = token.split(".")
         if len(parts) != 3:
@@ -183,6 +188,15 @@ def handler(event: dict, context) -> dict:
     admin_password_2 = os.environ.get("ADMIN_PASSWORD_2", "")
     admin_password_hash_2 = os.environ.get("ADMIN_PASSWORD_HASH_2", "")
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
+
+    secret_ok = len(jwt_secret) >= MIN_JWT_SECRET_LENGTH
+    if method == "POST" and not secret_ok and not path.endswith("/logout"):
+        print("ADMIN_JWT_SECRET не задан или короче минимальной длины")
+        return {
+            "statusCode": 503,
+            "headers": cors_headers,
+            "body": json.dumps({"error": "Вход временно недоступен: не настроен секрет подписи ключа. Обратитесь к владельцу сайта."})
+        }
 
     # POST /logout — очищаем cookie
     if method == "POST" and path.endswith("/logout"):

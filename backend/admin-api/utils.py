@@ -9,6 +9,8 @@ import psycopg2
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
 
+MIN_JWT_SECRET_LENGTH = 32
+
 
 def to_utc_iso(dt):
     """Сериализует datetime в ISO-строку с явной пометкой UTC.
@@ -65,6 +67,8 @@ def get_cors_headers(event: dict) -> dict:
 def verify_admin_token(token: str) -> bool:
     """Проверяет JWT токен администратора"""
     jwt_secret = os.environ.get("ADMIN_JWT_SECRET", "")
+    if len(jwt_secret) < MIN_JWT_SECRET_LENGTH:
+        return False
     try:
         parts = token.split(".")
         if len(parts) != 3:
