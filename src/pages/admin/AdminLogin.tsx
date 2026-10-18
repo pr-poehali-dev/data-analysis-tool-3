@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminStore } from "@/store/adminStore";
+import { useNoIndex } from "@/hooks/admin/useNoIndex";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ const ADMIN_AUTH_URL = "https://functions.poehali.dev/f95fb7eb-1686-4a09-83f0-31
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  useNoIndex();
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

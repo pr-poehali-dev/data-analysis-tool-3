@@ -32,7 +32,9 @@
     <link rel="canonical" href="https://sovetpay.ru/"/>
     <script>
         if (location.hostname === 'sovetpay.ru' || location.hostname === 'www.sovetpay.ru') {
-            document.getElementById('robots-meta').setAttribute('content', 'index, follow');
+            if (!location.pathname.startsWith('/admin')) {
+                document.getElementById('robots-meta').setAttribute('content', 'index, follow');
+            }
         } else if (!location.hostname.includes('preview.poehali.dev')) {
             location.replace('https://sovetpay.ru' + location.pathname + location.search + location.hash);
         }

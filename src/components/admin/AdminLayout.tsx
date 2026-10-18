@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
 import { adminStore } from "@/store/adminStore";
+import { useNoIndex } from "@/hooks/admin/useNoIndex";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 
@@ -20,6 +21,8 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useNoIndex();
 
   useEffect(() => {
     if (!adminStore.isAuthenticated()) {
