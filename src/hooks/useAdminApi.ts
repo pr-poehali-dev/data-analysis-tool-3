@@ -7,8 +7,10 @@ let redirectingToLogin = false;
 
 async function guardedFetch(input: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(input, init);
-  if (res.status === 403 && !redirectingToLogin && window.location.pathname !== ADMIN_LOGIN_PATH) {
+  const sessionRejected = res.status === 401 || res.status === 403;
+  if (sessionRejected && !redirectingToLogin && window.location.pathname !== ADMIN_LOGIN_PATH) {
     redirectingToLogin = true;
+    if (adminStore.isAuthenticated()) adminStore.markSessionExpired();
     adminStore.clearToken();
     window.location.replace(ADMIN_LOGIN_PATH);
   }

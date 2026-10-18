@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminStore } from "@/store/adminStore";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,11 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sessionExpired] = useState(() => adminStore.isSessionExpired());
+
+  useEffect(() => {
+    adminStore.clearSessionExpired();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +86,13 @@ export default function AdminLogin() {
               required
             />
           </div>
+
+          {sessionExpired && !error && (
+            <p role="status" className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 flex items-center gap-1.5">
+              <Icon name="Clock" size={14} className="shrink-0" />
+              Сессия истекла, войдите снова
+            </p>
+          )}
 
           {error && (
             <p className="text-sm text-red-600 flex items-center gap-1.5">

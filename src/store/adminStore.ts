@@ -1,5 +1,6 @@
 // Хранилище сессии администратора (sessionStorage — закрывается вместе с вкладкой)
 const TOKEN_KEY = "admin_token";
+const EXPIRED_KEY = "admin_session_expired";
 
 export const adminStore = {
   getToken(): string | null {
@@ -7,11 +8,24 @@ export const adminStore = {
   },
 
   setToken(token: string): void {
+    sessionStorage.removeItem(EXPIRED_KEY);
     sessionStorage.setItem(TOKEN_KEY, token);
   },
 
   clearToken(): void {
     sessionStorage.removeItem(TOKEN_KEY);
+  },
+
+  markSessionExpired(): void {
+    sessionStorage.setItem(EXPIRED_KEY, "1");
+  },
+
+  isSessionExpired(): boolean {
+    return sessionStorage.getItem(EXPIRED_KEY) === "1";
+  },
+
+  clearSessionExpired(): void {
+    sessionStorage.removeItem(EXPIRED_KEY);
   },
 
   isAuthenticated(): boolean {
