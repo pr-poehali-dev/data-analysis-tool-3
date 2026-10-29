@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { authStore } from "@/store/authStore";
 import funcUrls from "../../backend/func2url.json";
 import { withTimezone } from "@/lib/userTimezone";

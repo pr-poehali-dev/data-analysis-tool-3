@@ -4,10 +4,12 @@ import { recommendationsStore } from "@/store/recommendationsStore";
 
 const ITEMS_PER_PAGE = 6;
 
-export const useRequestsFilter = (currentUserEmail?: string) => {
+export const useRequestsFilter = (currentUserEmail?: string, initialRequests?: Request[]) => {
   const [budget, setBudget] = useState([0]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [requests, setRequests] = useState<Request[]>(
+    () => (initialRequests || []).filter(r => r.status === 'active')
+  );
   const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
   const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
   const [selectedHousingType, setSelectedHousingType] = useState<string | undefined>(undefined);
@@ -22,6 +24,10 @@ export const useRequestsFilter = (currentUserEmail?: string) => {
       const activeRequests = allRequests.filter(r => r.status === 'active');
       setRequests(activeRequests);
     };
+
+    if (initialRequests && initialRequests.length > 0) {
+      requestsStore.seed(initialRequests);
+    }
 
     requestsStore.fetchRequests().then(() => {
       updateFromCache();

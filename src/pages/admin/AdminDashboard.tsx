@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { adminApi, DashboardStats, RegistrationDay, ActivityItem } from "@/hooks/useAdminApi";
 import Icon from "@/components/ui/icon";

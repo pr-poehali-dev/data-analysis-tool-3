@@ -80,7 +80,7 @@ export const RequestDetailsCard = ({
           <p className="text-sm sm:text-lg text-muted-foreground mb-2 sm:mb-4">{request.location}</p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Icon name="Calendar" size={16} />
-            <span>Создана: {createdAt.toLocaleDateString('ru-RU', {
+            <span suppressHydrationWarning>Создана: {createdAt.toLocaleDateString('ru-RU', {
               day: 'numeric',
               month: 'long',
               year: 'numeric'

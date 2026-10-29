@@ -25,6 +25,7 @@ interface ComboboxProps {
   searchPlaceholder?: string
   emptyText?: string
   className?: string
+  disabled?: boolean
 }
 
 export function Combobox({
@@ -35,6 +36,7 @@ export function Combobox({
   searchPlaceholder = "Поиск...",
   emptyText = "Ничего не найдено",
   className,
+  disabled,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
@@ -46,6 +48,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={disabled}
           className={cn(
             "w-full justify-between font-normal text-left h-10 px-3 py-2",
             "hover:bg-accent hover:text-accent-foreground transition-colors",

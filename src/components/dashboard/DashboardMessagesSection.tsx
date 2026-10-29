@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "@/lib/router-compat";
 import { Chat, messagesStore } from "@/store/messagesStore";
 import { authStore } from "@/store/authStore";
 import { ChatsList } from "./messages/ChatsList";

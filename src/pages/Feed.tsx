@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -8,11 +8,12 @@ import { PortfolioNavbar, Footer } from "@/components/landing";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { authStore } from "@/store/authStore";
+import type { Request } from "@/store/requestsStore";
 import { messagesStore } from "@/store/messagesStore";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { MobileProfileSheet } from "@/components/dashboard/MobileProfileSheet";
 
-export const Feed = () => {
+export const Feed = ({ initialRequests }: { initialRequests?: Request[] } = {}) => {
   const navigate = useNavigate();
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -80,11 +81,11 @@ export const Feed = () => {
     }
   };
 
-  const handleRegistrationComplete = (data: { firstName: string; lastName: string; role: string; email: string; phone: string; city?: string }) => {
+  const handleRegistrationComplete = (data: { firstName: string; lastName: string; role?: "tenant" | "recommender" | "landlord"; email: string; phone: string; city?: string }) => {
     authStore.setUser({
       firstName: data.firstName,
       lastName: data.lastName,
-      role: data.role,
+      role: data.role ?? "tenant",
       email: data.email,
       phone: data.phone,
       city: data.city,
@@ -122,6 +123,7 @@ export const Feed = () => {
           onRegisterClick={handleRegistrationClick}
           onSuggestProperty={handleSuggestProperty}
           isAuthenticated={isAuthenticated}
+          initialRequests={initialRequests}
         />
       </main>
 

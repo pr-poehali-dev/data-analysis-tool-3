@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "@/lib/router-compat";
 import Icon from "@/components/ui/icon";
 import { RequestsFeed } from "@/components/dashboard/RequestsFeed";
 import { DashboardRequestsSection } from "@/components/dashboard/DashboardRequestsSection";

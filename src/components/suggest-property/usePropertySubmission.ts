@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { useToast } from "@/hooks/use-toast";
 import { authStore } from "@/store/authStore";
 import { recommendationsStore } from "@/store/recommendationsStore";

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "@/lib/router-compat";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -12,11 +12,11 @@ import UserProfileDialog from "@/components/offers/UserProfileDialog";
 import { RequestDetailsCard } from "@/components/request-details/RequestDetailsCard";
 import { useAuthorProfile } from "@/components/request-details/useAuthorProfile";
 
-export const RequestDetails = () => {
+export const RequestDetails = ({ initialRequest }: { initialRequest?: Request | null } = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { requestId } = useParams<{ requestId: string }>();
-  const [request, setRequest] = useState<Request | null>(null);
+  const [request, setRequest] = useState<Request | null>(initialRequest ?? null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
@@ -37,6 +37,9 @@ export const RequestDetails = () => {
       return;
     }
 
+    if (initialRequest && String(initialRequest.id) === requestId && !requestsStore.getRequestById(requestId)) {
+      requestsStore.seed([initialRequest]);
+    }
     const cached = requestsStore.getRequestById(requestId);
     if (cached) setRequest(cached);
 

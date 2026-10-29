@@ -373,7 +373,7 @@ export function useAuth(options: UseAuthOptions): UseAuthReturn {
   /**
    * Get Authorization header for API requests
    */
-  const getAuthHeader = useCallback(() => {
+  const getAuthHeader = useCallback((): { Authorization: string } | Record<string, never> => {
     if (!accessToken) return {};
     return { Authorization: `Bearer ${accessToken}` };
   }, [accessToken]);

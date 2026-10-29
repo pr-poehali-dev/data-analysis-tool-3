@@ -16,7 +16,7 @@ export default function RecommendationPhotos({ recommendation }: RecommendationP
   const [loaded, setLoaded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const photoCount = recommendation.photos.length > 0 ? recommendation.photos.length : ((recommendation as Record<string, unknown>).photoCount as number) || 0;
+  const photoCount = recommendation.photos.length > 0 ? recommendation.photos.length : ((recommendation as unknown as Record<string, unknown>).photoCount as number) || 0;
 
   if (photoCount === 0 && recommendation.photos.length === 0) return null;
 

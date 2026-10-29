@@ -1,1 +1,0 @@
-ALTER TABLE t_p66037117_data_analysis_tool_3.admin_audit_log ADD COLUMN IF NOT EXISTS admin_login VARCHAR(100);

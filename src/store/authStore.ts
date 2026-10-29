@@ -191,8 +191,22 @@ async function doRefresh(): Promise<string> {
   }
 }
 
+// Set in the browser after hydration: until then (server render and the
+// hydration pass) the visitor is rendered as a guest so the markup matches.
+let hydrated = false;
+
 export const authStore = {
+  markHydrated: () => {
+    hydrated = true;
+  },
+
+  hasStoredSession: (): boolean => {
+    if (!hydrated) return false;
+    return !!localStorage.getItem(USER_KEY) || !!getProvider();
+  },
+
   getUser: (): User => {
+    if (!hydrated) return null;
     if (!currentUser) {
       const saved = localStorage.getItem(USER_KEY);
       if (saved) {
@@ -357,6 +371,10 @@ export const authStore = {
 
   isSessionRestored: (): boolean => {
     return sessionRestored;
+  },
+
+  notify: () => {
+    listeners.forEach((listener) => listener());
   },
 
   subscribe: (listener: () => void) => {

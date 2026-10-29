@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@/lib/router-compat";
 import { ArrowLeft } from "lucide-react";
 import { InviteOwnerStep } from "@/components/suggest-property/InviteOwnerStep";
 import { PropertyDetailsStep } from "@/components/suggest-property/PropertyDetailsStep";

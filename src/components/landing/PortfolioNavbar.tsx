@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LogOut, User, Instagram } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@/lib/router-compat";
 import { authStore } from "@/store/authStore";
 import { messagesStore } from "@/store/messagesStore";
 import Icon from "@/components/ui/icon";

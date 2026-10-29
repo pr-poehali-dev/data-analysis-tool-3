@@ -29,7 +29,7 @@ export function useAuthorProfile() {
     const fallback: UserProfile = {
       firstName: name.split(' ')[0] || '',
       lastName: name.split(' ').slice(1).join(' ') || '',
-      avatar_url: avatar,
+      avatar_url: avatar || '',
       city: city || '',
       vkLink: '',
       role: 'tenant',

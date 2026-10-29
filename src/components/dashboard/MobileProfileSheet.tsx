@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Instagram } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@/lib/router-compat";
 import {
   Sheet,
   SheetContent,

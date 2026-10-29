@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { Request } from "@/store/requestsStore";
 import { useRequestsFilter } from "@/hooks/useRequestsFilter";
 import { RequestsFeedFilters } from "./feed/RequestsFeedFilters";
@@ -10,9 +10,11 @@ interface RequestsFeedProps {
   onSuggestProperty?: (requestId?: string, requestName?: string) => void;
   isAuthenticated?: boolean;
   currentUserEmail?: string;
+  /** requests rendered by the server (route loader) */
+  initialRequests?: Request[];
 }
 
-export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false, currentUserEmail }: RequestsFeedProps = {}) => {
+export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticated = false, currentUserEmail, initialRequests }: RequestsFeedProps = {}) => {
   const navigate = useNavigate();
 
   const {
@@ -27,7 +29,7 @@ export const RequestsFeed = ({ onRegisterClick, onSuggestProperty, isAuthenticat
     getSuggestionsCount,
     handleApplyFilters, handleResetFilters,
     getCityOptions, citiesWithDistricts,
-  } = useRequestsFilter(currentUserEmail);
+  } = useRequestsFilter(currentUserEmail, initialRequests);
 
   const handleSuggestClick = (request?: Request) => {
     if (!isAuthenticated && onRegisterClick) {

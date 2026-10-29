@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, UserCheck, Handshake, FileCheck, Wallet } from "lucide-react";
 
@@ -9,7 +9,7 @@ interface BankingScaleHeroProps {
 }
 
 interface ProcessStep {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   title: string;
   description: string;
   delay: number;

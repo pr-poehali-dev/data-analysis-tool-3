@@ -1,8 +1,20 @@
-# Dependencies
-node_modules/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Build output
-dist/
+node_modules
+dist
+dist-ssr
+*.local
+
+# Служебные файлы warmup/handoff (задания hero-генераторам, скачанный
+# выбранный hero и спека) — не для репозитория пользователя
+tmp/
 
 # Editor directories and files
 .vscode/*
@@ -14,23 +26,16 @@ dist/
 *.njsproj
 *.sln
 *.sw?
+builds
+# Серверные сборки SSR — приватный артефакт публикации, не для репозитория
+builds-server
+.tanstack
+.output
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Local env files
-.env
-.env.local
-.env.*.local
-
-# Build artifacts
-builds/
-
-# warmup/handoff артефакты
-tmp/
+# Python (страховка: разовые Bash-скрипты должны класть venv в /tmp, но если
+# venv/кэш всё же оказался в проекте — не коммитить его через end-of-turn git add -A)
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/

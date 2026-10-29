@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PortfolioNavbar, Footer } from "@/components/landing";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "@/lib/router-compat";
 import Icon from "@/components/ui/icon";
 import { requestsStore } from "@/store/requestsStore";
 import { authStore } from "@/store/authStore";

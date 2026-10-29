@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/ui/icon";
 import { messagesStore, Message } from "@/store/messagesStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { getSoundSettings } from "@/components/dashboard/DashboardSettingsSection";
 
 interface NotificationItem extends Message {

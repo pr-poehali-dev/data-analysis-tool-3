@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
+import { useNavigate, Outlet, NavLink, useLocation } from "@/lib/router-compat";
 import { adminStore } from "@/store/adminStore";
 import { useNoIndex } from "@/hooks/admin/useNoIndex";
 import { Button } from "@/components/ui/button";

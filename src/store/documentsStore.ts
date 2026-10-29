@@ -34,7 +34,7 @@ class DocumentsStore {
   private fetched = false;
 
   constructor() {
-    localStorage.removeItem("documents");
+    if (typeof localStorage !== "undefined") localStorage.removeItem("documents");
   }
 
   subscribe(listener: () => void) {

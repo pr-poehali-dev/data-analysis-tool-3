@@ -1,1 +1,0 @@
-ALTER TABLE users ADD COLUMN vk_link text NULL;

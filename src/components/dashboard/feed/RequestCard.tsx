@@ -7,7 +7,7 @@ const rentalPeriodLabel: Record<string, string> = {
   "12+": "Более года",
 };
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Request } from "@/store/requestsStore";

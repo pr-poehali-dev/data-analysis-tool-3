@@ -28,6 +28,7 @@ export interface Request {
   roomsCount: string;
   rentalPeriod: string;
   moveInDate: string;
+  preferences?: string;
   status: RequestStatus;
   createdAt: Date;
 }
@@ -35,7 +36,7 @@ export interface Request {
 const API_URL = funcUrls["requests-api"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseRequest(raw: any): Request {
+export function parseRequest(raw: any): Request {
   return {
     ...raw,
     createdAt: new Date(raw.createdAt),
@@ -180,11 +181,16 @@ class RequestsStore {
 
   subscribe(listener: () => void) {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => { this.listeners.delete(listener); };
   }
 
   private notifyListeners() {
     this.listeners.forEach(listener => listener());
+  }
+
+  /** Browser only (useEffect): puts requests rendered by the server into the cache. */
+  seed(items: Request[]) {
+    this.mergeCache(items);
   }
 
   private mergeCache(items: Request[]) {
